@@ -1,5 +1,6 @@
+import json
 from pprint import pprint
-from flask import Flask, redirect, session, jsonify, url_for
+from flask import Flask, request, redirect, session, jsonify, url_for
 from flask_oauthlib.client import OAuth
 import requests
 
@@ -18,10 +19,10 @@ twitch = OAuth().remote_app('twitch',
                           request_token_params={'scope': ["user_read", "channel_editor"]}
 )
 
-def query(endpoint, token=None):
+def query(endpoint, *, token=None, method="GET", data=None):
 	if token is None:
 		token = session["twitch_token"]
-	r = requests.get("https://api.twitch.tv/kraken/" + endpoint, headers={
+	r = requests.request(method, "https://api.twitch.tv/kraken/" + endpoint, data=data, headers={
 		"Accept": "application/vnd.twitchtv.v5+json",
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": "OAuth " + token,
@@ -34,10 +35,35 @@ def mainpage():
 	if "twitch_token" in session:
 		token = session["twitch_token"]
 		user = query("user")
+		session["twitch_user"] = user
 		channel = query("channels/" + user["_id"])
-		pprint(channel)
-		return f"""<p>Welcome, {user["display_name"]}! Category: {channel["game"]}</p><p><a href="/logout">Logout</a></p>"""
+		return f"""<p>Welcome, {user["display_name"]}!</p>
+		<form method=post action="/update">
+		<ul>
+		<li>Category: <input name=category size=50></li>
+		<li>Stream title: <input name=title size=50></li>
+		</ul>
+		<input type=submit>
+		<script>
+		const channel = {json.dumps(channel)};
+		const form = document.forms[0].elements;
+		form.category.value = channel.game;
+		form.title.value = channel.status;
+		</script>
+		</form>
+		<p><a href="/logout">Logout</a></p>"""
 	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>"""
+
+@app.route("/update", methods=["POST"])
+def update():
+	if "twitch_user" not in session:
+		return redirect(url_for("mainpage"))
+	user = session["twitch_user"]
+	resp = query("channels/" + user["_id"], method="PUT", data={
+		"channel[game]": request.form["category"],
+		"channel[status]": request.form["title"],
+	})
+	return redirect(url_for("mainpage"))
 
 @twitch.tokengetter
 def get_twitch_token(token=None):
