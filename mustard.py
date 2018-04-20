@@ -8,6 +8,10 @@ import config # ImportError? See config_sample.py
 app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET
 
+# Map community names to their IDs
+# If a name is not present, look up the ID and cache it here.
+community_id = {}
+
 twitch = OAuth().remote_app('twitch',
                           base_url='https://api.twitch.tv/kraken/',
                           request_token_url=None,
@@ -19,15 +23,17 @@ twitch = OAuth().remote_app('twitch',
                           request_token_params={'scope': ["user_read", "channel_editor"]}
 )
 
-def query(endpoint, *, token=None, method="GET", data=None):
+def query(endpoint, *, token=None, method="GET", params=None, data=None):
 	if token is None:
 		token = session["twitch_token"]
-	r = requests.request(method, "https://api.twitch.tv/kraken/" + endpoint, data=data, headers={
+	r = requests.request(method, "https://api.twitch.tv/kraken/" + endpoint,
+		params=params, data=data, headers={
 		"Accept": "application/vnd.twitchtv.v5+json",
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": "OAuth " + token,
 	})
 	r.raise_for_status()
+	if r.status_code == 204: return {}
 	return r.json()
 
 @app.route("/")
@@ -37,18 +43,27 @@ def mainpage():
 		user = query("user")
 		session["twitch_user"] = user
 		channel = query("channels/" + user["_id"])
+		communities = query("channels/" + user["_id"] + "/communities")
+		for community in communities["communities"]:
+			community_id[community["name"]] = community["_id"]
+		commnames = [comm["name"] for comm in communities["communities"]]
 		return f"""<p>Welcome, {user["display_name"]}!</p>
 		<form method=post action="/update">
 		<ul>
 		<li>Category: <input name=category size=50></li>
 		<li>Stream title: <input name=title size=50></li>
+		<li>Communities: <input name=comm1 size=50><br>
+		<input name=comm2 size=50><br>
+		<input name=comm3 size=50><br>
 		</ul>
 		<input type=submit>
 		<script>
 		const channel = {json.dumps(channel)};
+		const communities = {json.dumps(commnames)};
 		const form = document.forms[0].elements;
 		form.category.value = channel.game;
 		form.title.value = channel.status;
+		communities.forEach((c, i) => form["comm"+(i+1)].value = c);
 		</script>
 		</form>
 		<p><a href="/logout">Logout</a></p>"""
@@ -62,6 +77,20 @@ def update():
 	resp = query("channels/" + user["_id"], method="PUT", data={
 		"channel[game]": request.form["category"],
 		"channel[status]": request.form["title"],
+	})
+	communities = []
+	for i in range(1, 4):
+		n = "comm%d" % i
+		if n not in request.form: continue
+		name = request.form[n]
+		if name == "": continue
+		if name not in community_id:
+			resp = query("communities", params={"name": name})
+			community_id[name] = resp["_id"]
+		communities.append(community_id[name])
+	print(communities)
+	query("channels/" + user["_id"] + "/communities", method="PUT", data={
+		"community_ids[]": communities,
 	})
 	return redirect(url_for("mainpage"))
 
