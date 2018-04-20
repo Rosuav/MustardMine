@@ -1,3 +1,4 @@
+from pprint import pprint
 from flask import Flask, redirect, session, jsonify, url_for
 from flask_oauthlib.client import OAuth
 import requests
@@ -17,17 +18,25 @@ twitch = OAuth().remote_app('twitch',
                           request_token_params={'scope': ["user_read", "channel_editor"]}
 )
 
+def query(endpoint, token=None):
+	if token is None:
+		token = session["twitch_token"]
+	r = requests.get("https://api.twitch.tv/kraken/" + endpoint, headers={
+		"Accept": "application/vnd.twitchtv.v5+json",
+		"Client-ID": config.CLIENT_ID,
+		"Authorization": "OAuth " + token,
+	})
+	r.raise_for_status()
+	return r.json()
+
 @app.route("/")
 def mainpage():
 	if "twitch_token" in session:
 		token = session["twitch_token"]
-		r = requests.get("https://api.twitch.tv/kraken/user", headers={
-			"Accept": "application/vnd.twitchtv.v5+json",
-			"Client-ID": config.CLIENT_ID,
-			"Authorization": "OAuth " + token,
-		})
-		user = r.json()
-		return f"""<p>Welcome, {user["display_name"]}!</p><p><a href="/logout">Logout</a></p>"""
+		user = query("user")
+		channel = query("channels/" + user["_id"])
+		pprint(channel)
+		return f"""<p>Welcome, {user["display_name"]}! Category: {channel["game"]}</p><p><a href="/logout">Logout</a></p>"""
 	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>"""
 
 @twitch.tokengetter
