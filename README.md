@@ -11,5 +11,5 @@ TODO:
   - Game category
   - Communities
 * Connect to Twitter and send a tweet as you go live
-* Invoke OBS
 * Negotiate with StreamLabs extension for schedule??
+  - Which direction? Configure SL or query it?
