@@ -1,6 +1,19 @@
 from flask import Flask, render_template, g, Markup, request, redirect
-import config # Local config variables and passwords, not in source control
+from flask_oauthlib.client import OAuth
+
+import config # ImportError? See config_sample.py
 app = Flask(__name__)
+
+twitch = OAuth().remote_app('twitch',
+                          base_url='https://api.twitch.tv/kraken/',
+                          request_token_url=None,
+                          access_token_method='POST',
+                          access_token_url='https://api.twitch.tv/kraken/oauth2/token',
+                          authorize_url='https://api.twitch.tv/kraken/oauth2/authorize',
+                          consumer_key=config.CLIENT_ID,
+                          consumer_secret=config.CLIENT_SECRET,
+                          request_token_params={'scope': ["user_read", "channel_check_subscription"]}
+                          )
 
 @app.route("/")
 def mainpage():
