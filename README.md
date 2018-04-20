@@ -1,5 +1,8 @@
-Twitch Go-Live assistant
-========================
+Mustard-Mine - Twitch Go-Live assistant
+=======================================
+
+    The more work there is of mine, the less there is of yours.
+    -- The Duchess (attrib)
 
 TODO:
 
