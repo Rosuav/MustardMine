@@ -20,8 +20,9 @@ twitch = OAuth().remote_app('twitch',
 @app.route("/")
 def mainpage():
 	if "twitch_token" in session:
-		return "Got login"
-	return "Hello, world!"
+		print(twitch.get("foo"))
+		return """<a href="/logout">Logout</a>"""
+	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>"""
 
 @twitch.tokengetter
 def get_twitch_token(token=None):
