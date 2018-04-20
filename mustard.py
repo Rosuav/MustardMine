@@ -80,9 +80,7 @@ def update():
 	})
 	communities = []
 	for i in range(1, 4):
-		n = "comm%d" % i
-		if n not in request.form: continue
-		name = request.form[n]
+		name = request.form.get("comm%d" % i)
 		if name == "": continue
 		if name not in community_id:
 			resp = query("communities", params={"name": name})
