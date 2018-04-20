@@ -20,8 +20,14 @@ twitch = OAuth().remote_app('twitch',
 @app.route("/")
 def mainpage():
 	if "twitch_token" in session:
-		print(twitch.get("foo"))
-		return """<a href="/logout">Logout</a>"""
+		token = session["twitch_token"]
+		r = requests.get("https://api.twitch.tv/kraken/user", headers={
+			"Accept": "application/vnd.twitchtv.v5+json",
+			"Client-ID": config.CLIENT_ID,
+			"Authorization": "OAuth " + token,
+		})
+		user = r.json()
+		return f"""<p>Welcome, {user["display_name"]}!</p><p><a href="/logout">Logout</a></p>"""
 	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>"""
 
 @twitch.tokengetter
@@ -40,7 +46,7 @@ def authorized():
 			request.args['error'],
 			request.args['error_description']
 		)
-	session["twitch_token"] = (resp["access_token"], "")
+	session["twitch_token"] = resp["access_token"]
 	return redirect(url_for("mainpage"))
 
 @app.route('/logout')
