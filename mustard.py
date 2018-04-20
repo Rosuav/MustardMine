@@ -1,8 +1,10 @@
-from flask import Flask, render_template, g, Markup, request, redirect
+from flask import Flask, redirect, session, jsonify, url_for
 from flask_oauthlib.client import OAuth
+import requests
 
 import config # ImportError? See config_sample.py
 app = Flask(__name__)
+app.secret_key = config.SESSION_SECRET
 
 twitch = OAuth().remote_app('twitch',
                           base_url='https://api.twitch.tv/kraken/',
@@ -12,12 +14,38 @@ twitch = OAuth().remote_app('twitch',
                           authorize_url='https://api.twitch.tv/kraken/oauth2/authorize',
                           consumer_key=config.CLIENT_ID,
                           consumer_secret=config.CLIENT_SECRET,
-                          request_token_params={'scope': ["user_read", "channel_check_subscription"]}
-                          )
+                          request_token_params={'scope': ["user_read"]}
+)
 
 @app.route("/")
 def mainpage():
+	if "twitch_token" in session:
+		return "Got login"
 	return "Hello, world!"
+
+@twitch.tokengetter
+def get_twitch_token(token=None):
+	return session.get("twitch_token")
+
+@app.route("/login")
+def login():
+	return twitch.authorize(callback=url_for("authorized", _external=True))
+
+@app.route("/login/authorized")
+def authorized():
+	resp = twitch.authorized_response()
+	if resp is None:
+		return "Access denied: reason=%s error=%s" % (
+			request.args['error'],
+			request.args['error_description']
+		)
+	session["twitch_token"] = (resp["access_token"], "")
+	return redirect(url_for("mainpage"))
+
+@app.route('/logout')
+def logout():
+	del session["twitch_token"]
+	return redirect(url_for("mainpage"))
 
 if __name__ == "__main__":
 	import logging
