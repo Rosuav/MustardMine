@@ -118,5 +118,5 @@ def logout():
 
 if __name__ == "__main__":
 	import logging
-	logging.basicConfig(level=logging.DEBUG)
+	logging.basicConfig(level=logging.INFO)
 	app.run(host='0.0.0.0')
