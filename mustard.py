@@ -14,7 +14,7 @@ twitch = OAuth().remote_app('twitch',
                           authorize_url='https://api.twitch.tv/kraken/oauth2/authorize',
                           consumer_key=config.CLIENT_ID,
                           consumer_secret=config.CLIENT_SECRET,
-                          request_token_params={'scope': ["user_read"]}
+                          request_token_params={'scope': ["user_read", "channel_editor"]}
 )
 
 @app.route("/")
