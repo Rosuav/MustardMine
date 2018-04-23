@@ -11,6 +11,7 @@ TODO:
   - Game category
   - Communities
 * Connect to Twitter and send a tweet as you go live
+* Connect to Discord?
 * Retain history of previously-used title/cat/community sets
 * Negotiate with StreamLabs extension for schedule??
   - Which direction? Configure SL or query it?
