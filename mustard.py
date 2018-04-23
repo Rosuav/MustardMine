@@ -9,10 +9,6 @@ import database
 app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET
 
-# Map community names to their IDs
-# If a name is not present, look up the ID and cache it here.
-community_id = {}
-
 twitch = OAuth().remote_app('twitch',
 	base_url='https://api.twitch.tv/kraken/',
 	request_token_url=None,
@@ -69,7 +65,7 @@ def mainpage():
 	channel = query("channels/" + user["_id"])
 	communities = query("channels/" + user["_id"] + "/communities")
 	for community in communities["communities"]:
-		community_id[community["name"]] = community["_id"]
+		database.cache_community(community)
 	commnames = [comm["name"] for comm in communities["communities"]]
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
@@ -89,10 +85,12 @@ def update():
 	for i in range(1, 4):
 		name = request.form.get("comm%d" % i)
 		if name == "": continue
-		if name not in community_id:
+		community_id = database.get_community_id(name)
+		if community_id is None:
 			resp = query("communities", params={"name": name})
-			community_id[name] = resp["_id"]
-		communities.append(community_id[name])
+			community_id = resp["_id"]
+			database.cache_community(resp)
+		communities.append(community_id)
 	print(communities)
 	query("channels/" + user["_id"] + "/communities", method="PUT", data={
 		"community_ids[]": communities,
