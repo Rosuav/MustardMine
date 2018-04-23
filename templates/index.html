@@ -1,3 +1,10 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Mustard Mine</title>
+<link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
 {{ twitter | safe }}
 <p>Welcome, {{ username }}!</p>
 <form method=post action="/update">
@@ -23,3 +30,5 @@ communities.forEach((c, i) => form["comm"+(i+1)].value = c);
 <input type=submit>
 </form>
 <p><a href="/logout">Logout</a></p>
+</body>
+</html>
