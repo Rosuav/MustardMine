@@ -15,3 +15,6 @@ TWITTER_CLIENT_SECRET = "aawnSpNTOVuDCjx7HMh6uSXetjNN8zWLpZwCEU4LBrk"
 
 SESSION_SECRET = "..."
 # import os, base64; SESSION_SECRET = base64.b64encode(os.urandom(12))
+
+# PostgreSQL connection credentials
+DATABASE_URI = "postgresql://localhost/"

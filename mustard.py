@@ -5,6 +5,7 @@ from flask_oauthlib.client import OAuth
 import requests
 
 import config # ImportError? See config_sample.py
+import database
 app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET
 
@@ -64,8 +65,7 @@ def mainpage():
 	if "twitch_token" not in session:
 		return render_template("login.html", twitter=twitter)
 	token = session["twitch_token"]
-	user = query("user")
-	session["twitch_user"] = user
+	user = session["twitch_user"]
 	channel = query("channels/" + user["_id"])
 	communities = query("channels/" + user["_id"] + "/communities")
 	for community in communities["communities"]:
@@ -124,6 +124,8 @@ def authorized():
 			request.args['error_description']
 		)
 	session["twitch_token"] = resp["access_token"]
+	user = query("user")
+	session["twitch_user"] = user
 	return redirect(url_for("mainpage"))
 
 @app.route("/login-twitter")
