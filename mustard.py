@@ -1,6 +1,6 @@
 import json
 from pprint import pprint
-from flask import Flask, request, redirect, session, jsonify, url_for, g
+from flask import Flask, request, redirect, session, url_for, g, render_template
 from flask_oauthlib.client import OAuth
 import requests
 
@@ -70,30 +70,10 @@ def mainpage():
 		for community in communities["communities"]:
 			community_id[community["name"]] = community["_id"]
 		commnames = [comm["name"] for comm in communities["communities"]]
-		return twitter + f"""<p>Welcome, {user["display_name"]}!</p>
-		<form method=post action="/update">
-		<ul>
-		<li>Category: <input name=category size=50></li>
-		<li>Stream title: <input name=title size=50></li>
-		<li>Communities: <input name=comm1 size=50><br>
-		<input name=comm2 size=50><br>
-		<input name=comm3 size=50><br>
-		</ul>
-		<input type=submit>
-		<script>
-		const channel = {json.dumps(channel)};
-		const communities = {json.dumps(commnames)};
-		const form = document.forms[0].elements;
-		form.category.value = channel.game;
-		form.title.value = channel.status;
-		communities.forEach((c, i) => form["comm"+(i+1)].value = c);
-		</script>
-		</form>
-		<form method=post action="/tweet">
-		<p>Tweet that you're live: <input name=tweet size=50></p>
-		<input type=submit>
-		</form>
-		<p><a href="/logout">Logout</a></p>"""
+		return render_template("index.html",
+			twitter=twitter, username=user["display_name"],
+			channel=json.dumps(channel), commnames=json.dumps(commnames),
+		)
 	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>""" + twitter
 
 @app.route("/update", methods=["POST"])

@@ -1,0 +1,25 @@
+{{ twitter | safe }}
+<p>Welcome, {{ username }}!</p>
+<form method=post action="/update">
+<ul>
+<li>Category: <input name=category size=50></li>
+<li>Stream title: <input name=title size=50></li>
+<li>Communities: <input name=comm1 size=50><br>
+<input name=comm2 size=50><br>
+<input name=comm3 size=50><br>
+</ul>
+<input type=submit>
+<script>
+const channel = {{ channel }};
+const communities = {{ commnames }};
+const form = document.forms[0].elements;
+form.category.value = channel.game;
+form.title.value = channel.status;
+communities.forEach((c, i) => form["comm"+(i+1)].value = c);
+</script>
+</form>
+<form method=post action="/tweet">
+<p>Tweet that you're live: <input name=tweet size=50></p>
+<input type=submit>
+</form>
+<p><a href="/logout">Logout</a></p>
