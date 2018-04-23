@@ -1,6 +1,6 @@
 import json
 from pprint import pprint
-from flask import Flask, request, redirect, session, jsonify, url_for
+from flask import Flask, request, redirect, session, jsonify, url_for, g
 from flask_oauthlib.client import OAuth
 import requests
 
@@ -28,13 +28,8 @@ def get_twitch_token(token=None):
 
 twitter = OAuth().remote_app(
 	'twitter',
-	# TODO eventually: Create an application and use our own keys, stored on config.py
-	# This is the Flask-OAuth Example, but apparently Twitter don't mind if you change
-	# the callback URL. Not even "anything localhost is valid", which would be a great
-	# test account setup but still safe against abuse. No, absolutely ANYTHING will be
-	# accepted, and Twitter will redirect the user back to whatever you ask for.
-	consumer_key='xBeXxg9lyElUgwZT6AZ0A',
-	consumer_secret='aawnSpNTOVuDCjx7HMh6uSXetjNN8zWLpZwCEU4LBrk',
+	consumer_key=config.TWITTER_CLIENT_ID,
+	consumer_secret=config.TWITTER_CLIENT_SECRET,
 	base_url='https://api.twitter.com/1.1/',
 	request_token_url='https://api.twitter.com/oauth/request_token',
 	access_token_url='https://api.twitter.com/oauth/access_token',
@@ -94,6 +89,10 @@ def mainpage():
 		communities.forEach((c, i) => form["comm"+(i+1)].value = c);
 		</script>
 		</form>
+		<form method=post action="/tweet">
+		<p>Tweet that you're live: <input name=tweet size=50></p>
+		<input type=submit>
+		</form>
 		<p><a href="/logout">Logout</a></p>"""
 	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>""" + twitter
 
@@ -118,6 +117,18 @@ def update():
 	query("channels/" + user["_id"] + "/communities", method="PUT", data={
 		"community_ids[]": communities,
 	})
+	return redirect(url_for("mainpage"))
+
+@app.route("/tweet", methods=["POST"])
+def tweet():
+	tweet = request.form.get("tweet")
+	if not tweet or "twitter_oauth" not in session:
+		return redirect(url_for("mainpage"))
+	g.user = session["twitter_oauth"]
+	resp = twitter.post("statuses/update.json", data={"status": tweet})
+	print(resp.status)
+	print(resp.data)
+	# TODO: 403 means too long, so report on that
 	return redirect(url_for("mainpage"))
 
 @app.route("/login")
@@ -148,8 +159,8 @@ def authorized_twitter():
 
 @app.route("/logout")
 def logout():
-	del session["twitch_token"]
-	del session["twitter_oauth"]
+	session.pop("twitch_token", None)
+	session.pop("twitter_oauth", None)
 	return redirect(url_for("mainpage"))
 
 if __name__ == "__main__":
