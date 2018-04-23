@@ -61,20 +61,20 @@ def mainpage():
 		twitter = "Twitter connected: " + username
 	else:
 		twitter = """<a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo" height=32>Connect with Twitter</a>"""
-	if "twitch_token" in session:
-		token = session["twitch_token"]
-		user = query("user")
-		session["twitch_user"] = user
-		channel = query("channels/" + user["_id"])
-		communities = query("channels/" + user["_id"] + "/communities")
-		for community in communities["communities"]:
-			community_id[community["name"]] = community["_id"]
-		commnames = [comm["name"] for comm in communities["communities"]]
-		return render_template("index.html",
-			twitter=twitter, username=user["display_name"],
-			channel=json.dumps(channel), commnames=json.dumps(commnames),
-		)
-	return render_template("login.html", twitter=twitter)
+	if "twitch_token" not in session:
+		return render_template("login.html", twitter=twitter)
+	token = session["twitch_token"]
+	user = query("user")
+	session["twitch_user"] = user
+	channel = query("channels/" + user["_id"])
+	communities = query("channels/" + user["_id"] + "/communities")
+	for community in communities["communities"]:
+		community_id[community["name"]] = community["_id"]
+	commnames = [comm["name"] for comm in communities["communities"]]
+	return render_template("index.html",
+		twitter=twitter, username=user["display_name"],
+		channel=json.dumps(channel), commnames=json.dumps(commnames),
+	)
 
 @app.route("/update", methods=["POST"])
 def update():
