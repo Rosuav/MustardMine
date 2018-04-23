@@ -13,15 +13,19 @@ app.secret_key = config.SESSION_SECRET
 community_id = {}
 
 twitch = OAuth().remote_app('twitch',
-                          base_url='https://api.twitch.tv/kraken/',
-                          request_token_url=None,
-                          access_token_method='POST',
-                          access_token_url='https://api.twitch.tv/kraken/oauth2/token',
-                          authorize_url='https://api.twitch.tv/kraken/oauth2/authorize',
-                          consumer_key=config.CLIENT_ID,
-                          consumer_secret=config.CLIENT_SECRET,
-                          request_token_params={'scope': ["user_read", "channel_editor"]}
+	base_url='https://api.twitch.tv/kraken/',
+	request_token_url=None,
+	access_token_method='POST',
+	access_token_url='https://api.twitch.tv/kraken/oauth2/token',
+	authorize_url='https://api.twitch.tv/kraken/oauth2/authorize',
+	consumer_key=config.CLIENT_ID,
+	consumer_secret=config.CLIENT_SECRET,
+	request_token_params={'scope': ["user_read", "channel_editor"]}
 )
+@twitch.tokengetter
+def get_twitch_token(token=None):
+	return session.get("twitch_token")
+
 twitter = OAuth().remote_app(
 	'twitter',
 	# TODO eventually: Create an application and use our own keys, stored on config.py
@@ -116,10 +120,6 @@ def update():
 	})
 	return redirect(url_for("mainpage"))
 
-@twitch.tokengetter
-def get_twitch_token(token=None):
-	return session.get("twitch_token")
-
 @app.route("/login")
 def login():
 	return twitch.authorize(callback=url_for("authorized", _external=True))
@@ -135,12 +135,6 @@ def authorized():
 	session["twitch_token"] = resp["access_token"]
 	return redirect(url_for("mainpage"))
 
-@app.route('/logout')
-def logout():
-	del session["twitch_token"]
-	del session["twitter_oauth"]
-	return redirect(url_for("mainpage"))
-
 @app.route("/login-twitter")
 def login_twitter():
 	return twitter.authorize(callback=url_for("authorized_twitter", _external=True))
@@ -150,6 +144,12 @@ def authorized_twitter():
 	resp = twitter.authorized_response()
 	if resp is not None:
 		session["twitter_oauth"] = resp
+	return redirect(url_for("mainpage"))
+
+@app.route("/logout")
+def logout():
+	del session["twitch_token"]
+	del session["twitter_oauth"]
 	return redirect(url_for("mainpage"))
 
 if __name__ == "__main__":
