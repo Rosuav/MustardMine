@@ -9,9 +9,9 @@
 <p>Welcome, {{ username }}!</p>
 <form method=post action="/update">
 <table>
-<tr><td><label for=category>Category:</label></td><td><input name=category size=50></td></tr>
-<tr><td><label for=title>Stream title:</label></td><td><input name=title size=50></td></tr>
-<tr><td><label for=comm1>Communities:</label></td><td><input name=comm1 size=50></td></tr>
+<tr><td><label for=category>Category:</label></td><td><input id=category name=category size=50></td></tr>
+<tr><td><label for=title>Stream title:</label></td><td><input id=title name=title size=50></td></tr>
+<tr><td><label for=comm1>Communities:</label></td><td><input id=comm1 name=comm1 size=50></td></tr>
 <tr><td></td><td><input name=comm2 size=50></td></tr>
 <tr><td></td><td><input name=comm3 size=50></td></tr>
 </table>
@@ -26,7 +26,7 @@ communities.forEach((c, i) => form["comm"+(i+1)].value = c);
 </script>
 </form>
 <form method=post action="/tweet">
-<p>Tweet that you're live: <input name=tweet size=50><input type=submit value="Tweet!"></p>
+<p><label>Tweet that you're live: <input name=tweet size=50></label><input type=submit value="Tweet!"></p>
 </form>
 <p><a href="/logout">Logout</a></p>
 </body>
