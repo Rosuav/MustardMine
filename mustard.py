@@ -22,6 +22,25 @@ twitch = OAuth().remote_app('twitch',
                           consumer_secret=config.CLIENT_SECRET,
                           request_token_params={'scope': ["user_read", "channel_editor"]}
 )
+twitter = OAuth().remote_app(
+	'twitter',
+	# TODO eventually: Create an application and use our own keys, stored on config.py
+	# This is the Flask-OAuth Example, but apparently Twitter don't mind if you change
+	# the callback URL. Not even "anything localhost is valid", which would be a great
+	# test account setup but still safe against abuse. No, absolutely ANYTHING will be
+	# accepted, and Twitter will redirect the user back to whatever you ask for.
+	consumer_key='xBeXxg9lyElUgwZT6AZ0A',
+	consumer_secret='aawnSpNTOVuDCjx7HMh6uSXetjNN8zWLpZwCEU4LBrk',
+	base_url='https://api.twitter.com/1.1/',
+	request_token_url='https://api.twitter.com/oauth/request_token',
+	access_token_url='https://api.twitter.com/oauth/access_token',
+	authorize_url='https://api.twitter.com/oauth/authenticate',
+)
+@twitter.tokengetter
+def get_twitter_token():
+	if "twitter_oauth" in session:
+		resp = session["twitter_oauth"]
+		return resp['oauth_token'], resp['oauth_token_secret']
 
 def query(endpoint, *, token=None, method="GET", params=None, data=None):
 	if token is None:
@@ -38,6 +57,11 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None):
 
 @app.route("/")
 def mainpage():
+	if "twitter_oauth" in session:
+		username = session["twitter_oauth"]["screen_name"]
+		twitter = "Twitter connected: " + username
+	else:
+		twitter = """<a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo" height=32>Connect with Twitter</a>"""
 	if "twitch_token" in session:
 		token = session["twitch_token"]
 		user = query("user")
@@ -47,7 +71,7 @@ def mainpage():
 		for community in communities["communities"]:
 			community_id[community["name"]] = community["_id"]
 		commnames = [comm["name"] for comm in communities["communities"]]
-		return f"""<p>Welcome, {user["display_name"]}!</p>
+		return twitter + f"""<p>Welcome, {user["display_name"]}!</p>
 		<form method=post action="/update">
 		<ul>
 		<li>Category: <input name=category size=50></li>
@@ -67,7 +91,7 @@ def mainpage():
 		</script>
 		</form>
 		<p><a href="/logout">Logout</a></p>"""
-	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>"""
+	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>""" + twitter
 
 @app.route("/update", methods=["POST"])
 def update():
@@ -114,6 +138,18 @@ def authorized():
 @app.route('/logout')
 def logout():
 	del session["twitch_token"]
+	del session["twitter_oauth"]
+	return redirect(url_for("mainpage"))
+
+@app.route("/login-twitter")
+def login_twitter():
+	return twitter.authorize(callback=url_for("authorized_twitter", _external=True))
+
+@app.route("/authorized-twitter")
+def authorized_twitter():
+	resp = twitter.authorized_response()
+	if resp is not None:
+		session["twitter_oauth"] = resp
 	return redirect(url_for("mainpage"))
 
 if __name__ == "__main__":
