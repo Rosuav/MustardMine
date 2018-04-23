@@ -74,7 +74,7 @@ def mainpage():
 			twitter=twitter, username=user["display_name"],
 			channel=json.dumps(channel), commnames=json.dumps(commnames),
 		)
-	return """<a href="/login"><img src="http://ttv-api.s3.amazonaws.com/assets/connect_dark.png" alt="Connect with Twitch"></a>""" + twitter
+	return render_template("login.html", twitter=twitter)
 
 @app.route("/update", methods=["POST"])
 def update():
