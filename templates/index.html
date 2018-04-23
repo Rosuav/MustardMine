@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="/static/main.css">
 </head>
 <body>
-{{ twitter | safe }}
+<ul class=menu><li>{{ twitter | safe }}</li></ul>
 <p>Welcome, {{ username }}!</p>
 <form method=post action="/update">
 <ul>
@@ -17,8 +17,8 @@
 </ul>
 <input type=submit>
 <script>
-const channel = {{ channel }};
-const communities = {{ commnames }};
+const channel = {{ channel | safe }};
+const communities = {{ commnames | safe }};
 const form = document.forms[0].elements;
 form.category.value = channel.game;
 form.title.value = channel.status;

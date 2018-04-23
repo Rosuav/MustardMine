@@ -60,7 +60,7 @@ def mainpage():
 		username = session["twitter_oauth"]["screen_name"]
 		twitter = "Twitter connected: " + username
 	else:
-		twitter = """<a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo" height=32>Connect with Twitter</a>"""
+		twitter = """<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>"""
 	if "twitch_token" not in session:
 		return render_template("login.html", twitter=twitter)
 	token = session["twitch_token"]

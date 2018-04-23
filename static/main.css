@@ -1,0 +1,20 @@
+#login-twitter {
+	background-color: #1DA1F2;
+}
+
+#login-twitter a {
+	display: flex;
+	flex-direction: row;
+	color: white;
+	text-decoration: none;
+}
+
+#login-twitter img {
+	max-height: 32px;
+}
+
+.menu {
+	display: flex;
+	flex-direction: row;
+	list-style: none;
+}
