@@ -20,7 +20,7 @@
 <script>
 const channel = {{ channel | safe }};
 const communities = {{ commnames | safe }};
-const setups = {{ setups | safe }};
+let setups = {{ setups | safe }};
 const form = document.forms[0].elements;
 form.category.value = channel.game;
 form.title.value = channel.status;
@@ -33,6 +33,7 @@ function render_setups() {
 			<td>${s.category}</td>
 			<td>${s.title}</td>
 			<td>${s.communities.join(", ")}</td>
+			<td><button class="deleting" id="del${i}" onclick="try_delete_setup(${i})">X</button></td>
 		</tr>
 	`);
 	document.getElementById("setups").innerHTML =
@@ -46,6 +47,24 @@ function pick_setup(i) {
 	form.category.value = setup.category;
 	form.title.value = setup.title;
 	setup.communities.forEach((c, i) => form["comm"+(i+1)].value = c);
+}
+</script><script> //<==satisfy editor
+let deleting_setup = -1;
+let delete_time = 0;
+function try_delete_setup(i) {
+	if (deleting_setup != i) {
+		//Await confirmation via a second click
+		document.querySelectorAll(".deleting").forEach(b => b.innerHTML = "X");
+		document.getElementById("del" + i).innerHTML = "Delete?";
+		deleting_setup = i;
+		delete_time = +new Date + 1;
+		return;
+	}
+	if (+new Date < delete_time) return;
+	//Okay, let's actually delete it.
+	deleting_setup = -1;
+	document.getElementById("del" + i).innerHTML = "X";
+	delete_setup(setups[i].id);
 }
 
 async function hello() {
@@ -69,6 +88,16 @@ async function save() {
 		})
 	})).json();
 	setups.push(result);
+	render_setups();
+}
+
+async function delete_setup(i) {
+	const result = await fetch("/api/setups/" + i, {
+		credentials: "include",
+		method: "DELETE",
+	});
+	if (!result.ok) return;
+	setups = await (await fetch("/api/setups", {credentials: "include"})).json();
 	render_setups();
 }
 </script>

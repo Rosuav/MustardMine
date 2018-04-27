@@ -150,6 +150,10 @@ def helloworld():
 		return jsonify({"user": session["twitch_user"]["display_name"]})
 	return jsonify({"user": None})
 
+@app.route("/api/setups")
+def list_setups():
+	return jsonify(database.list_setups(session["twitch_user"]["_id"]))
+
 @app.route("/api/setups", methods=["POST"])
 def create_setup():
 	if not request.json: return jsonify({}), 400
@@ -162,6 +166,12 @@ def create_setup():
 			database.cache_community(resp)
 	setup = database.create_setup(session["twitch_user"]["_id"], **request.json)
 	return jsonify(setup)
+
+@app.route("/api/setups/<int:setupid>", methods=["DELETE"])
+def delete_setup(setupid):
+	deleted = database.delete_setup(session["twitch_user"]["_id"], setupid)
+	if deleted: return "", 204
+	return "", 404
 
 if __name__ == "__main__":
 	import logging

@@ -85,3 +85,13 @@ def list_setups(twitchid):
 			cur.execute("select community from mustard.setup_communities where setupid=%s", (setup["id"],))
 			setup["communities"] = sorted([row["community"] for row in cur])
 	return ret
+
+def delete_setup(twitchid, setupid):
+	"""Attempt to delete a saved setup
+
+	If the setupid is bad, or if it doesn't belong to the given twitchid,
+	returns 0. There is no permissions-error response - just a 404ish.
+	"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("delete from mustard.setups where twitchid=%s and id=%s", (twitchid, setupid))
+		return cur.rowcount
