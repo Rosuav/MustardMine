@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg2.extras
 import config
 
 postgres = psycopg2.connect(config.DATABASE_URI)
@@ -20,7 +20,7 @@ CREATE_TABLE = (
 		descr text not null default ''
 	)""",
 	"""create table if not exists mustard.setup_communities (
-		setupid integer not null references mustard.setups,
+		setupid integer not null references mustard.setups on delete cascade,
 		community text not null references mustard.communities
 	)""",
 )
@@ -50,3 +50,29 @@ def cache_community(community):
 
 def get_community_id(name):
 	return _community_id.get(name)
+
+def create_user(twitchid):
+	# TODO: Save the user's OAuth info, incl Twitter.
+	try:
+		with postgres, postgres.cursor() as cur:
+			cur.execute("insert into mustard.users values (%s)", [twitchid])
+	except psycopg2.IntegrityError:
+		pass # TODO: Update any extra info eg Twitter OAuth
+
+def create_setup(twitchid, category, title="", communities=(), **extra):
+	"""Create a new 'setup' - a loadable stream config
+
+	Returns the full record just created, including its ID.
+	The communities MUST have already been stored in the on-disk cache.
+	"""
+	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+		cur.execute("insert into mustard.setups (twitchid, category, title) values (%s, %s, %s) returning *",
+			(twitchid, category, title))
+		ret = cur.fetchone()
+		id = ret["id"]
+		# TODO: insertmany, but with individual error checking
+		ret["communities"] = []
+		for comm in communities:
+			cur.execute("insert into mustard.setup_communities values (%s, %s)", (id, comm))
+			ret["communities"].append(comm)
+	return ret

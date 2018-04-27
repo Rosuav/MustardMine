@@ -15,7 +15,7 @@
 <tr><td></td><td><input name=comm2 size=50></td></tr>
 <tr><td></td><td><input name=comm3 size=50></td></tr>
 </table>
-<input type=submit value="Update stream info">
+<input type=submit value="Update stream info"> <button type=button onclick="save()">Save this setup</button>
 <script>
 const channel = {{ channel | safe }};
 const communities = {{ commnames | safe }};
@@ -26,6 +26,24 @@ communities.forEach((c, i) => form["comm"+(i+1)].value = c);
 
 async function hello() {
 	const result = await (await fetch("/api/hello", {credentials: "include"})).json();
+	console.log(result);
+}
+
+async function save() {
+	const result = await (await fetch("/api/setups", {
+		credentials: "include",
+		headers: {"Content-Type": "application/json"},
+		method: "POST",
+		body: JSON.stringify({
+			category: form.category.value,
+			title: form.title.value,
+			communities: [
+				form.comm1.value,
+				form.comm2.value,
+				form.comm3.value,
+			].filter(x=>x), //Remove any blank communities
+		})
+	})).json();
 	console.log(result);
 }
 </script>

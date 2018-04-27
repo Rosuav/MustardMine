@@ -91,7 +91,6 @@ def update():
 			community_id = resp["_id"]
 			database.cache_community(resp)
 		communities.append(community_id)
-	print(communities)
 	query("channels/" + user["_id"] + "/communities", method="PUT", data={
 		"community_ids[]": communities,
 	})
@@ -104,8 +103,6 @@ def tweet():
 		return redirect(url_for("mainpage"))
 	g.user = session["twitter_oauth"]
 	resp = twitter.post("statuses/update.json", data={"status": tweet})
-	print(resp.status)
-	print(resp.data)
 	# TODO: 403 means too long, so report on that
 	return redirect(url_for("mainpage"))
 
@@ -123,6 +120,7 @@ def authorized():
 		)
 	session["twitch_token"] = resp["access_token"]
 	user = query("user")
+	database.create_user(user["_id"])
 	session["twitch_user"] = user
 	return redirect(url_for("mainpage"))
 
@@ -150,6 +148,19 @@ def helloworld():
 	if "twitch_user" in session:
 		return jsonify({"user": session["twitch_user"]["display_name"]})
 	return jsonify({"user": None})
+
+@app.route("/api/setups", methods=["POST"])
+def create_setup():
+	if not request.json: return jsonify({}), 400
+	missing = {"category", "title", "communities"} - set(request.json)
+	if missing:
+		return jsonify({"error": "Missing:" + ", ".join(sorted(missing))}), 400
+	for name in request.json["communities"]:
+		if database.get_community_id(name) is None:
+			resp = query("communities", params={"name": name})
+			database.cache_community(resp)
+	setup = database.create_setup(session["twitch_user"]["_id"], **request.json)
+	return jsonify(setup)
 
 if __name__ == "__main__":
 	import logging
