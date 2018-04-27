@@ -70,6 +70,7 @@ def mainpage():
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
 		channel=json.dumps(channel), commnames=json.dumps(commnames),
+		setups=json.dumps(database.list_setups(user["_id"])),
 	)
 
 @app.route("/update", methods=["POST"])

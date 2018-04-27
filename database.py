@@ -76,3 +76,12 @@ def create_setup(twitchid, category, title="", communities=(), **extra):
 			cur.execute("insert into mustard.setup_communities values (%s, %s)", (id, comm))
 			ret["communities"].append(comm)
 	return ret
+
+def list_setups(twitchid):
+	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+		cur.execute("select * from mustard.setups where twitchid=%s", (twitchid,))
+		ret = cur.fetchall()
+		for setup in ret:
+			cur.execute("select community from mustard.setup_communities where setupid=%s", (setup["id"],))
+			setup["communities"] = sorted([row["community"] for row in cur])
+	return ret

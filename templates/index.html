@@ -7,6 +7,7 @@
 <body>
 <ul class=menu><li>{{ twitter | safe }}</li></ul>
 <p>Welcome, {{ username }}!</p>
+<table border=1 id=setups></table>
 <form method=post action="/update">
 <table>
 <tr><td><label for=category>Category:</label></td><td><input id=category name=category size=50></td></tr>
@@ -19,10 +20,25 @@
 <script>
 const channel = {{ channel | safe }};
 const communities = {{ commnames | safe }};
+const setups = {{ setups | safe }};
 const form = document.forms[0].elements;
 form.category.value = channel.game;
 form.title.value = channel.status;
 communities.forEach((c, i) => form["comm"+(i+1)].value = c);
+render_setups();
+
+function render_setups() {
+	const html = setups.map(s => `
+		<tr onclick="pick_setup({s.id})">
+			<td>${s.category}</td>
+			<td>${s.title}</td>
+			<td>${s.communities.join(", ")}</td>
+		</tr>
+	`);
+	document.getElementById("setups").innerHTML =
+		"<tr><th>Category</th><th>Title</th><th>Communities</th></tr>" +
+		html.join("");
+}
 
 async function hello() {
 	const result = await (await fetch("/api/hello", {credentials: "include"})).json();
@@ -44,7 +60,8 @@ async function save() {
 			].filter(x=>x), //Remove any blank communities
 		})
 	})).json();
-	console.log(result);
+	setups.push(result);
+	render_setups();
 }
 </script>
 </form>
