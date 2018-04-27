@@ -18,3 +18,23 @@
 	flex-direction: row;
 	list-style: none;
 }
+
+/* The header row doesn't get styled like the others */
+#setups tr:first-child {
+	background: inherit !important;
+	cursor: inherit !important;
+}
+
+#setups tr:nth-child(odd) {
+	background: #ddf;
+	cursor: pointer;
+}
+
+#setups tr:nth-child(even) {
+	background: #dff;
+	cursor: pointer;
+}
+
+#setups tr:hover {
+	background: #ff0;
+}
