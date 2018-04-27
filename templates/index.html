@@ -28,8 +28,8 @@ communities.forEach((c, i) => form["comm"+(i+1)].value = c);
 render_setups();
 
 function render_setups() {
-	const html = setups.map(s => `
-		<tr onclick="pick_setup(${s.id})">
+	const html = setups.map((s, i) => `
+		<tr onclick="pick_setup(${i})">
 			<td>${s.category}</td>
 			<td>${s.title}</td>
 			<td>${s.communities.join(", ")}</td>
@@ -38,6 +38,14 @@ function render_setups() {
 	document.getElementById("setups").innerHTML =
 		"<tr><th>Category</th><th>Title</th><th>Communities</th></tr>" +
 		html.join("");
+}
+
+function pick_setup(i) {
+	const setup = setups[i];
+	if (!setup) return; //Shouldn't happen
+	form.category.value = setup.category;
+	form.title.value = setup.title;
+	setup.communities.forEach((c, i) => form["comm"+(i+1)].value = c);
 }
 
 async function hello() {
