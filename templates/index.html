@@ -29,7 +29,7 @@ render_setups();
 
 function render_setups() {
 	const html = setups.map(s => `
-		<tr onclick="pick_setup({s.id})">
+		<tr onclick="pick_setup(${s.id})">
 			<td>${s.category}</td>
 			<td>${s.title}</td>
 			<td>${s.communities.join(", ")}</td>
