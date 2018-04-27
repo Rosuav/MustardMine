@@ -18,3 +18,4 @@ TODO:
 * Allow a user to restore saved setups from JSON backup
   - Naive: delete all and recreate
   - Smart: detect changes
+* Should the "Tweet that live" be pre-filled when loading a setup?
