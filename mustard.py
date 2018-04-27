@@ -1,6 +1,6 @@
 import json
 from pprint import pprint
-from flask import Flask, request, redirect, session, url_for, g, render_template
+from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify
 from flask_oauthlib.client import OAuth
 import requests
 
@@ -142,6 +142,14 @@ def logout():
 	session.pop("twitch_token", None)
 	session.pop("twitter_oauth", None)
 	return redirect(url_for("mainpage"))
+
+# ---- Config management API ----
+
+@app.route("/api/hello")
+def helloworld():
+	if "twitch_user" in session:
+		return jsonify({"user": session["twitch_user"]["display_name"]})
+	return jsonify({"user": None})
 
 if __name__ == "__main__":
 	import logging
