@@ -9,6 +9,8 @@ TODO:
 * Connect to Twitter and send a tweet as you go live
 * Connect to Discord?
 * Query StreamLabs extension for schedule??
+  - Would require assistance from SL, which they don't offer
+  - Reverse-engineering is impractical; needs an API.
 * Allow a user to back up his/her saved setups as a JSON file
   - Format the file nicely - see ~/shed/steamguard for ideas
   - File should be 100% stable. Backing up twice with no changes
