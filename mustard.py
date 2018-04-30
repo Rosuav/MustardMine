@@ -198,6 +198,16 @@ def make_backup():
 	return Response(response, mimetype="application/json",
 		headers={"Content-disposition": "attachment"})
 
+@app.route("/tz")
+def tz():
+	return """
+<div id=tz></div>
+<script>
+const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+document.getElementById("tz").innerHTML = "Your timezone appears to be: " + tz;
+</script>
+"""
+
 if __name__ == "__main__":
 	import logging
 	logging.basicConfig(level=logging.INFO)
