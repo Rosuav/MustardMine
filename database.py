@@ -22,7 +22,7 @@ TABLES = {
 		"descr text not null default ''",
 	],
 	"setup_communities": [
-		"setupid integer not null references mustard.setups on delete cascade,"
+		"setupid integer not null references mustard.setups on delete cascade",
 		"community text not null references mustard.communities",
 	],
 }
