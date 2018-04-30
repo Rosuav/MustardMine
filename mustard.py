@@ -192,7 +192,7 @@ def delete_setup(setupid):
 def make_backup():
 	setups = database.list_setups(session["twitch_user"]["_id"])
 	response = "[\n"
-	fields = "category", "title", "communities"
+	fields = "category", "title", "communities", "tweet"
 	for setup in setups:
 		setup = {field: setup[field] for field in fields}
 		response += "\t" + json.dumps(setup) + ",\n"

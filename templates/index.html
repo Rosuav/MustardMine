@@ -33,11 +33,12 @@ function render_setups() {
 			<td>${s.category}</td>
 			<td>${s.title}</td>
 			<td>${s.communities.join(", ")}</td>
+			<td>${s.tweet}</td>
 			<td><button class="deleting" id="del${i}" onclick="try_delete_setup(${i})">X</button></td>
 		</tr>
 	`);
 	document.getElementById("setups").innerHTML =
-		"<tr><th>Category</th><th>Title</th><th>Communities</th></tr>" +
+		"<tr><th>Category</th><th>Title</th><th>Communities</th><th>Tweet</th></tr>" +
 		html.join("");
 }
 
@@ -47,6 +48,7 @@ function pick_setup(i) {
 	form.category.value = setup.category;
 	form.title.value = setup.title;
 	setup.communities.forEach((c, i) => form["comm"+(i+1)].value = c);
+	document.getElementById("tweet").value = setup.tweet;
 }
 </script><script> //<==satisfy editor
 let deleting_setup = -1;
@@ -85,6 +87,7 @@ async function save() {
 				form.comm2.value,
 				form.comm3.value,
 			].filter(x=>x), //Remove any blank communities
+			tweet: document.getElementById("tweet").value,
 		})
 	})).json();
 	setups.push(result);
@@ -103,7 +106,7 @@ async function delete_setup(i) {
 </script>
 </form>
 <form method=post action="/tweet">
-<p><label>Tweet that you're live: <input name=tweet size=50></label><input type=submit value="Tweet!"></p>
+<p><label>Tweet that you're live: <input name=tweet id=tweet size=50></label><input type=submit value="Tweet!"></p>
 </form>
 <section id=schedule>
 <p>Specify schedule in timezone: <input id=sched_tz size=40> <span id=othertz></span></p>

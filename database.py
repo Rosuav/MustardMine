@@ -16,6 +16,7 @@ TABLES = {
 		"twitchid integer not null references mustard.users",
 		"category text not null default ''",
 		"title text not null default ''",
+		"tweet text not null default ''",
 	],
 	"communities": [
 		"name text primary key",
@@ -86,15 +87,15 @@ def create_user(twitchid):
 	except psycopg2.IntegrityError:
 		pass # TODO: Update any extra info eg Twitter OAuth
 
-def create_setup(twitchid, category, title="", communities=(), **extra):
+def create_setup(twitchid, category, title="", communities=(), tweet="", **extra):
 	"""Create a new 'setup' - a loadable stream config
 
 	Returns the full record just created, including its ID.
 	The communities MUST have already been stored in the on-disk cache.
 	"""
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-		cur.execute("insert into mustard.setups (twitchid, category, title) values (%s, %s, %s) returning *",
-			(twitchid, category, title))
+		cur.execute("insert into mustard.setups (twitchid, category, title, tweet) values (%s, %s, %s, %s) returning *",
+			(twitchid, category, title, tweet))
 		ret = cur.fetchone()
 		id = ret["id"]
 		# TODO: insertmany, but with individual error checking

@@ -22,7 +22,6 @@ TODO:
 * Allow a user to restore saved setups from JSON backup
   - Naive: delete all and recreate
   - Smart: detect changes
-* Should the "Tweet that live" be pre-filled when loading a setup?
 * Custom check-list - saved list of items that get shown with tickboxes
 * Simple HTML page containing a countdown timer
   - By default, it counts down to actual stream time
