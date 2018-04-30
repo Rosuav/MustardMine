@@ -107,6 +107,17 @@ async function delete_setup(i) {
 </form>
 <section id=schedule>
 <p>Specify schedule in timezone: <input id=sched_tz size=40> <span id=othertz></span></p>
+<p>
+The schedule will be subject to the following rules:
+</p>
+<ul>
+<li>The schedule repeats weekly. Everything is based on Sun/Mon/Tue etc.
+<li>On each day-of-week, you may have zero or more times. Each time is interpreted within the specified timezone.
+<li>This info is not public, so there's no need to have a "vacation mode" etc. Just don't click the button to tell MM to do stuff.
+<li>If the time falls within a gap (eg when DST advances clocks), behaviour is undefined, but will probably pick one side or the other.
+<li>If the time falls within a fold (eg when DST retards clocks), the first available time will be used.
+<li>Basically, don't schedule stuff when DST is changing clocks. You'll probably be annoyed, and not just because of MM.
+</ul>
 <script>
 const sched_tz = {{ sched_tz | tojson }};
 const schedule = {{ schedule | tojson }};
