@@ -74,8 +74,8 @@ def mainpage():
 	commnames = [comm["name"] for comm in communities["communities"]]
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
-		channel=json.dumps(channel), commnames=json.dumps(commnames),
-		setups=json.dumps(database.list_setups(user["_id"])),
+		channel=channel, commnames=commnames,
+		setups=database.list_setups(user["_id"]),
 	)
 
 @app.route("/update", methods=["POST"])

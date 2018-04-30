@@ -18,9 +18,9 @@
 </table>
 <input type=submit value="Update stream info"> <button type=button onclick="save()">Save this setup</button>
 <script>
-const channel = {{ channel | safe }};
-const communities = {{ commnames | safe }};
-let setups = {{ setups | safe }};
+const channel = {{ channel | tojson }};
+const communities = {{ commnames | tojson }};
+let setups = {{ setups | tojson }};
 const form = document.forms[0].elements;
 form.category.value = channel.game;
 form.title.value = channel.status;
