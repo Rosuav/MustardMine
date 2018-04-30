@@ -1,7 +1,8 @@
 import json
 from pprint import pprint
 from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify
-from flask_oauthlib.client import OAuth
+from flask_oauthlib.client import OAuth # deprecated - TODO: switch to authlib
+from authlib.client import OAuth2Session
 import requests
 
 import config # ImportError? See config_sample.py
@@ -22,6 +23,10 @@ twitch = OAuth().remote_app('twitch',
 @twitch.tokengetter
 def get_twitch_token(token=None):
 	return session.get("twitch_token")
+
+# TODO: Use this instead:
+# twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
+#	scope=["user_read", "channel_editor"])
 
 twitter = OAuth().remote_app(
 	'twitter',
@@ -110,9 +115,17 @@ def tweet():
 @app.route("/login")
 def login():
 	return twitch.authorize(callback=url_for("authorized", _external=True))
+	# TODO:
+	#uri, state = twitch.authorization_url("https://api.twitch.tv/kraken/oauth2/authorize",
+	#	redirect_uri=url_for("authorized", _external=True))
+	#session["login_state"] = state
+	#return redirect(uri)
 
 @app.route("/login/authorized")
 def authorized():
+	# TODO:
+	#token = twitch.fetch_access_token("https://api.twitch.tv/kraken/oauth2/token",
+	#	code=request.args["code"], state=session["login_state"])
 	resp = twitch.authorized_response()
 	if resp is None:
 		return "Access denied: reason=%s error=%s" % (
