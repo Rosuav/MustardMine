@@ -105,6 +105,25 @@ async function delete_setup(i) {
 <form method=post action="/tweet">
 <p><label>Tweet that you're live: <input name=tweet size=50></label><input type=submit value="Tweet!"></p>
 </form>
+<section id=schedule>
+<p>Specify schedule in timezone: <input id=sched_tz size=40> <span id=othertz></span></p>
+<script>
+const sched_tz = {{ sched_tz | tojson }};
+const schedule = {{ schedule | tojson }};
+const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+if (sched_tz === "") {
+	//No saved TZ - assume you probably want the one you're using in the browser.
+	document.getElementById("sched_tz").value = local_tz;
+} else {
+	document.getElementById("sched_tz").value = sched_tz;
+	if (sched_tz !== local_tz) {
+		//Your saved timezone and your browser timezone are different.
+		//Notify the user.
+		document.getElementById("othertz").innerHTML = "(Your browser's preferred timezone is: " + local_tz + ")";
+	}
+}
+</script>
+</section>
 <button type=button onclick="hello()">Hello, world</button>
 <p><a href="/logout">Logout</a></p>
 <ul>

@@ -72,10 +72,12 @@ def mainpage():
 	for community in communities["communities"]:
 		database.cache_community(community)
 	commnames = [comm["name"] for comm in communities["communities"]]
+	sched_tz, schedule = database.get_schedule(user["_id"])
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
 		channel=channel, commnames=commnames,
 		setups=database.list_setups(user["_id"]),
+		sched_tz=sched_tz, schedule=schedule,
 	)
 
 @app.route("/update", methods=["POST"])

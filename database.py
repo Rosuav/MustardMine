@@ -9,6 +9,7 @@ postgres = psycopg2.connect(config.DATABASE_URI)
 TABLES = {
 	"users": [
 		"twitchid integer primary key",
+		"sched_timezone varchar not null default ''",
 	],
 	"setups": [
 		"id serial primary key",
@@ -121,3 +122,12 @@ def delete_setup(twitchid, setupid):
 	with postgres, postgres.cursor() as cur:
 		cur.execute("delete from mustard.setups where twitchid=%s and id=%s", (twitchid, setupid))
 		return cur.rowcount
+
+def get_schedule(twitchid):
+	"""Return the user's timezone and schedule
+
+	Schedule currently unsupported, always returns [].
+	"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("select sched_timezone from mustard.users where twitchid=%s", (twitchid,))
+		return cur.fetchone()[0], []
