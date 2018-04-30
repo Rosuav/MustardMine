@@ -9,7 +9,7 @@ TODO:
 * Connect to Twitter and send a tweet as you go live
 * Connect to Discord?
 * Query StreamLabs extension for schedule??
-  - Would require assistance from SL, which they don't offer
+  - Would require assistance from SL, which they don't currently offer
   - Reverse-engineering is impractical; needs an API.
 * Allow a user to back up his/her saved setups as a JSON file
   - Format the file nicely - see ~/shed/steamguard for ideas
@@ -21,3 +21,4 @@ TODO:
   - Naive: delete all and recreate
   - Smart: detect changes
 * Should the "Tweet that live" be pre-filled when loading a setup?
+* Custom check-list - saved list of items that get shown with tickboxes
