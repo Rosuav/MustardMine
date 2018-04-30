@@ -28,3 +28,5 @@ TODO:
   - Can manually alter the time
   - This page should be accessible w/o auth, and would be used for OBS
   - Allow custom CSS?
+* Internal refactoring: use https://github.com/lepture/authlib
+* Internal functionality: database migrations
