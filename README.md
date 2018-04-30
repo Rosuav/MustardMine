@@ -7,6 +7,7 @@ Mustard-Mine - Twitch Go-Live assistant
 TODO:
 
 * Connect to Twitter and send a tweet as you go live
+  - Can currently do manually; needs to be linked to schedule
 * Connect to Discord?
 * Query StreamLabs extension for schedule??
   - Would require assistance from SL, which they don't currently offer
