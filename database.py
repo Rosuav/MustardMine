@@ -1,34 +1,60 @@
 import psycopg2.extras
 import config
+import collections
 
 postgres = psycopg2.connect(config.DATABASE_URI)
 
-CREATE_TABLE = (
-	"""create schema if not exists mustard""",
-	"""create table if not exists mustard.users (
-		twitchid integer primary key
-	)""",
-	"""create table if not exists mustard.setups (
-		id serial primary key,
-		twitchid integer not null references mustard.users,
-		category text not null default '',
-		title text not null default ''
-	)""",
-	"""create table if not exists mustard.communities (
-		name text primary key,
-		twitchid text not null,
-		descr text not null default ''
-	)""",
-	"""create table if not exists mustard.setup_communities (
-		setupid integer not null references mustard.setups on delete cascade,
-		community text not null references mustard.communities
-	)""",
-)
+# Assumes that dict preserves insertion order (CPython 3.6+, other Python 3.7+, possible 3.5)
+# Otherwise, tables might be created in the wrong order, breaking foreign key refs.
+TABLES = {
+	"users": [
+		"twitchid integer primary key",
+	],
+	"setups": [
+		"id serial primary key",
+		"twitchid integer not null references mustard.users",
+		"category text not null default ''",
+		"title text not null default ''",
+	],
+	"communities": [
+		"name text primary key",
+		"twitchid text not null",
+		"descr text not null default ''",
+	],
+	"setup_communities": [
+		"setupid integer not null references mustard.setups on delete cascade,"
+		"community text not null references mustard.communities",
+	],
+}
 
 def create_tables():
 	with postgres, postgres.cursor() as cur:
-		for tb in CREATE_TABLE:
-			cur.execute(tb)
+		cur.execute("create schema if not exists mustard")
+		cur.execute("""select table_name, column_name
+				from information_schema.columns
+				where table_schema = 'mustard'
+				order by ordinal_position""")
+		tables = collections.defaultdict(list)
+		for table, column in cur:
+			tables[table].append(column)
+		for table, columns in TABLES.items():
+			if table not in tables:
+				# Table doesn't exist - create it. Yes, I'm using percent
+				# interpolation, not parameterization. It's an unusual case.
+				cur.execute("create table mustard.%s (%s)" % (
+					table, ",".join(columns)))
+			else:
+				# Table exists. Check if all its columns do.
+				# Note that we don't reorder columns. Removing works,
+				# but inserting doesn't - new columns will be added at
+				# the end of the table.
+				want = {c.split()[0]: c for c in columns}
+				have = tables[table]
+				need = [c for c in want if c not in have]
+				xtra = [c for c in have if c not in want]
+				if not need and not xtra: continue # All's well!
+				actions = ["add " + want[c] for c in need] + ["drop column " + c for c in xtra]
+				cur.execute("alter table mustard." + table + " " + ", ".join(actions))
 create_tables()
 
 # Map community names to their IDs
