@@ -10,6 +10,7 @@ TABLES = {
 	"users": [
 		"twitchid integer primary key",
 		"sched_timezone varchar not null default ''",
+		"checklist text not null default ''",
 	],
 	"setups": [
 		"id serial primary key",
@@ -132,3 +133,13 @@ def get_schedule(twitchid):
 	with postgres, postgres.cursor() as cur:
 		cur.execute("select sched_timezone from mustard.users where twitchid=%s", (twitchid,))
 		return cur.fetchone()[0], []
+
+def get_checklist(twitchid):
+	"""Return the user's checklist
+
+	Items are separated by \n in a single string.
+	Empty string means no checklist.
+	"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("select checklist from mustard.users where twitchid=%s", (twitchid,))
+		return cur.fetchone()[0]

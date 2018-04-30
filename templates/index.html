@@ -138,6 +138,15 @@ if (sched_tz === "") {
 }
 </script>
 </section>
+<section>
+<p>Personal checklist <a href="/checklist">[edit]</a></p>
+<ul id=checklist></ul>
+<script>
+const checklist = {{ checklist | tojson }};
+const boxes = checklist.split("\n").map(item => item && "<li><label><input type=checkbox>" + item + "</label></li>");
+document.getElementById("checklist").innerHTML = boxes.join("");
+</script>
+</section>
 <button type=button onclick="hello()">Hello, world</button>
 <p><a href="/logout">Logout</a></p>
 <ul>
