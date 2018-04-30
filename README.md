@@ -17,6 +17,8 @@ TODO:
     should result in identical files.
   - File should be plain text and easy to diff.
   - Backup should be easy to take, but MUST require authentication
+  - TODO: Include all important info. As features are added, ensure
+    that they are backed up.
 * Allow a user to restore saved setups from JSON backup
   - Naive: delete all and recreate
   - Smart: detect changes

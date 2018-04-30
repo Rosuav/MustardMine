@@ -1,6 +1,6 @@
 import json
 from pprint import pprint
-from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify
+from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response
 from flask_oauthlib.client import OAuth # deprecated - TODO: switch to authlib
 from authlib.client import OAuth2Session
 import requests
@@ -185,6 +185,18 @@ def delete_setup(setupid):
 	deleted = database.delete_setup(session["twitch_user"]["_id"], setupid)
 	if deleted: return "", 204
 	return "", 404
+
+@app.route("/mustard-backup.json")
+def make_backup():
+	setups = database.list_setups(session["twitch_user"]["_id"])
+	response = "[\n"
+	fields = "category", "title", "communities"
+	for setup in setups:
+		setup = {field: setup[field] for field in fields}
+		response += "\t" + json.dumps(setup) + ",\n"
+	response += '\t"Mustard-Mine Backup"\n]\n'
+	return Response(response, mimetype="application/json",
+		headers={"Content-disposition": "attachment"})
 
 if __name__ == "__main__":
 	import logging
