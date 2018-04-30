@@ -22,3 +22,8 @@ TODO:
   - Smart: detect changes
 * Should the "Tweet that live" be pre-filled when loading a setup?
 * Custom check-list - saved list of items that get shown with tickboxes
+* Simple HTML page containing a countdown timer
+  - By default, it counts down to actual stream time
+  - Can save an "offset time" that it'll count down to (eg "T +5 minutes")
+  - Can manually alter the time
+  - This page should be accessible w/o auth, and would be used for OBS
