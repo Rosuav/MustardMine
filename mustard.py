@@ -105,6 +105,41 @@ def update():
 	})
 	return redirect(url_for("mainpage"))
 
+@app.route("/schedule", methods=["POST"])
+def update_schedule():
+	if "twitch_user" not in session:
+		return redirect(url_for("mainpage"))
+	user = session["twitch_user"]
+	# Perform simple validation on the schedule. Tidying up human entry
+	# is the job of the front end; if you send "1pm" to the back end,
+	# you will simply get back an error, nothing more. The front end is
+	# supposed to have already converted this to "13:00", which is the
+	# only format we accept here.
+	schedule = []
+	sched = "<unknown cause>" # in case we get an unexpected ValueError
+	try:
+		for day in range(7):
+			sched = request.form.get("sched%d" % day, "")
+			if ',' in sched: raise ValueError
+			for time in sched.split():
+				hr, min = time.split(":") # Raises ValueError if wrong number of colons
+				if not (0 <= int(hr) < 24): raise ValueError # Also raises if not integer
+				if not (0 <= int(min) < 60): raise ValueError
+			schedule.append(" ".join(sched.split()))
+	except ValueError:
+		return "Schedule format error: " + sched, 400
+	tz = request.form.get("sched_tz")
+	if not tz:
+		# No TZ specified? Use what we have, if possible, otherwise
+		# demand one from the user. The front end will normally try
+		# to provide a default timezone, so most users won't have
+		# to worry about this.
+		tz = database.get_schedule(user["_id"])[0]
+		if not tz:
+			return "Please specify a timezone", 400
+	database.set_schedule(user["_id"], tz, schedule)
+	return redirect(url_for("mainpage"))
+
 @app.route("/tweet", methods=["POST"])
 def tweet():
 	tweet = request.form.get("tweet")

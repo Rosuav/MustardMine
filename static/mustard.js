@@ -121,9 +121,9 @@ render_setups();
 const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 if (sched_tz === "") {
 	//No saved TZ - assume you probably want the one you're using in the browser.
-	document.getElementById("sched_tz").value = local_tz;
+	schedform.sched_tz.value = local_tz;
 } else {
-	document.getElementById("sched_tz").value = sched_tz;
+	schedform.sched_tz.value = sched_tz;
 	if (sched_tz !== local_tz) {
 		//Your saved timezone and your browser timezone are different.
 		//Notify the user.
@@ -134,3 +134,5 @@ if (sched_tz === "") {
 document.getElementById("checklist").innerHTML = checklist.split("\n")
 	.map(item => item && "<li><label><input type=checkbox>" + item + "</label></li>")
 	.join("");
+
+schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));

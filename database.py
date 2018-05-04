@@ -10,6 +10,7 @@ TABLES = {
 	"users": [
 		"twitchid integer primary key",
 		"sched_timezone varchar not null default ''",
+		"schedule varchar not null default ''",
 		"checklist text not null default ''",
 	],
 	"setups": [
@@ -128,11 +129,17 @@ def delete_setup(twitchid, setupid):
 def get_schedule(twitchid):
 	"""Return the user's timezone and schedule
 
-	Schedule currently unsupported, always returns [].
+	Schedule is split into seven (Sun through Sat) space-delimited strings.
 	"""
 	with postgres, postgres.cursor() as cur:
-		cur.execute("select sched_timezone from mustard.users where twitchid=%s", (twitchid,))
-		return cur.fetchone()[0], []
+		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
+		tz, sched = cur.fetchone()
+		sched = sched.split(",") + [""] * 7
+		return tz, sched[:7]
+
+def set_schedule(twitchid, tz, schedule):
+	with postgres, postgres.cursor() as cur:
+		cur.execute("update mustard.users set sched_timezone=%s, schedule=%s where twitchid=%s", (tz, ",".join(schedule), twitchid))
 
 def get_checklist(twitchid):
 	"""Return the user's checklist
