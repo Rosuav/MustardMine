@@ -95,5 +95,6 @@ if (sched_tz === "") {
 	}
 }
 
-const boxes = checklist.split("\n").map(item => item && "<li><label><input type=checkbox>" + item + "</label></li>");
-document.getElementById("checklist").innerHTML = boxes.join("");
+document.getElementById("checklist").innerHTML = checklist.split("\n")
+	.map(item => item && "<li><label><input type=checkbox>" + item + "</label></li>")
+	.join("");
