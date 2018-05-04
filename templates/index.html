@@ -45,13 +45,25 @@ const checklist = {{ checklist | tojson }};
 
 <section id=schedule>
 <h2>Schedule</h2>
+<form name=schedule method=post action="/schedule">
 <p>Specify schedule in timezone: <input id=sched_tz size=40> <span id=othertz></span></p>
+<table>
+<tr><td><label for=sched0>Sun:</label></td><td><input class=sched name=sched0 size=20></td></tr>
+<tr><td><label for=sched1>Mon:</label></td><td><input class=sched name=sched1 size=20></td></tr>
+<tr><td><label for=sched2>Tue:</label></td><td><input class=sched name=sched2 size=20></td></tr>
+<tr><td><label for=sched3>Wed:</label></td><td><input class=sched name=sched3 size=20></td></tr>
+<tr><td><label for=sched4>Thu:</label></td><td><input class=sched name=sched4 size=20></td></tr>
+<tr><td><label for=sched5>Fri:</label></td><td><input class=sched name=sched5 size=20></td></tr>
+<tr><td><label for=sched6>Sat:</label></td><td><input class=sched name=sched6 size=20></td></tr>
+</table>
+</form>
 <p>
 The schedule will be subject to the following rules:
 </p>
 <ul>
 <li>The schedule repeats weekly. Everything is based on Sun/Mon/Tue etc.
 <li>On each day-of-week, you may have zero or more times. Each time is interpreted within the specified timezone.
+<li>Times can be entered with AM/PM and will be converted into 24-hour notation.
 <li>This info is not public, so there's no need to have a "vacation mode" etc. Just don't click the button to tell MM to do stuff.
 <li>If the time falls within a gap (eg when DST advances clocks), behaviour is undefined, but will probably pick one side or the other.
 <li>If the time falls within a fold (eg when DST retards clocks), the first available time will be used.

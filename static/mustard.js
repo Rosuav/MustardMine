@@ -1,4 +1,9 @@
+function event(selector, ev, func) {
+	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
+}
+
 const setupform = document.forms.setups.elements;
+const schedform = document.forms.schedule.elements;
 
 function render_setups() {
 	const html = setups.map((s, i) => `
@@ -76,6 +81,37 @@ async function delete_setup(i) {
 	setups = await (await fetch("/api/setups", {credentials: "include"})).json();
 	render_setups();
 }
+
+function tidy_times(times) {
+	return times.split(" ").map(tm => {
+		//Reformat tm tidily
+		//TODO: If tm is exactly "AM" or "PM" (case insensitively),
+		//apply the transformation to the previous entry, and discard
+		//this one. That will allow "9 pm" to parse correctly.
+		//Yes, that's "?::" in a regex. Don't you just LOVE it when a
+		//character is sometimes special, sometimes literal?
+		//I'm abusing regex a little here; the last bit really should be
+		//(AM|PM)?, but there's no way to say "but which of the alternation
+		//did you match?". So by splitting it into two matchable parts, I
+		//take advantage of the regex case-insensitivity flag. That DOES
+		//mean that "2:30AMPM" will match. Simple rule: PM wins. (Just ask
+		//Jim Hacker if you don't believe me. Except when he's PM.)
+		const parts = /^([0-9][0-9]?)(?::([0-9][0-9]?))?(AM)?(PM)?$/i.exec(tm);
+		if (!parts) return "";
+		let hour = parseInt(parts[1], 10);
+		let min = parseInt(parts[2] || "00", 10);
+		if (parts[3] || parts[4]) //AM or PM was set
+		{
+			if (hour == 12) hour = 0;
+			if (parts[4]) hour += 12; //PM
+		}
+		return ("0" + hour).slice(-2) + ":" + ("0" + min).slice(-2);
+	}).join(" ");
+}
+
+event(".sched", "change", function() {
+	this.value = tidy_times(this.value);
+});
 
 setupform.category.value = channel.game;
 setupform.title.value = channel.status;
