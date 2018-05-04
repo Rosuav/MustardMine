@@ -1,8 +1,4 @@
 const form = document.forms[0].elements;
-form.category.value = channel.game;
-form.title.value = channel.status;
-communities.forEach((c, i) => form["comm"+(i+1)].value = c);
-render_setups();
 
 function render_setups() {
 	const html = setups.map((s, i) => `
@@ -80,6 +76,11 @@ async function delete_setup(i) {
 	setups = await (await fetch("/api/setups", {credentials: "include"})).json();
 	render_setups();
 }
+
+form.category.value = channel.game;
+form.title.value = channel.status;
+communities.forEach((c, i) => form["comm"+(i+1)].value = c);
+render_setups();
 
 const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 if (sched_tz === "") {
