@@ -1,4 +1,4 @@
-const setupform = document.forms[0].elements;
+const setupform = document.forms.setups.elements;
 
 function render_setups() {
 	const html = setups.map((s, i) => `
