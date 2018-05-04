@@ -24,7 +24,7 @@ const checklist = {{ checklist | tojson }};
 <tr><td></td><td><input name=comm2 size=50></td></tr>
 <tr><td></td><td><input name=comm3 size=50></td></tr>
 </table>
-<input type=submit value="Update stream info"> <button type=button onclick="save()">Save this setup</button>
+<input type=submit value="Update stream info"> <button type=button id=save>Save this setup</button>
 </form>
 <form method=post action="/tweet">
 <p><label>Tweet that you're live: <input name=tweet id=tweet size=50></label><input type=submit value="Tweet!"></p>
@@ -47,7 +47,7 @@ The schedule will be subject to the following rules:
 <p>Personal checklist <a href="/checklist">[edit]</a></p>
 <ul id=checklist></ul>
 </section>
-<button type=button onclick="hello()">Hello, world</button>
+<button type=button id=hello>Hello, world</button>
 <p><a href="/logout">Logout</a></p>
 <ul>
 <li><a href="/mustard-backup.json">Backup/export settings</a></li>

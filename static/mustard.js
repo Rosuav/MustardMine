@@ -42,12 +42,12 @@ function try_delete_setup(i) {
 	delete_setup(setups[i].id);
 }
 
-async function hello() {
+document.getElementById("hello").onclick = async function() {
 	const result = await (await fetch("/api/hello", {credentials: "include"})).json();
 	console.log(result);
 }
 
-async function save() {
+document.getElementById("save").onclick = async function() {
 	const result = await (await fetch("/api/setups", {
 		credentials: "include",
 		headers: {"Content-Type": "application/json"},
