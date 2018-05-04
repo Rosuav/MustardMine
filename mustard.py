@@ -226,13 +226,24 @@ def delete_setup(setupid):
 
 @app.route("/mustard-backup.json")
 def make_backup():
-	setups = database.list_setups(session["twitch_user"]["_id"])
-	response = "[\n"
+	twitchid = session["twitch_user"]["_id"]
+	response = "{\n"
+	# Setups
+	setups = database.list_setups(twitchid)
+	response += '\t"setups": [\n'
 	fields = "category", "title", "communities", "tweet"
 	for setup in setups:
 		setup = {field: setup[field] for field in fields}
-		response += "\t" + json.dumps(setup) + ",\n"
-	response += '\t"Mustard-Mine Backup"\n]\n'
+		response += "\t\t" + json.dumps(setup) + ",\n"
+	response += '\t\t"shim [TODO]"\n\t],\n'
+	# Schedule
+	tz, sched = database.get_schedule(twitchid)
+	response += '\t"schedule": [\n'
+	for day in sched:
+		response += "\t\t" + json.dumps(day) + ",\n"
+	response += "\t\t" + json.dumps(tz) + "\n\t],\n"
+	# Footer (marker to show that the file was correctly downloaded)
+	response += '\t"": "Mustard-Mine Backup"\n}\n'
 	return Response(response, mimetype="application/json",
 		headers={"Content-disposition": "attachment"})
 
