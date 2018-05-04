@@ -1,4 +1,4 @@
-const form = document.forms[0].elements;
+const setupform = document.forms[0].elements;
 
 function render_setups() {
 	const html = setups.map((s, i) => `
@@ -18,9 +18,9 @@ function render_setups() {
 function pick_setup(i) {
 	const setup = setups[i];
 	if (!setup) return; //Shouldn't happen
-	form.category.value = setup.category;
-	form.title.value = setup.title;
-	setup.communities.forEach((c, i) => form["comm"+(i+1)].value = c);
+	setupform.category.value = setup.category;
+	setupform.title.value = setup.title;
+	setup.communities.forEach((c, i) => setupform["comm"+(i+1)].value = c);
 	document.getElementById("tweet").value = setup.tweet;
 }
 
@@ -53,12 +53,12 @@ document.getElementById("save").onclick = async function() {
 		headers: {"Content-Type": "application/json"},
 		method: "POST",
 		body: JSON.stringify({
-			category: form.category.value,
-			title: form.title.value,
+			category: setupform.category.value,
+			title: setupform.title.value,
 			communities: [
-				form.comm1.value,
-				form.comm2.value,
-				form.comm3.value,
+				setupform.comm1.value,
+				setupform.comm2.value,
+				setupform.comm3.value,
 			].filter(x=>x), //Remove any blank communities
 			tweet: document.getElementById("tweet").value,
 		})
@@ -77,9 +77,9 @@ async function delete_setup(i) {
 	render_setups();
 }
 
-form.category.value = channel.game;
-form.title.value = channel.status;
-communities.forEach((c, i) => form["comm"+(i+1)].value = c);
+setupform.category.value = channel.game;
+setupform.title.value = channel.status;
+communities.forEach((c, i) => setupform["comm"+(i+1)].value = c);
 render_setups();
 
 const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
