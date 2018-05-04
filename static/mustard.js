@@ -83,7 +83,7 @@ async function delete_setup(i) {
 }
 
 function tidy_times(times) {
-	return times.split(" ").map(tm => {
+	return times.replace(",", " ").split(" ").map(tm => {
 		//Reformat tm tidily
 		//TODO: If tm is exactly "AM" or "PM" (case insensitively),
 		//apply the transformation to the previous entry, and discard
