@@ -110,12 +110,75 @@ function tidy_times(times) {
 }
 
 event(".sched", "change", function() {
-	this.value = tidy_times(this.value);
+	schedule[this.name[5]] = this.value = tidy_times(this.value);
 });
 
 document.getElementById("tweet").oninput = function() {
 	document.getElementById("tweetlen").innerHTML = this.value.length;
 };
+
+function timediff(timestr, date) {
+	//Calculate the difference between a time string and a date.
+	//Yes, it's weird. It's a helper for g_n_s_t below. Nothing more.
+	//Can and will return a negative number of seconds if timestr
+	//represents a time earlier in the day than date does.
+	const [hr, min] = timestr.split(":");
+	const tm = parseInt(hr, 10) * 60 + parseInt(min, 10);
+	const secs = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+	return tm * 60 - secs;
+}
+
+function get_next_scheduled_time() {
+	//Returns [dow, time, days, tm]
+	//dow - day of week (0-6)
+	//time - HH:MM
+	//days - number of days into the future (might be 0, might be 7)
+	//tm - number of seconds from now until that time.
+	//If no times on the schedule, returns [].
+	const now = new Date();
+	const today = now.getDay(); //0 = Sunday, 1 = Monday, etc
+	//Cycle from today forwards, wrapping, until we find a valid time
+	//If we get all the way back to today, look at times behind us.
+	const today_times = schedule[today].split(" ").filter(x => x);
+	if (today_times.length) {
+		//Find one that's after the current time
+		const time = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2);
+		for (let t of today_times) if (t > time) {
+			return [today, t, 0, timediff(t, now)];
+		}
+	}
+	//Nope? Okay, let's try tomorrow.
+	for (let days = 1; days < 7; ++days) {
+		const times = schedule[(today + days) % 7].split(" ").filter(x => x);
+		if (times.length) return [(today + days) % 7, times[0], days, days*86400 + timediff(times[0], now)];
+	}
+	//Nothing at all? Alright, one last try, looking at today.
+	//If there is anything at all on today's schedule, and we didn't return
+	//from the previous block, then what we want is to wait all the way around
+	//the week until we get back to today, and then take the earliest time
+	//slot available. Seven days and negative a few hours.
+	if (today_times.length) return [today, today_times[0], 7, 604800 + timediff(today_times[0], now)];
+	//If we get here, the entire schedule must be empty.
+	return [];
+}
+
+setInterval(function() {
+	const [dow, time, days, delay] = get_next_scheduled_time();
+	if (!time) {
+		document.getElementById("nextsched").innerHTML = "(none)";
+		return;
+	}
+	const hh = Math.floor(delay / 3600);
+	const mm = ("0" + Math.floor((delay / 60) % 60)).slice(-2);
+	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
+	const downame = "Sun Mon Tue Wed Thu Fri Sat".split(" ")[dow];
+	let day;
+	if (!days) day = "Today";
+	else if (days == 1) day = "Tomorrow";
+	else if (days == 7) day = "Next " + downame
+	else day = downame;
+	document.getElementById("nextsched").innerHTML = `${day} ${time} ==> ${hh}:${mm}:${ss}`;
+}, 1000);
 
 setupform.category.value = channel.game;
 setupform.title.value = channel.status;

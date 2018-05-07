@@ -47,6 +47,7 @@ const checklist = {{ checklist | tojson }};
 <h2>Schedule</h2>
 <form name=schedule method=post action="/schedule">
 <p>Specify schedule in timezone: <input name=sched_tz size=40> <span id=othertz></span></p>
+<p>Next scheduled time: <span id=nextsched></span></p>
 <table>
 <tr><td><label for=sched0>Sun:</label></td><td><input class=sched name=sched0 size=20></td></tr>
 <tr><td><label for=sched1>Mon:</label></td><td><input class=sched name=sched1 size=20></td></tr>
