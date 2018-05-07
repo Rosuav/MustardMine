@@ -106,7 +106,7 @@ function tidy_times(times) {
 			if (parts[4]) hour += 12; //PM
 		}
 		return ("0" + hour).slice(-2) + ":" + ("0" + min).slice(-2);
-	}).join(" ");
+	}).sort().join(" ");
 }
 
 event(".sched", "change", function() {
