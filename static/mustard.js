@@ -113,6 +113,10 @@ event(".sched", "change", function() {
 	this.value = tidy_times(this.value);
 });
 
+document.getElementById("tweet").oninput = function() {
+	document.getElementById("tweetlen").innerHTML = this.value.length;
+};
+
 setupform.category.value = channel.game;
 setupform.title.value = channel.status;
 communities.forEach((c, i) => setupform["comm"+(i+1)].value = c);
