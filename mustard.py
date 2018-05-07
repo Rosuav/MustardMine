@@ -147,7 +147,17 @@ def tweet():
 		return redirect(url_for("mainpage"))
 	g.user = session["twitter_oauth"]
 	resp = twitter.post("statuses/update.json", data={"status": tweet})
-	# TODO: 403 means too long, so report on that
+	if resp.status != 200:
+		try:
+			return jsonify(resp.data["errors"][0]), resp.status
+		except:
+			# If something goes wrong, provide more info on the console
+			print("Unknown response from Twitter")
+			print(resp.status)
+			print("---")
+			print(resp.data)
+			print("---")
+			raise
 	return redirect(url_for("mainpage"))
 
 @app.route("/login")
