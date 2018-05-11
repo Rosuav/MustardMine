@@ -4,6 +4,10 @@
 <title>Mustard Mine - {{ title }}</title>
 <style>
 #id {display: none;}
+div {
+	font-weight: 400;
+	font-size: 12em;
+}
 </style>
 </head>
 <body>
@@ -11,11 +15,22 @@
 <div id=time></div>
 <script>
 const target_time = {{ next_event }};
+const maxtime = {{ maxtime }};
 const target = new Date(target_time * 1000);
-document.getElementById("time").innerHTML = "" + target;
-setInterval(() => {
-	
-}, 1000);
+const display = document.getElementById("time")
+function update() {
+	const delay = Math.floor((target - new Date()) / 1000);
+	if (delay <= 0 || delay >= maxtime) {
+		display.innerHTML = "NOW";
+		display.classList.add("now");
+	} else {
+		const min = Math.floor(delay / 60);
+		const sec = delay % 60;
+		display.innerHTML = min + ":" + ("0" + sec).slice(-2);
+		display.classList.remove("now");
+	}
+}
+setInterval(update, 1000); update();
 </script>
 </body>
 </html>
