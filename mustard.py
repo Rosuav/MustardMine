@@ -240,6 +240,14 @@ def save_timer(id):
 	)
 	return redirect(url_for("mainpage"))
 
+@app.route("/countdown/<id>")
+def countdown(id):
+	# TODO: Have the page query the server periodically, or maybe even open
+	# a websocket. It can then get notified of timer adjustments.
+	info = database.get_public_timer_details(id)
+	if not info: return "Timer not found", 404
+	return render_template("countdown.html", id=id, **info)
+
 # ---- Config management API ----
 
 @app.route("/api/hello")

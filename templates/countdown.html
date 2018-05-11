@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Mustard Mine - {{ title }}</title>
+<style>
+#id {display: none;}
+</style>
+</head>
+<body>
+<div id=id>{{ id }}</div>
+<div id=time></div>
+<script>
+const target_time = {{ next_event }};
+const target = new Date(target_time * 1000);
+document.getElementById("time").innerHTML = "" + target;
+setInterval(() => {
+	
+}, 1000);
+</script>
+</body>
+</html>

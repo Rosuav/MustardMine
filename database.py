@@ -3,6 +3,8 @@ import config
 import collections
 import os
 import base64
+import pytz
+from datetime import datetime, timedelta
 
 postgres = psycopg2.connect(config.DATABASE_URI)
 
@@ -179,6 +181,61 @@ def get_timer_details(twitchid, id):
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
 		cur.execute("select * from mustard.timers where twitchid=%s and id=%s", (twitchid, id))
 		return cur.fetchone()
+
+def find_next_event(tz, sched, delta=0):
+	if not sched.strip(","):
+		# If you have no schedule set, there can't be any events.
+		# Early check to prevent crashing out if no TZ set. If
+		# you have a schedule but do *not* have a TZ, the below
+		# code will bomb.
+		return 0
+	sched = sched.split(",") + [""] * 7
+	sched = [[tm for tm in day.split(" ") if tm] for day in sched[:7]]
+	tz = pytz.timezone(tz)
+	now = datetime.now(tz=tz).replace(second=0, microsecond=0) - timedelta(seconds=delta)
+	tm = (now.hour, now.minute)
+	dow = now.isoweekday() % 7 # isoweekday returns 7 for Sunday, we want 0
+	for tryme in range(8):
+		for schedtime in sched[(dow + tryme) % 7]:
+			hr, min = schedtime.split(":")
+			# First pass, looking at today, we count only times in the future.
+			# After that, we look at the first available time. If we go seven
+			# full days into the future (weeklong wraparound), we take any
+			# schedule entry from the current date.
+			if tryme or tm < (int(hr), int(min)):
+				# Advance to the right day
+				target = now + timedelta(days=tryme)
+				# Select the hour and minute, which might break stuff badly
+				target = target.replace(hour=int(hr), minute=int(min))
+				# Fix the timezone in case something's broken
+				target = tz.normalize(target)
+				# In case we went past a UTC offset change, re-replace.
+				target = target.replace(hour=int(hr), minute=int(min))
+				# In case we landed right inside a DST advancement, re-normalize.
+				target = tz.normalize(target)
+				# Convert to Unix time and return it!
+				return int(target.timestamp())
+	# Nothing? Strange. We were supposed to catch empty schedules up above.
+	# Maybe there's a malformed entry that got skipped. In any case, this
+	# is an empty schedule, so return failure.
+	return 0
+
+def get_public_timer_details(id):
+	"""Get public details for a specific timer
+
+	Requires no Twitch ID, but is guaranteed to return ONLY public info.
+	In addition to the raw info, this also gives the UTC time of the next
+	scheduled event.
+	"""
+	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+		cur.execute("select twitchid, title, delta, maxtime, styling from mustard.timers where id=%s", (id,))
+		info = cur.fetchone()
+		if not info: return None
+		twitchid = info.pop("twitchid")
+		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
+		sched = cur.fetchone()
+		info["next_event"] = find_next_event(sched["sched_timezone"], sched["schedule"], info["delta"])
+		return info
 
 def create_timer(twitchid):
 	"""Create a new timer and return its unique ID"""
