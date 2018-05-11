@@ -52,6 +52,9 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None):
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": "OAuth " + token,
 	})
+	if r.status_code == 401:
+		print("... about to go boom, but here's the refresh token:")
+		print(session["twitch_refresh_token"])
 	r.raise_for_status()
 	if r.status_code == 204: return {}
 	return r.json()
@@ -181,6 +184,7 @@ def authorized():
 			request.args['error_description']
 		)
 	session["twitch_token"] = resp["access_token"]
+	session["twitch_refresh_token"] = resp["refresh_token"]
 	user = query("user")
 	database.create_user(user["_id"])
 	session["twitch_user"] = user
