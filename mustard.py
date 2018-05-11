@@ -219,6 +219,27 @@ def edit_timer(id):
 	if not info: return "Timer not found, or not owned by you", 404
 	return render_template("timer.html", info=info)
 
+def parse_time(timestr):
+	"""Parse a human-writable time string into a number of seconds"""
+	if not timestr: return 0
+	if ":" not in timestr:
+		return int(timestr)
+	neg = timestr.startswith("-") # "-5:30" means -330 seconds
+	min, sec = timestr.strip("-").split(":")
+	time = int(min) * 60 + int(sec)
+	if neg: return -time
+	return time
+
+@app.route("/timer/<id>", methods=["POST"])
+def save_timer(id):
+	database.update_timer_details(session["twitch_user"]["_id"], id,
+		title=request.form["title"],
+		delta=parse_time(request.form["delta"]),
+		maxtime=parse_time(request.form["maxtime"]),
+		styling=request.form["styling"],
+	)
+	return redirect(url_for("mainpage"))
+
 # ---- Config management API ----
 
 @app.route("/api/hello")

@@ -191,3 +191,14 @@ def create_timer(twitchid):
 		id = base64.b64encode(os.urandom(30), b"Qx").decode("ascii")
 		cur.execute("insert into mustard.timers (id, twitchid) values (%s, %s)", (id, twitchid))
 		return id
+
+def update_timer_details(twitchid, id, *, title, delta, maxtime, styling):
+	"""Update a timer, but only if it's owned by that twitchid
+
+	Raises ValueError if it found nothing to update
+	"""
+	with postgres, postgres.cursor() as cur:
+		
+		cur.execute("update mustard.timers set title=%s, delta=%s, maxtime=%s, styling=%s where id=%s and twitchid=%s",
+			(title, delta, maxtime, styling, id, twitchid))
+		if not cur.rowcount: raise ValueError("Timer not found, or not owned by that user")
