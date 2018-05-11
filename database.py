@@ -171,6 +171,15 @@ def list_timers(twitchid):
 		cur.execute("select id, title from mustard.timers where twitchid=%s", (twitchid,))
 		return cur.fetchall()
 
+def get_timer_details(twitchid, id):
+	"""Get details for a specific timer
+
+	Will return data if the timer is owned by the given user, otherwise None.
+	"""
+	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+		cur.execute("select * from mustard.timers where twitchid=%s and id=%s", (twitchid, id))
+		return cur.fetchone()
+
 def create_timer(twitchid):
 	"""Create a new timer and return its unique ID"""
 	# TODO: If we happen to collide, rerandomize instead of failing

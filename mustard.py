@@ -213,6 +213,12 @@ def create_timer():
 	database.create_timer(session["twitch_user"]["_id"])
 	return redirect(url_for("mainpage"))
 
+@app.route("/timer/<id>")
+def edit_timer(id):
+	info = database.get_timer_details(session["twitch_user"]["_id"], id)
+	if not info: return "Timer not found, or not owned by you", 404
+	return render_template("timer.html", info=info)
+
 # ---- Config management API ----
 
 @app.route("/api/hello")

@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Mustard Mine - edit timer</title>
+<link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+<h1>Mustard Mine</h1>
+<p>Editing timer: {{ info["id"] }}</p>
+<form method=post>
+<table>
+<tr><td><label for=title>Title</label></td><td><input name=title id=title size=40></td></tr>
+<tr><td><label for=delta>Delta</label></td><td><input name=delta id=delta size=10></td></tr>
+<tr><td><label for=maxtime>Max displayed time</label></td><td><input name=maxtime id=maxtime size=10></td></tr>
+</table>
+<p><label>Custom styling (advanced usage only)</label><br>
+<textarea name=styling rows=8 cols=50></textarea></p>
+
+<input type=submit value="Save">
+<script>
+const info = {{ info | tojson }};
+const form = document.forms[0].elements;
+"title delta maxtype styling".split(" ").forEach(id => form[id].value = info[id]);
+</script>
+</form>
+</body>
+</html>
