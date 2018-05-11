@@ -33,3 +33,6 @@ TODO:
   - Allow custom CSS?
 * Internal refactoring: use https://github.com/lepture/authlib
 * Bug: Selecting a setup with fewer than 3 communities doesn't blank the spares
+* Create one database transaction per incoming HTTP request, for efficiency
+  - Currently all operations that *require* atomicity are done with single
+    calls to database.py, but the landing page has a ton of separate queries.
