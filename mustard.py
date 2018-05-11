@@ -208,6 +208,11 @@ def logout():
 	session.pop("twitter_oauth", None)
 	return redirect(url_for("mainpage"))
 
+@app.route("/countdown/new", methods=["POST"])
+def create_countdown():
+	database.create_timer(session["twitch_user"]["_id"])
+	return redirect(url_for("mainpage"))
+
 # ---- Config management API ----
 
 @app.route("/api/hello")

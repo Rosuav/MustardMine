@@ -1,6 +1,8 @@
 import psycopg2.extras
 import config
 import collections
+import os
+import base64
 
 postgres = psycopg2.connect(config.DATABASE_URI)
 
@@ -32,6 +34,7 @@ TABLES = {
 	"timers": [
 		"id text primary key",
 		"twitchid integer not null references mustard.users",
+		"title text not null default ''",
 		"delta integer not null default 0",
 		"maxtime integer not null default 3600", # If time to event exceeds this, shows "NOW"
 		"styling text not null default ''", # custom CSS??
@@ -161,8 +164,21 @@ def get_checklist(twitchid):
 def list_timers(twitchid):
 	"""List the user's timers
 
-	Returns just their unique IDs, which are URL-safe strings.
+	Returns their unique IDs, which are URL-safe strings, and titles, which
+	usually aren't.
 	"""
 	with postgres, postgres.cursor() as cur:
-		cur.execute("select id from mustard.timers where twitchid=%s", (twitchid,))
-		return [row[0] for row in cur]
+		cur.execute("select id, title from mustard.timers where twitchid=%s", (twitchid,))
+		return cur.fetchall()
+
+def create_timer(twitchid):
+	"""Create a new timer and return its unique ID"""
+	# TODO: If we happen to collide, rerandomize instead of failing
+	with postgres, postgres.cursor() as cur:
+		# Generate an alphanumeric random identifier. If it would have used the
+		# last two characters in the base-64 alphabet, replace them with letters;
+		# this means we can potentially get collisions, but that's possible even
+		# without that hack, and this is the easiest way to make clean IDs.
+		id = base64.b64encode(os.urandom(30), b"Qx").decode("ascii")
+		cur.execute("insert into mustard.timers (id, twitchid) values (%s, %s)", (id, twitchid))
+		return id
