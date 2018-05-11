@@ -81,7 +81,8 @@ def mainpage():
 		channel=channel, commnames=commnames,
 		setups=database.list_setups(user["_id"]),
 		sched_tz=sched_tz, schedule=schedule,
-		checklist=database.get_checklist(user["_id"])
+		checklist=database.get_checklist(user["_id"]),
+		timers=database.list_timers(user["_id"]),
 	)
 
 @app.route("/update", methods=["POST"])

@@ -29,6 +29,13 @@ TABLES = {
 		"setupid integer not null references mustard.setups on delete cascade",
 		"community text not null references mustard.communities",
 	],
+	"timers": [
+		"id text primary key",
+		"twitchid integer not null references mustard.users",
+		"delta integer not null default 0",
+		"maxtime integer not null default 3600", # If time to event exceeds this, shows "NOW"
+		"styling text not null default ''", # custom CSS??
+	],
 }
 
 def create_tables():
@@ -150,3 +157,12 @@ def get_checklist(twitchid):
 	with postgres, postgres.cursor() as cur:
 		cur.execute("select checklist from mustard.users where twitchid=%s", (twitchid,))
 		return cur.fetchone()[0]
+
+def list_timers(twitchid):
+	"""List the user's timers
+
+	Returns just their unique IDs, which are URL-safe strings.
+	"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("select id from mustard.timers where twitchid=%s", (twitchid,))
+		return [row[0] for row in cur]

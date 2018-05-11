@@ -74,6 +74,16 @@ The schedule will be subject to the following rules:
 </section>
 
 <section>
+<h2>Timers</h2>
+<ul id=checklist>
+{% for id in timers %}
+<li><a href="/countdown/{{id}}" target="_new">{{id}}</a> | <a href="/timer/{{id}}">[edit]</a></li>
+{% endfor-%}
+</ul>
+<form target="/countdown/new" method=post><input type=submit value="Create new timer"></form>
+</section>
+
+<section>
 <h2>Personal checklist</h2>
 <p><a href="/checklist">[edit]</a></p>
 <ul id=checklist></ul>
