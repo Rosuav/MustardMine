@@ -6,7 +6,6 @@ Mustard-Mine - Twitch Go-Live assistant
 
 TODO:
 
-* Refresh Twitch auth
 * Connect to Twitter and send a tweet as you go live
   - Can currently do manually; needs to be linked to schedule
 * Connect to Discord?
