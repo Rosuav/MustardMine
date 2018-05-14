@@ -135,7 +135,7 @@ function get_next_scheduled_time(offset) {
 	//days - number of days into the future (might be 0, might be 7)
 	//tm - number of seconds from now until that time.
 	//If no times on the schedule, returns [].
-	const now = new Date(new Date() - (offset||0));
+	const now = new Date(new Date() - (offset||0)*1000);
 	const today = now.getDay(); //0 = Sunday, 1 = Monday, etc
 	//Cycle from today forwards, wrapping, until we find a valid time
 	//If we get all the way back to today, look at times behind us.
