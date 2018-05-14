@@ -39,6 +39,9 @@ class Scheduler:
 
 	def pump(self):
 		while True:
-			tm, func, *args = self.queue.wait()
+			tm, func, args = self.queue.wait()
 			assert tm <= time.time()
 			func(*args)
+
+	def put(self, tm, func, *args):
+		return self.queue.put((tm, func, args))
