@@ -6,8 +6,9 @@ Mustard-Mine - Twitch Go-Live assistant
 
 TODO:
 
-* Connect to Twitter and send a tweet as you go live
-  - Can currently do manually; needs to be linked to schedule
+* Automated tweeting: retain schedule in DB and load on startup
+  - Currently works so long as the server doesn't restart before the
+    tweet gets sent.
 * Connect to Discord?
 * Query StreamLabs extension for schedule??
   - Would require assistance from SL, which they don't currently offer

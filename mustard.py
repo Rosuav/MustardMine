@@ -1,4 +1,5 @@
 import json
+import time
 from pprint import pprint
 from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response
 from flask_oauthlib.client import OAuth # deprecated - TODO: switch to authlib
@@ -7,8 +8,10 @@ import requests
 
 import config # ImportError? See config_sample.py
 import database
+import utils
 app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET
+scheduler = utils.Scheduler()
 
 twitch = OAuth().remote_app('twitch',
 	base_url='https://api.twitch.tv/kraken/',
@@ -161,8 +164,26 @@ def tweet():
 	tweet = request.form.get("tweet")
 	if not tweet or "twitter_oauth" not in session:
 		return redirect(url_for("mainpage"))
-	g.user = session["twitter_oauth"]
-	resp = twitter.post("statuses/update.json", data={"status": tweet})
+	schedule = request.form.get("tweetschedule", "now")
+	if schedule == "now":
+		send_tweet(get_twitter_token(), tweet)
+		return redirect(url_for("mainpage"))
+	schedule = int(schedule)
+	target = database.get_next_event(session["twitch_user"]["_id"], schedule)
+	if not target:
+		# TODO: Catch this on the front end, so this ugly message won't
+		# happen without someone messing around
+		return "Can't schedule tweets without a schedule!", 400
+	target += schedule
+	if target - time.time() > 3600:
+		# Protect against schedule mistakes and various forms of insanity
+		return "Refusing to schedule a tweet more than an hour in advance", 400
+	scheduler.put(target, send_tweet, get_twitter_token(), tweet)
+	return redirect(url_for("mainpage"))
+
+def send_tweet(auth, tweet):
+	"""Actually send a tweet"""
+	resp = twitter.post("statuses/update.json", data={"status": tweet}, token=auth)
 	if resp.status != 200:
 		try:
 			return jsonify(resp.data["errors"][0]), resp.status
@@ -174,7 +195,7 @@ def tweet():
 			print(resp.data)
 			print("---")
 			raise
-	return redirect(url_for("mainpage"))
+	# print("Tweet sent.")
 
 @app.route("/login")
 def login():

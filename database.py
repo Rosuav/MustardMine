@@ -237,6 +237,18 @@ def get_public_timer_details(id):
 		info["next_event"] = find_next_event(sched["sched_timezone"], sched["schedule"], info["delta"])
 		return info
 
+def get_next_event(twitchid, delta=0):
+	"""Get the next event from this user's schedule
+
+	Similar to get_public_timer_details but can provide arbitrary times
+	and deltas, without requiring preconfigured timers. Returns the Unix
+	time for the next event, or 0 if no events on this user's calendar.
+	"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
+		tz, sched = cur.fetchone()
+		return find_next_event(tz, sched, delta)
+
 def create_timer(twitchid):
 	"""Create a new timer and return its unique ID"""
 	# TODO: If we happen to collide, rerandomize instead of failing
