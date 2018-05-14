@@ -43,7 +43,9 @@ def get_twitter_token():
 		resp = session["twitter_oauth"]
 		return resp['oauth_token'], resp['oauth_token_secret']
 
-def query(endpoint, *, token=None, method="GET", params=None, data=None):
+def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_refresh=True):
+	# If this is called outside of a Flask request context, be sure to provide
+	# the auth token, and set auto_refresh to False.
 	if token is None:
 		token = session["twitch_token"]
 	r = requests.request(method, "https://api.twitch.tv/kraken/" + endpoint,
@@ -52,9 +54,19 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None):
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": "OAuth " + token,
 	})
-	if r.status_code == 401:
-		print("... about to go boom, but here's the refresh token:")
-		print(session["twitch_refresh_token"])
+	if auto_refresh and r.status_code == 401 and r.json()["message"] == "invalid oauth token":
+		r = requests.post("https://id.twitch.tv/oauth2/token", data={
+			"grant_type": "refresh_token",
+			"refresh_token": session["twitch_refresh_token"],
+			"client_id": config.CLIENT_ID, "client_secret": config.CLIENT_SECRET,
+		})
+		r.raise_for_status()
+		data = r.json()
+		session["twitch_token"] = data["access_token"]
+		session["twitch_refresh_token"] = data["refresh_token"]
+		# Recurse for simplicity. Do NOT pass the original token, and be sure to
+		# prevent infinite loops by disabling auto-refresh. Otherwise, pass-through.
+		return query(endpoint, method=method, params=params, data=data, auto_refresh=False)
 	r.raise_for_status()
 	if r.status_code == 204: return {}
 	return r.json()
