@@ -162,12 +162,9 @@ function get_next_scheduled_time(offset) {
 	return [];
 }
 
-setInterval(function() {
-	const [dow, time, days, delay] = get_next_scheduled_time();
-	if (!time) {
-		document.getElementById("nextsched").innerHTML = "(none)";
-		return;
-	}
+function format_schedule_time(offset) {
+	const [dow, time, days, delay] = get_next_scheduled_time(offset);
+	if (!time) return null;
 	const hh = Math.floor(delay / 3600);
 	const mm = ("0" + Math.floor((delay / 60) % 60)).slice(-2);
 	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
@@ -177,7 +174,11 @@ setInterval(function() {
 	else if (days == 1) day = "Tomorrow";
 	else if (days == 7) day = "Next " + downame
 	else day = downame;
-	document.getElementById("nextsched").innerHTML = `${day} ${time} ==> ${hh}:${mm}:${ss}`;
+	return `${day} ${time} ==> ${hh}:${mm}:${ss}`;
+}
+
+setInterval(function() {
+	document.getElementById("nextsched").innerHTML = format_schedule_time() || "(none)";
 }, 1000);
 
 setupform.category.value = channel.game;
