@@ -178,6 +178,13 @@ def tweet():
 	if target - time.time() > 3600:
 		# Protect against schedule mistakes and various forms of insanity
 		return "Refusing to schedule a tweet more than an hour in advance", 400
+	# TODO: Retain the tweet and token in Postgres in case the server restarts
+	# We'll assume the token won't need changing - but we assume that already.
+	# Keep the one-hour limit (give or take) to minimize the likelihood of the
+	# token expiring. Don't fret the weirdnesses; if stuff breaks, be sure the
+	# tweets get retained, and then let Twitter worry about duplication. It is
+	# not as obvious in the UI as it is in the API, but what you call a "tweet"
+	# is actually a "status", and setting status is idempotent.
 	scheduler.put(target, send_tweet, get_twitter_token(), tweet)
 	return redirect(url_for("mainpage"))
 
