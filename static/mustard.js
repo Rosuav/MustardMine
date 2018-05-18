@@ -25,7 +25,7 @@ function pick_setup(i) {
 	if (!setup) return; //Shouldn't happen
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
-	setup.communities.forEach((c, i) => setupform["comm"+(i+1)].value = c);
+	for (let i=1; i<=3; ++i) setupform["comm"+i].value = setup.communities[i-1] || "";
 	document.getElementById("tweet").value = setup.tweet;
 }
 
