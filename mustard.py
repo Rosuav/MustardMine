@@ -182,9 +182,8 @@ def tweet():
 	# We'll assume the token won't need changing - but we assume that already.
 	# Keep the one-hour limit (give or take) to minimize the likelihood of the
 	# token expiring. Don't fret the weirdnesses; if stuff breaks, be sure the
-	# tweets get retained, and then let Twitter worry about duplication. It is
-	# not as obvious in the UI as it is in the API, but what you call a "tweet"
-	# is actually a "status", and setting status is idempotent.
+	# tweets get retained, and then let Twitter worry about deduplication - it
+	# apparently isn't possible to post the same tweet twice. (Whodathunk?)
 	scheduler.put(target, send_tweet, get_twitter_token(), tweet)
 	return redirect(url_for("mainpage"))
 
