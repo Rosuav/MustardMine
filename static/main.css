@@ -64,3 +64,15 @@ details {
 .columns > * {
 	margin: 0 0.5em;
 }
+
+#checklist {
+	padding: 0;
+}
+#checklist li {
+	font-size: 1.25em;
+	list-style: none;
+}
+#checklist input[type=checkbox] {
+	height: 1.75em;
+	width: 1.75em;
+}
