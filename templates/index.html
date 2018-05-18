@@ -96,10 +96,15 @@ The schedule will be subject to the following rules:
 <ul id=checklist></ul>
 <details><summary>Edit checklist</summary>
 <form name=checklist action="/checklist" method=post>
+<div class="columns">
 <textarea name=checklist rows=10 cols=80>
 {{checklist}}
 </textarea> <!-- How many things can I call "checklist" without collisions? -->
-<br><input type=submit value="Update">
+<p style="flex: 1 0">Put important reminders here, one per line. You'll be able to check them off as you're
+preparing to go live, with one tick box per entry. Purely for your own use, has no actual
+functionality behind it.</p>
+</div>
+<input type=submit value="Update">
 </form>
 </details>
 </section>

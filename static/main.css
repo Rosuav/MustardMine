@@ -8,7 +8,7 @@ h2 {
 }
 
 details {
-	max-width: 50em;
+	max-width: 60em;
 }
 
 #login-twitter {
@@ -54,4 +54,13 @@ details {
 
 #tweetlen, #tweettime {
 	margin-left: 0.5em;
+}
+
+.columns {
+	display: flex;
+	margin: 0.5em 0;
+}
+
+.columns > * {
+	margin: 0 0.5em;
 }
