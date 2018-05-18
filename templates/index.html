@@ -9,7 +9,6 @@ const communities = {{ commnames | tojson }};
 let setups = {{ setups | tojson }};
 const sched_tz = {{ sched_tz | tojson }};
 const schedule = {{ schedule | tojson }};
-const checklist = {{ checklist | tojson }};
 </script>
 </head>
 <body>
@@ -94,8 +93,15 @@ The schedule will be subject to the following rules:
 
 <section>
 <h2>Personal checklist</h2>
-<p><a href="/checklist">[edit]</a></p>
 <ul id=checklist></ul>
+<details><summary>Edit checklist</summary>
+<form name=checklist action="/checklist" method=post>
+<textarea name=checklist rows=10 cols=80>
+{{checklist}}
+</textarea> <!-- How many things can I call "checklist" without collisions? -->
+<br><input type=submit value="Update">
+</form>
+</details>
 </section>
 
 <section>

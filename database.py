@@ -163,6 +163,11 @@ def get_checklist(twitchid):
 		cur.execute("select checklist from mustard.users where twitchid=%s", (twitchid,))
 		return cur.fetchone()[0]
 
+def set_checklist(twitchid, checklist):
+	"""Update the checklist, which must be formatted as lines already"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("update mustard.users set checklist=%s where twitchid=%s", (checklist, twitchid,))
+
 def list_timers(twitchid):
 	"""List the user's timers
 

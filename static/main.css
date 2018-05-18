@@ -1,10 +1,14 @@
-section {
+section, details {
 	border: 1px solid black;
 	padding: 10px;
 	margin: 10px 0;
 }
 h2 {
 	margin-top: 0;
+}
+
+details {
+	max-width: 50em;
 }
 
 #login-twitter {

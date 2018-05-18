@@ -159,6 +159,14 @@ def update_schedule():
 	database.set_schedule(user["_id"], tz, schedule)
 	return redirect(url_for("mainpage"))
 
+@app.route("/checklist", methods=["POST"])
+def update_checklist():
+	if "twitch_user" not in session:
+		return redirect(url_for("mainpage"))
+	user = session["twitch_user"]
+	database.set_checklist(user["_id"], request.form["checklist"].strip().replace("\r", ""))
+	return redirect(url_for("mainpage"))
+
 @app.route("/tweet", methods=["POST"])
 def tweet():
 	tweet = request.form.get("tweet")

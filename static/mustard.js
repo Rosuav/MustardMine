@@ -207,7 +207,8 @@ if (sched_tz === "") {
 	}
 }
 
-document.getElementById("checklist").innerHTML = checklist.split("\n")
+document.getElementById("checklist").innerHTML = document.forms.checklist.elements.checklist.value
+	.trim().split("\n")
 	.map(item => item && "<li><label><input type=checkbox>" + item + "</label></li>")
 	.join("");
 
