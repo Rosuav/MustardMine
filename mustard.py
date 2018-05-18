@@ -307,7 +307,7 @@ def create_setup():
 	if not request.json: return jsonify({}), 400
 	missing = {"category", "title", "communities"} - set(request.json)
 	if missing:
-		return jsonify({"error": "Missing:" + ", ".join(sorted(missing))}), 400
+		return jsonify({"error": "Missing: " + ", ".join(sorted(missing))}), 400
 	for name in request.json["communities"]:
 		if database.get_community_id(name) is None:
 			resp = query("communities", params={"name": name})
