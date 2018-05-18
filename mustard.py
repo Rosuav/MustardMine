@@ -183,7 +183,10 @@ def tweet():
 	# Keep the one-hour limit (give or take) to minimize the likelihood of the
 	# token expiring. Don't fret the weirdnesses; if stuff breaks, be sure the
 	# tweets get retained, and then let Twitter worry about deduplication - it
-	# apparently isn't possible to post the same tweet twice. (Whodathunk?)
+	# apparently isn't possible to post the same tweet twice. (Whodathunk?) So
+	# if tweeting fails, check to see if it was "duplicate status", and if so,
+	# remove the tweet from the database. (Otherwise, error means "try again",
+	# unless we just want to schedule tweets as fire-and-forget.)
 	scheduler.put(target, send_tweet, get_twitter_token(), tweet)
 	return redirect(url_for("mainpage"))
 
