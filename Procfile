@@ -1,1 +1,1 @@
-web: gunicorn server:app --log-file=-
+web: gunicorn mustard:app --log-file=-
