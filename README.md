@@ -4,6 +4,9 @@ Mustard-Mine - Twitch Go-Live assistant
     The more work there is of mine, the less there is of yours.
     -- The Duchess (attrib)
 
+Source code for https://mustard-mine.herokuapp.com/ and also available for
+individual deployment as desired.
+
 TODO:
 
 * Connect to Discord?
