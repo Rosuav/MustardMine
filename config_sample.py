@@ -1,5 +1,9 @@
 # Copy this file to config.py and edit it (not this file!) to have all your
-# secrets and such. Obtain credentials from https://dev.twitch.tv/
+# secrets and such. Alternatively, create environment variables with all of
+# these names, and ensure that config.py does not exist (as config.py takes
+# precedence over the environment).
+
+# Obtain credentials from https://dev.twitch.tv/
 CLIENT_ID = "..."
 CLIENT_SECRET = "..."
 
