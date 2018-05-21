@@ -11,8 +11,11 @@ CLIENT_SECRET = "..."
 TWITTER_CLIENT_ID = "..."
 TWITTER_CLIENT_SECRET = "..."
 
+# Set this to an empty string to randomize every startup. This is secure
+# against most forms of session secret leakage, but means that any time the
+# server restarts, all sessions will be destroyed (meaning that all users get
+# logged out). A constant string is far easier, but must be kept secret.
 SESSION_SECRET = "..."
-# import os, base64; SESSION_SECRET = base64.b64encode(os.urandom(12))
 
 # PostgreSQL connection credentials
 DATABASE_URI = "postgresql://localhost/"

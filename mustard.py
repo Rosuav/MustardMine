@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import sys
@@ -22,7 +23,7 @@ except ImportError:
 import database
 import utils
 app = Flask(__name__)
-app.secret_key = config.SESSION_SECRET
+app.secret_key = config.SESSION_SECRET or base64.b64encode(os.urandom(12))
 scheduler = utils.Scheduler()
 
 twitch = OAuth().remote_app('twitch',
