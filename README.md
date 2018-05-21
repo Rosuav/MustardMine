@@ -30,6 +30,7 @@ TODO:
 * Internal refactoring: use https://github.com/lepture/authlib
 * Create one database transaction per incoming HTTP request, for efficiency
   - Currently all operations that *require* atomicity are done with single
-    calls to database.py, but the landing page has a ton of separate queries.
+    calls to database.py (and single transactions within that), but the
+    landing page has a ton of separate (read-only) queries.
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
