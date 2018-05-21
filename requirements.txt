@@ -4,3 +4,4 @@ authlib
 requests
 psycopg2
 pytz
+gunicorn
