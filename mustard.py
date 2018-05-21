@@ -22,7 +22,7 @@ except ImportError:
 		if var in os.environ: setattr(config, var, os.environ[var])
 		else: failed.append(var)
 	if failed:
-		print("Required config variables %s not found - see config_sample.py", ", ".join(failed), file=sys.stderr)
+		print("Required config variables %s not found - see config_sample.py" % ", ".join(failed), file=sys.stderr)
 		sys.exit(1)
 
 import database
