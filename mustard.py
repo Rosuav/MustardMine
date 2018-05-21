@@ -14,11 +14,13 @@ try:
 except ImportError:
 	# Construct a config object out of the environment
 	import config_sample as config
+	failed = []
 	for var in dir(config):
 		if var in os.environ: setattr(config, var, os.environ[var])
-		else:
-			print("Required config variables not found - see config_sample.py", file=sys.stderr)
-			sys.exit(1)
+		else: failed.append(var)
+	if failed:
+		print("Required config variables %s not found - see config_sample.py", ", ".join(failed), file=sys.stderr)
+		sys.exit(1)
 
 import database
 import utils
