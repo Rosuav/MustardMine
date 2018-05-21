@@ -15,6 +15,8 @@ except ImportError:
 	# Construct a config object out of the environment
 	import config_sample as config
 	failed = []
+	# Hack: Some systems like to give us a DATABASE_URL instead of a DATABASE_URI
+	if "DATABASE_URL" in os.environ: os.environ["DATABASE_URI"] = os.environ["DATABASE_URL"]
 	for var in dir(config):
 		if var.startswith("__"): continue # Ignore dunders
 		if var in os.environ: setattr(config, var, os.environ[var])
