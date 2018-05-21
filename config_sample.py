@@ -7,7 +7,7 @@
 CLIENT_ID = "..."
 CLIENT_SECRET = "..."
 
-# Obtain credentials from https://apps.twitter.com
+# Obtain credentials from https://apps.twitter.com/
 TWITTER_CLIENT_ID = "..."
 TWITTER_CLIENT_SECRET = "..."
 
