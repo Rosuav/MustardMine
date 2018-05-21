@@ -16,6 +16,7 @@ except ImportError:
 	import config_sample as config
 	failed = []
 	for var in dir(config):
+		if var.startswith("__"): continue # Ignore dunders
 		if var in os.environ: setattr(config, var, os.environ[var])
 		else: failed.append(var)
 	if failed:
