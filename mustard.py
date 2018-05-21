@@ -1,4 +1,6 @@
 import json
+import os
+import sys
 import time
 from pprint import pprint
 from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response
@@ -6,7 +8,17 @@ from flask_oauthlib.client import OAuth # deprecated - TODO: switch to authlib
 from authlib.client import OAuth2Session
 import requests
 
-import config # ImportError? See config_sample.py
+try:
+	import config
+except ImportError:
+	# Construct a config object out of the environment
+	import config_sample as config
+	for var in dir(config):
+		if var in os.environ: setattr(config, var, os.environ[var])
+		else:
+			print("Required config variables not found - see config_sample.py", file=sys.stderr)
+			sys.exit(1)
+
 import database
 import utils
 app = Flask(__name__)
