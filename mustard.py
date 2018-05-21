@@ -24,6 +24,7 @@ except ImportError:
 	if failed:
 		print("Required config variables %s not found - see config_sample.py" % ", ".join(failed), file=sys.stderr)
 		sys.exit(1)
+	sys.modules["config"] = config # Make the config vars available elsewhere
 
 import database
 import utils
