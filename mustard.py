@@ -367,6 +367,9 @@ def make_backup():
 		response += "\t\t" + json.dumps(day) + ",\n"
 	response += "\t\t" + json.dumps(tz) + "\n\t],\n"
 	# Footer (marker to show that the file was correctly downloaded)
+	# This must NOT include any sort of timestamp, as the backup file
+	# must be completely stable (taking two backups without changing
+	# anything should result in bit-for-bit identical files).
 	response += '\t"": "Mustard-Mine Backup"\n}\n'
 	return Response(response, mimetype="application/json",
 		headers={"Content-disposition": "attachment"})
