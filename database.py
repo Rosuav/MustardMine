@@ -369,7 +369,7 @@ class Restorer(contextlib.ExitStack):
 			# up the ID, it'll be ignored and a new one created, and then the old
 			# will get destroyed. So repeatedly restoring a file with the wrong ID
 			# in it will churn your IDs, but nothing else (you won't accrue timers).
-			id = generate_timer_id()
+			id = generate_timer_id(); twitchid = self.twitchid
 			args = [DEFAULT if x is None else x for x in (id, twitchid, title, delta, maxtime, styling)]
 			self.cur.execute("insert into mustard.timers (id, twitchid, title, delta, maxtime, styling) values (%s, %s, %s, %s, %s, %s)", args)
 			self.summary += "Recreated timer %s\n" % id
