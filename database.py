@@ -255,15 +255,21 @@ def get_next_event(twitchid, delta=0):
 		tz, sched = cur.fetchone()
 		return find_next_event(tz, sched, delta)
 
+def generate_timer_id():
+	"""Generate an alphanumeric random identifier.
+
+	Always returns a URL-safe and DB-safe value. If it would have used the
+	last two characters in the base-64 alphabet, replace them with letters;
+	this means we can potentially get collisions, but that's possible even
+	without that hack, and this is the easiest way to make clean IDs.
+	"""
+	return base64.b64encode(os.urandom(30), b"Qx").decode("ascii")
+
 def create_timer(twitchid):
 	"""Create a new timer and return its unique ID"""
 	# TODO: If we happen to collide, rerandomize instead of failing
 	with postgres, postgres.cursor() as cur:
-		# Generate an alphanumeric random identifier. If it would have used the
-		# last two characters in the base-64 alphabet, replace them with letters;
-		# this means we can potentially get collisions, but that's possible even
-		# without that hack, and this is the easiest way to make clean IDs.
-		id = base64.b64encode(os.urandom(30), b"Qx").decode("ascii")
+		id = generate_timer_id()
 		cur.execute("insert into mustard.timers (id, twitchid) values (%s, %s)", (id, twitchid))
 		return id
 
