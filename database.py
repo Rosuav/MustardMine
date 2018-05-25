@@ -341,9 +341,8 @@ class Restorer(contextlib.ExitStack):
 			(self.twitchid, category, title, tweet))
 		id = self.cur.fetchone()[0]
 		for comm in communities:
-			# TODO: Populate the community-id cache as required
-			if comm in _community_id:
-				self.cur.execute("insert into mustard.setup_communities values (%s, %s)", (id, _community_id[comm]))
+			assert comm in _community_id # Should be done prior, in mustard.py
+			self.cur.execute("insert into mustard.setup_communities values (%s, %s)", (id, comm))
 		self.summary += "Restored %r setup\n" % category
 
 	def restore_schedule(self, tz, schedule):
