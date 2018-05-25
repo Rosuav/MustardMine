@@ -1,5 +1,6 @@
 import psycopg2.extras
 import config
+import contextlib
 import collections
 import os
 import base64
@@ -42,6 +43,15 @@ TABLES = {
 		"styling text not null default ''", # custom CSS??
 	],
 }
+
+# https://postgrespro.com/list/thread-id/1544890
+# Allow <<DEFAULT>> to be used as a value in an insert statement
+class Default(object):
+	def __conform__(self, proto):
+		if proto is psycopg2.extensions.ISQLQuote: return self
+	def getquoted(self): return "DEFAULT"
+DEFAULT = Default()
+del Default
 
 def create_tables():
 	with postgres, postgres.cursor() as cur:
@@ -283,3 +293,92 @@ def update_timer_details(twitchid, id, *, title, delta, maxtime, styling):
 		cur.execute("update mustard.timers set title=%s, delta=%s, maxtime=%s, styling=%s where id=%s and twitchid=%s",
 			(title, delta, maxtime, styling, id, twitchid))
 		if not cur.rowcount: raise ValueError("Timer not found, or not owned by that user")
+
+class ValidationError(Exception): pass
+class Restorer(contextlib.ExitStack):
+	"""Context manager for a one-transaction full restoration action"""
+	def __init__(self, twitchid):
+		super().__init__()
+		self.twitchid = twitchid
+		self.summary = ""
+
+	def __enter__(self):
+		super().__enter__()
+		self.enter_context(postgres)
+		self.cur = self.enter_context(postgres.cursor())
+		# List all pre-existing timers so untouched ones can get wiped
+		self.cur.execute("select id from mustard.timers where twitchid=%s", (self.twitchid,))
+		self.timers = {tm[0] for tm in self.cur}
+		return self
+
+	def __exit__(self, t, v, tb):
+		super().__exit__(t, v, tb)
+		print("__exit__: t is", t)
+		if t is not None:
+			self.failed = True
+			if t is ValidationError:
+				print("Returning true")
+				self.summary += "--> " + v.args[0] + "\n"
+				return True
+			self.summary = "" # TODO: Summarize the failure?
+		else:
+			self.failed = False
+
+	def fail(self, msg="Malformed backup file"):
+		"""Abort the restoration with a message. Uses exception handling to unwind everything."""
+		raise ValidationError(msg)
+
+	def check_dict(self, data):
+		if not isinstance(data, dict): raise ValidationError("Invalid data format")
+		if "self" in data: raise ValidationError("Invalid key in data") # I doubt anyone will see this, but keep us safe
+
+	def wipe_setups(self):
+		self.cur.execute("delete from mustard.setups where twitchid = %s", (self.twitchid,))
+
+	def restore_setup(self, *, category=None, title=None, communities=(), tweet=""):
+		if not category or not title: raise ValidationError("Setups: Category and title are required")
+		self.cur.execute("insert into mustard.setups (twitchid, category, title, tweet) values (%s, %s, %s, %s) returning id",
+			(self.twitchid, category, title, tweet))
+		id = self.cur.fetchone()[0]
+		for comm in communities:
+			# TODO: Populate the community-id cache as required
+			if comm in _community_id:
+				self.cur.execute("insert into mustard.setup_communities values (%s, %s)", (id, _community_id[comm]))
+		self.summary += "Restored %r setup\n" % category
+
+	def restore_schedule(self, tz, schedule):
+		self.cur.execute("update mustard.users set sched_timezone=%s, schedule=%s where twitchid=%s", (tz, ",".join(schedule), self.twitchid))
+		self.summary += "Restored schedule and timezone\n"
+
+	def restore_checklist(self, checklist):
+		self.cur.execute("update mustard.users set checklist=%s where twitchid=%s", (checklist, self.twitchid,))
+		self.summary += "Restored personal checklist\n"
+
+	def restore_timer(self, *, id, title=None, delta=None, maxtime=None, styling=None):
+		if id in self.timers:
+			# It existed already. Update it.
+			self.timers.remove(id)
+			self.cur.execute("""update mustard.timers set
+						title=coalesce(%s, title), delta=coalesce(%s, delta),
+						maxtime=coalesce(%s, maxtime), styling=coalesce(%s, styling)
+					where id=%s""",
+				(title, delta, maxtime, styling, id))
+			self.summary += "Restored details for timer %s\n" % id
+		else:
+			# It didn't exist, or you tried to restore two timers with the same ID.
+			# Generate a new ID and create a brand new timer. Note that if you mess
+			# up the ID, it'll be ignored and a new one created, and then the old
+			# will get destroyed. So repeatedly restoring a file with the wrong ID
+			# in it will churn your IDs, but nothing else (you won't accrue timers).
+			id = generate_timer_id()
+			args = [DEFAULT if x is None else x for x in (id, twitchid, title, delta, maxtime, styling)]
+			self.cur.execute("insert into mustard.timers (id, twitchid, title, delta, maxtime, styling) values (%s, %s, %s, %s, %s, %s)", args)
+			self.summary += "Recreated timer %s\n" % id
+
+	def wipe_untouched_timers(self):
+		# Delete any timer that wasn't restored
+		for id in self.timers:
+			self.cur.execute("delete from mustard.timers where id=%s", (id,))
+			self.summary += "Deleted timer %s\n" % id
+
+
