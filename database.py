@@ -168,14 +168,15 @@ def set_checklist(twitchid, checklist):
 	with postgres, postgres.cursor() as cur:
 		cur.execute("update mustard.users set checklist=%s where twitchid=%s", (checklist, twitchid,))
 
-def list_timers(twitchid):
+def list_timers(twitchid, *, full=False):
 	"""List the user's timers
 
 	Returns their unique IDs, which are URL-safe strings, and titles, which
-	usually aren't.
+	usually aren't. If full is True, also returns additional fields.
 	"""
 	with postgres, postgres.cursor() as cur:
-		cur.execute("select id, title from mustard.timers where twitchid=%s", (twitchid,))
+		morefields = ", delta, maxtime, styling" if full else ""
+		cur.execute("select id, title" + morefields + " from mustard.timers where twitchid=%s order by id", (twitchid,))
 		return cur.fetchall()
 
 def get_timer_details(twitchid, id):

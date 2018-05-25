@@ -359,13 +359,26 @@ def make_backup():
 	for setup in setups:
 		setup = {field: setup[field] for field in fields}
 		response += "\t\t" + json.dumps(setup) + ",\n"
-	response += '\t\t"shim [TODO]"\n\t],\n'
+	response += '\t\t""\n\t],\n'
 	# Schedule
 	tz, sched = database.get_schedule(twitchid)
 	response += '\t"schedule": [\n'
 	for day in sched:
 		response += "\t\t" + json.dumps(day) + ",\n"
 	response += "\t\t" + json.dumps(tz) + "\n\t],\n"
+	# Checklist
+	checklist = database.get_checklist(twitchid).strip().split("\n")
+	response += '\t"checklist": [\n'
+	for item in checklist:
+		response += "\t\t" + json.dumps(item) + ",\n"
+	response += '\t\t""\n\t],\n' # Empty string as shim. Ignored on import.
+	# Timers
+	timers = database.list_timers(twitchid, full=True)
+	response += '\t"timers": [\n'
+	for timer in timers:
+		item = dict(zip("id title delta maxtime styling".split(), timer))
+		response += "\t\t" + json.dumps(item) + ",\n"
+	response += '\t\t""\n\t],\n'
 	# Footer (marker to show that the file was correctly downloaded)
 	# This must NOT include any sort of timestamp, as the backup file
 	# must be completely stable (taking two backups without changing
