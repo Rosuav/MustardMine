@@ -1,10 +1,17 @@
 import base64
+import collections
 import json
 import os
 import sys
 import time
 from pprint import pprint
+# Hack: Get gevent to do its monkeypatching as early as possible.
+# I have no idea what this is actually doing, but if you let the
+# patching happen automatically, it happens too late, and we get
+# RecursionErrors and such. There's a helpful warning on startup.
+from gevent import monkey; monkey.patch_all(subprocess=True)
 from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response
+from flask_sockets import Sockets
 from flask_oauthlib.client import OAuth # deprecated - TODO: switch to authlib
 from authlib.client import OAuth2Session
 import requests
@@ -31,6 +38,7 @@ import utils
 app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET or base64.b64encode(os.urandom(12))
 scheduler = utils.Scheduler()
+sockets = Sockets(app)
 
 twitch = OAuth().remote_app('twitch',
 	base_url='https://api.twitch.tv/kraken/',
@@ -438,6 +446,36 @@ const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 document.getElementById("tz").innerHTML = "Your timezone appears to be: " + tz;
 </script>
 """
+
+# Map timer IDs to lists of sockets
+timer_sockets = collections.defaultdict(list)
+@sockets.route("/countdown_ctrl")
+def control_socket(ws):
+	timerid = None
+	while not ws.closed:
+		message = ws.receive()
+		if type(message) is not str: continue # Be VERY strict here, for safety
+		try: message = json.loads(message)
+		except JSON.JSONDecodeError: continue
+		if type(message) is not dict: continue # Again, very strict
+		if set(message) - {"type", "data"}: continue
+		# Okay, we have a properly-formed message.
+		print(message)
+		data = message["data"]
+		if message["type"] == "init":
+			if timerid: continue # Don't initialize twice
+			if "id" not in data or not data["id"]: continue
+			timerid = data["id"]
+			timer_sockets[timerid].append(ws)
+			ws.send(json.dumps({"type": "inited"}))
+
+@app.route("/hack/<id>")
+def hack_timer(id):
+	# For never-used IDs, don't defaultdict a list into the mapping
+	if id not in timer_sockets: return "Nobody's using that"
+	for ws in timer_sockets[id]:
+		ws.send(json.dumps({"type": "adjust", "delta": 60}))
+	return "Done"
 
 if __name__ == "__main__":
 	import logging
