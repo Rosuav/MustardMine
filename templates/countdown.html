@@ -40,15 +40,19 @@ socket.onmessage = (ev) => {
 	switch (msg.type) {
 		case "inited": console.log("Mustard-Mine control connection established."); break;
 		case "adjust":
+			//Add or subtract some seconds from the clock
 			target_time += msg.delta;
 			target = new Date(target_time * 1000);
 			update();
 			break;
 		case "force":
+			//Force the clock to show a specific value
 			target_time = new Date()/1000 + msg.time;
 			target = new Date(target_time * 1000);
 			update();
 			break;
+		//Maybe TODO: Reset the target time to a specific Unix time
+		//That would allow the admin to say "okay now recalculate for a new event"
 	}
 };
 </script>
