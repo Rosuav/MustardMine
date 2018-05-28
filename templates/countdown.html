@@ -34,9 +34,14 @@ setInterval(update, 1000); update();
 
 const protocol = window.location.protocol == "https:" ? "wss://" : "ws://";
 const socket = new WebSocket(protocol + window.location.host + "/countdown_ctrl");
-function socksend(type, data) {socket.send(JSON.stringify({type, data}));}
-socket.onopen = () => {socksend("init", {id: "{{id}}"});};
-socket.onmessage = (ev) => {console.log("Message received:", ev.data);};
+socket.onopen = () => {socket.send(JSON.stringify({type: "init", id: "{{id}}"}));};
+socket.onmessage = (ev) => {
+	const msg = JSON.parse(ev.data);
+	switch (msg.type) {
+		case "inited": console.log("Connection established."); break;
+		case "adjust": console.log("Adjust time:", msg.delta); break;
+	}
+};
 </script>
 </body>
 </html>

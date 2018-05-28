@@ -458,14 +458,13 @@ def control_socket(ws):
 		try: message = json.loads(message)
 		except JSON.JSONDecodeError: continue
 		if type(message) is not dict: continue # Again, very strict
-		if set(message) - {"type", "data"}: continue
+		if "type" not in message: continue
 		# Okay, we have a properly-formed message.
 		print(message)
-		data = message["data"]
 		if message["type"] == "init":
 			if timerid: continue # Don't initialize twice
-			if "id" not in data or not data["id"]: continue
-			timerid = data["id"]
+			if "id" not in message or not message["id"]: continue
+			timerid = message["id"]
 			timer_sockets[timerid].append(ws)
 			ws.send(json.dumps({"type": "inited"}))
 
