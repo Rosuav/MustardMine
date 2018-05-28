@@ -511,3 +511,8 @@ if __name__ == "__main__":
 	os.environ["PORT"] = "5000" # hack - pick a different default port
 	sys.argv = cmd.split(" ") # TODO: Split more smartly
 	from gunicorn.app.wsgiapp import run; run()
+
+
+print("STARTING UP ==================>")
+print("Concurrency:", os.environ.get("WEB_CONCURRENCY", "<unset>"))
+print("My PID is:", os.getpid())
