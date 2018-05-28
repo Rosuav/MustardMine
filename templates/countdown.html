@@ -38,7 +38,7 @@ socket.onopen = () => {socket.send(JSON.stringify({type: "init", id: "{{id}}"}))
 socket.onmessage = (ev) => {
 	const msg = JSON.parse(ev.data);
 	switch (msg.type) {
-		case "inited": console.log("Connection established."); break;
+		case "inited": console.log("Mustard-Mine control connection established."); break;
 		case "adjust": console.log("Adjust time:", msg.delta); break;
 	}
 };
