@@ -23,3 +23,8 @@ TODO:
     landing page has a ton of separate (read-only) queries.
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
+
+CAUTION: On Python 3.7+, gunicorn.workers.async collides with the keyword.
+This may need to be hacked, until such time as a new release of gunicorn
+fixes this. (Last checked 20180528; there's a GitHub issue from a few days
+ago which should resolve this.)
