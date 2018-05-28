@@ -483,6 +483,16 @@ def force_timer(id):
 		ws.send(json.dumps({"type": "force", "time": 900}))
 	return "Done"
 
+@app.route("/timer-adjust-all/<int:delta>")
+def adjust_all_timers(delta):
+	twitchid = session["twitch_user"]["_id"]
+	if not twitchid: return redirect(url_for("mainpage"))
+	for id, timer in database.list_timers(twitchid):
+		if id in timer_sockets:
+			for ws in timer_sockets[id]:
+				ws.send(json.dumps({"type": "adjust", "delta": delta}))
+	return "", 204
+
 if __name__ == "__main__":
 	import logging
 	logging.basicConfig(level=logging.INFO)

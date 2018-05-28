@@ -89,6 +89,10 @@ The schedule will be subject to the following rules:
 {% endfor-%}
 </ul>
 <form action="/timer/new" method=post><input type=submit value="Create new timer"></form>
+<details><summary>Adjust timers</summary>
+<p><button class="timer-adjust" data-delta="60">+1 min</button> <button class="timer-adjust" data-delta="300">+5 min</button> <button class="timer-adjust" data-delta="900">+15 min</button></p>
+All timers will be instantly extended by the specified time.
+</details>
 </section>
 
 <section>

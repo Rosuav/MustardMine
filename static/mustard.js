@@ -213,3 +213,8 @@ document.getElementById("checklist").innerHTML = document.forms.checklist.elemen
 	.join("");
 
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
+
+document.querySelectorAll(".timer-adjust").forEach(btn => btn.onclick = function() {
+	console.log("Adjusting timers by", this.dataset.delta);
+	fetch("/timer-adjust-all/" + this.dataset.delta, {credentials: "include"}).catch(err => console.error(err));
+});
