@@ -407,7 +407,6 @@ def restore_backup():
 				r.check_dict(setup)
 				for comm in setup.get("communities", ()):
 					if not database.get_community_id(comm):
-						print("Caching", comm)
 						database.cache_community(query("communities", params={"name": comm}))
 				r.restore_setup(**setup)
 		if "schedule" in data:
