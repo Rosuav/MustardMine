@@ -217,3 +217,10 @@ schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(tim
 document.querySelectorAll(".timer-adjust").forEach(btn => btn.onclick = function() {
 	fetch("/timer-adjust-all/" + this.dataset.delta, {credentials: "include"}).catch(err => console.error(err));
 });
+document.getElementById("set-timer").onclick = function() {
+	const timestr = document.getElementById("targettime").value;
+	const [min, sec] = timestr.split(":");
+	const tm = parseInt(min, 10) * 60 + parseInt(sec, 10);
+	if (tm <= 0 || tm > 3600) return; //TODO: Handle these better
+	fetch("/timer-force-all/" + tm, {credentials: "include"}).catch(err => console.error(err));
+};
