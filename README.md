@@ -14,8 +14,7 @@ TODO:
   - Would require assistance from SL, which they don't currently offer
   - Reverse-engineering is impractical; needs an API.
 * Countdown timer:
-  - Allow manual altering the time, Christine-style
-  - Allow custom CSS? Currently stubbed out
+  - Custom CSS is currently stubbed out. Is it needed?
 * Internal refactoring: use https://github.com/lepture/authlib
 * Create one database transaction per incoming HTTP request, for efficiency
   - Currently all operations that *require* atomicity are done with single
