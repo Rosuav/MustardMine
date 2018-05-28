@@ -14,9 +14,9 @@ div {
 <div id=id>{{ id }}</div>
 <div id=time></div>
 <script>
-const target_time = {{ next_event }} + {{ delta }};
+let target_time = {{ next_event }} + {{ delta }};
 const maxtime = {{ maxtime }};
-const target = new Date(target_time * 1000);
+let target = new Date(target_time * 1000);
 const display = document.getElementById("time")
 function update() {
 	const delay = Math.floor((target - new Date()) / 1000);
@@ -39,7 +39,16 @@ socket.onmessage = (ev) => {
 	const msg = JSON.parse(ev.data);
 	switch (msg.type) {
 		case "inited": console.log("Mustard-Mine control connection established."); break;
-		case "adjust": console.log("Adjust time:", msg.delta); break;
+		case "adjust":
+			target_time += msg.delta;
+			target = new Date(target_time * 1000);
+			update();
+			break;
+		case "force":
+			target_time = new Date()/1000 + msg.time;
+			target = new Date(target_time * 1000);
+			update();
+			break;
 	}
 };
 </script>

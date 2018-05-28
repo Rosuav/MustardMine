@@ -319,8 +319,6 @@ def save_timer(id):
 
 @app.route("/countdown/<id>")
 def countdown(id):
-	# TODO: Have the page query the server periodically, or maybe even open
-	# a websocket. It can then get notified of timer adjustments.
 	info = database.get_public_timer_details(id)
 	if not info: return "Timer not found", 404
 	return render_template("countdown.html", id=id, **info)
@@ -467,6 +465,7 @@ def control_socket(ws):
 			timerid = message["id"]
 			timer_sockets[timerid].append(ws)
 			ws.send(json.dumps({"type": "inited"}))
+	if timerid: timer_sockets[timerid].remove(ws)
 
 @app.route("/hack/<id>")
 def hack_timer(id):
@@ -474,6 +473,14 @@ def hack_timer(id):
 	if id not in timer_sockets: return "Nobody's using that"
 	for ws in timer_sockets[id]:
 		ws.send(json.dumps({"type": "adjust", "delta": 60}))
+	return "Done"
+
+@app.route("/force/<id>")
+def force_timer(id):
+	# For never-used IDs, don't defaultdict a list into the mapping
+	if id not in timer_sockets: return "Nobody's using that"
+	for ws in timer_sockets[id]:
+		ws.send(json.dumps({"type": "force", "time": 900}))
 	return "Done"
 
 if __name__ == "__main__":
