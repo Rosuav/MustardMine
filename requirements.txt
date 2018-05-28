@@ -5,3 +5,4 @@ requests
 psycopg2
 pytz
 gunicorn
+Flask-Sockets

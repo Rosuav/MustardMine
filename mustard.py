@@ -442,4 +442,8 @@ document.getElementById("tz").innerHTML = "Your timezone appears to be: " + tz;
 if __name__ == "__main__":
 	import logging
 	logging.basicConfig(level=logging.INFO)
-	app.run(host='0.0.0.0')
+	# Load us up using gunicorn, configured via the Procfile
+	with open("Procfile") as f: cmd = f.read().strip().replace("web: ", "")
+	os.environ["PORT"] = "5000" # hack - pick a different default port
+	sys.argv = cmd.split(" ") # TODO: Split more smartly
+	from gunicorn.app.wsgiapp import run; run()
