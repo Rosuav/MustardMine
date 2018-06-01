@@ -168,7 +168,8 @@ def tweet():
 		return redirect(url_for("mainpage"))
 	schedule = request.form.get("tweetschedule", "now")
 	if schedule == "now":
-		send_tweet(get_twitter_token(), tweet)
+		auth = session["twitter_oauth"]
+		send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
 		return redirect(url_for("mainpage"))
 	schedule = int(schedule)
 	target = database.get_next_event(session["twitch_user"]["_id"], schedule)
