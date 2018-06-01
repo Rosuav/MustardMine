@@ -189,13 +189,13 @@ def tweet():
 	# if tweeting fails, check to see if it was "duplicate status", and if so,
 	# remove the tweet from the database. (Otherwise, error means "try again",
 	# unless we just want to schedule tweets as fire-and-forget.)
-	scheduler.put(target, send_tweet, get_twitter_token(), tweet)
+	auth = session["twitter_oauth"]
+	scheduler.put(target, send_tweet, (auth["oauth_token"], auth["oauth_token_secret"]), tweet)
 	return redirect(url_for("mainpage"))
 
 def send_tweet(auth, tweet):
 	"""Actually send a tweet"""
-	auth = session["twitter_oauth"]
-	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET, auth["oauth_token"], auth["oauth_token_secret"])
+	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET, auth[0], auth[1])
 	resp = twitter.post("https://api.twitter.com/1.1/statuses/update.json", data={"status": tweet})
 	if resp.status_code != 200:
 		print("Unknown response from Twitter")
