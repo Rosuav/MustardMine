@@ -40,24 +40,6 @@ app.secret_key = config.SESSION_SECRET or base64.b64encode(os.urandom(12))
 scheduler = utils.Scheduler()
 sockets = Sockets(app)
 
-twitch = OAuth().remote_app('twitch',
-	base_url='https://api.twitch.tv/kraken/',
-	request_token_url=None,
-	access_token_method='POST',
-	access_token_url='https://api.twitch.tv/kraken/oauth2/token',
-	authorize_url='https://api.twitch.tv/kraken/oauth2/authorize',
-	consumer_key=config.CLIENT_ID,
-	consumer_secret=config.CLIENT_SECRET,
-	request_token_params={'scope': ["user_read", "channel_editor"]}
-)
-@twitch.tokengetter
-def get_twitch_token(token=None):
-	return session.get("twitch_token")
-
-# TODO: Use this instead:
-# twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
-#	scope=["user_read", "channel_editor"])
-
 twitter = OAuth().remote_app(
 	'twitter',
 	consumer_key=config.TWITTER_CLIENT_ID,
@@ -244,24 +226,21 @@ def send_tweet(auth, tweet):
 
 @app.route("/login")
 def login():
-	return twitch.authorize(callback=url_for("authorized", _external=True))
-	# TODO:
-	#uri, state = twitch.authorization_url("https://api.twitch.tv/kraken/oauth2/authorize",
-	#	redirect_uri=url_for("authorized", _external=True))
-	#session["login_state"] = state
-	#return redirect(uri)
+	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
+		scope="user_read channel_editor")
+	uri, state = twitch.authorization_url("https://id.twitch.tv/oauth2/authorize",
+		redirect_uri=url_for("authorized", _external=True))
+	session["login_state"] = state
+	return redirect(uri)
 
 @app.route("/login/authorized")
 def authorized():
-	# TODO:
-	#token = twitch.fetch_access_token("https://api.twitch.tv/kraken/oauth2/token",
-	#	code=request.args["code"], state=session["login_state"])
-	resp = twitch.authorized_response()
-	if resp is None:
-		return "Access denied: reason=%s error=%s" % (
-			request.args['error'],
-			request.args['error_description']
-		)
+	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
+		state=session["login_state"])
+	resp = twitch.fetch_access_token("https://id.twitch.tv/oauth2/token",
+		code=request.args["code"],
+		# For some bizarre reason, we need to pass this information along.
+		client_secret=config.CLIENT_SECRET, redirect_uri=url_for("authorized", _external=True))
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
 	user = query("user")
