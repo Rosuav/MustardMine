@@ -130,6 +130,7 @@ def mainpage():
 @app.route("/update", methods=["POST"])
 def update():
 	if "twitch_user" not in session:
+		# TODO: Report failures - there seems to be something wrong with first update
 		return redirect(url_for("mainpage"))
 	user = session["twitch_user"]
 	resp = query("channels/" + user["_id"], method="PUT", data={
