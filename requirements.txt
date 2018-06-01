@@ -1,5 +1,4 @@
 flask
-flask-oauthlib
 authlib
 requests
 psycopg2
