@@ -15,7 +15,6 @@ TODO:
   - Reverse-engineering is impractical; needs an API.
 * Countdown timer:
   - Custom CSS is currently stubbed out. Is it needed?
-* Internal refactoring: use https://github.com/lepture/authlib
 * Create one database transaction per incoming HTTP request, for efficiency
   - Currently all operations that *require* atomicity are done with single
     calls to database.py (and single transactions within that), but the

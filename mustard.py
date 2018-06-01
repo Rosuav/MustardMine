@@ -12,8 +12,7 @@ from pprint import pprint
 from gevent import monkey; monkey.patch_all(subprocess=True)
 from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response
 from flask_sockets import Sockets
-from flask_oauthlib.client import OAuth # deprecated - TODO: switch to authlib
-from authlib.client import OAuth2Session
+from authlib.client import OAuth1Session, OAuth2Session
 import requests
 
 try:
@@ -39,21 +38,6 @@ app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET or base64.b64encode(os.urandom(12))
 scheduler = utils.Scheduler()
 sockets = Sockets(app)
-
-twitter = OAuth().remote_app(
-	'twitter',
-	consumer_key=config.TWITTER_CLIENT_ID,
-	consumer_secret=config.TWITTER_CLIENT_SECRET,
-	base_url='https://api.twitter.com/1.1/',
-	request_token_url='https://api.twitter.com/oauth/request_token',
-	access_token_url='https://api.twitter.com/oauth/access_token',
-	authorize_url='https://api.twitter.com/oauth/authenticate',
-)
-@twitter.tokengetter
-def get_twitter_token():
-	if "twitter_oauth" in session:
-		resp = session["twitter_oauth"]
-		return resp['oauth_token'], resp['oauth_token_secret']
 
 def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
@@ -210,18 +194,15 @@ def tweet():
 
 def send_tweet(auth, tweet):
 	"""Actually send a tweet"""
-	resp = twitter.post("statuses/update.json", data={"status": tweet}, token=auth)
-	if resp.status != 200:
-		try:
-			return jsonify(resp.data["errors"][0]), resp.status
-		except:
-			# If something goes wrong, provide more info on the console
-			print("Unknown response from Twitter")
-			print(resp.status)
-			print("---")
-			print(resp.data)
-			print("---")
-			raise
+	auth = session["twitter_oauth"]
+	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET, auth["oauth_token"], auth["oauth_token_secret"])
+	resp = twitter.post("https://api.twitter.com/1.1/statuses/update.json", data={"status": tweet})
+	if resp.status_code != 200:
+		print("Unknown response from Twitter")
+		print(resp.status_code)
+		print("---")
+		print(resp.json())
+		print("---")
 	# print("Tweet sent.")
 
 @app.route("/login")
@@ -250,13 +231,18 @@ def authorized():
 
 @app.route("/login-twitter")
 def login_twitter():
-	return twitter.authorize(callback=url_for("authorized_twitter", _external=True))
+	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
+		redirect_uri=url_for("authorized_twitter", _external=True))
+	session["twitter_state"] = twitter.fetch_request_token("https://api.twitter.com/oauth/request_token")
+	return redirect(twitter.authorization_url("https://api.twitter.com/oauth/authenticate"))
 
 @app.route("/authorized-twitter")
 def authorized_twitter():
-	resp = twitter.authorized_response()
-	if resp is not None:
-		session["twitter_oauth"] = resp
+	req_token = session["twitter_state"]
+	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
+		req_token["oauth_token"], req_token["oauth_token_secret"])
+	resp = twitter.fetch_access_token("https://api.twitter.com/oauth/access_token", request.args["oauth_verifier"])
+	session["twitter_oauth"] = resp
 	return redirect(url_for("mainpage"))
 
 @app.route("/logout")
