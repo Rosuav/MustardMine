@@ -82,7 +82,7 @@ def mainpage():
 	communities = query("channels/" + user["_id"] + "/communities")
 	for community in communities["communities"]:
 		database.cache_community(community)
-	commnames = [comm["name"] for comm in communities["communities"]]
+	commnames = sorted(comm["name"] for comm in communities["communities"])
 	sched_tz, schedule = database.get_schedule(user["_id"])
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
