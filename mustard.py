@@ -452,7 +452,9 @@ def force_timer(id):
 
 # Normally the one-click adjustments apply to ALL your timers
 @app.route("/timer-adjust-all/<int:delta>")
-def adjust_all_timers(delta):
+@app.route("/timer-adjust-all/-<int:delta>", defaults={"negative": True})
+def adjust_all_timers(delta, negative=False):
+	if negative: delta = -delta # Since the int converter can't handle negatives, we do them manually.
 	twitchid = session["twitch_user"]["_id"]
 	if not twitchid: return redirect(url_for("mainpage"))
 	for id, timer in database.list_timers(twitchid):
