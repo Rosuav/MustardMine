@@ -10,7 +10,7 @@ individual deployment as desired.
 TODO:
 
 * Connect to Discord?
-* Query StreamLabs extension for schedule??
+* Query StreamLabs extension for schedule?
   - Would require assistance from SL, which they don't currently offer
   - Reverse-engineering is impractical; needs an API.
 * Create one database transaction per incoming HTTP request, for efficiency
