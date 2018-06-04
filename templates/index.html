@@ -40,8 +40,8 @@ const schedule = {{ schedule | tojson }};
 <form method=post action="/tweet">
 <p><label>Tweet that you're live: <input name=tweet id=tweet size=100></label><span id=tweetlen></span></p>
 <p><select name=tweetschedule id=tweetschedule>
-<option value="now" selected>Now</option>
-<option value="0">At schedule</option>
+<option value="now">Right now</option>
+<option value="0" selected>At schedule</option>
 <option value="300">At T+5 mins</option>
 <option value="600">At T+10 mins</option>
 <option value="1800">At T+30 mins</option>
