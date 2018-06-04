@@ -96,13 +96,14 @@ def mainpage():
 @app.route("/update", methods=["POST"])
 def update():
 	if "twitch_user" not in session:
-		# TODO: Report failures - there seems to be something wrong with first update
 		return redirect(url_for("mainpage"))
+	# TODO: Report failures - there seems to be something wrong with first update
 	user = session["twitch_user"]
 	resp = query("channels/" + user["_id"], method="PUT", data={
 		"channel[game]": request.form["category"],
 		"channel[status]": request.form["title"],
 	})
+	print("UPDATE:", resp)
 	communities = []
 	for i in range(1, 4):
 		name = request.form.get("comm%d" % i)
@@ -113,9 +114,9 @@ def update():
 			community_id = resp["_id"]
 			database.cache_community(resp)
 		communities.append(community_id)
-	query("channels/" + user["_id"] + "/communities", method="PUT", data={
+	print("Communities:", query("channels/" + user["_id"] + "/communities", method="PUT", data={
 		"community_ids[]": communities,
-	})
+	}))
 	return redirect(url_for("mainpage"))
 
 @app.route("/schedule", methods=["POST"])
@@ -425,7 +426,6 @@ def control_socket(ws):
 		if type(message) is not dict: continue # Again, very strict
 		if "type" not in message: continue
 		# Okay, we have a properly-formed message.
-		print(message)
 		if message["type"] == "init":
 			if timerid: continue # Don't initialize twice
 			if "id" not in message or not message["id"]: continue
