@@ -434,6 +434,7 @@ def control_socket(ws):
 			ws.send(json.dumps({"type": "inited"}))
 	if timerid: timer_sockets[timerid].remove(ws)
 
+# For testing, update a single timer
 @app.route("/hack/<id>")
 def hack_timer(id):
 	# For never-used IDs, don't defaultdict a list into the mapping
@@ -441,7 +442,6 @@ def hack_timer(id):
 	for ws in timer_sockets[id]:
 		ws.send(json.dumps({"type": "adjust", "delta": 60}))
 	return "Done"
-
 @app.route("/force/<id>")
 def force_timer(id):
 	# For never-used IDs, don't defaultdict a list into the mapping
@@ -450,6 +450,7 @@ def force_timer(id):
 		ws.send(json.dumps({"type": "force", "time": 900}))
 	return "Done"
 
+# Normally the one-click adjustments apply to ALL your timers
 @app.route("/timer-adjust-all/<int:delta>")
 def adjust_all_timers(delta):
 	twitchid = session["twitch_user"]["_id"]
