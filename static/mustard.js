@@ -224,3 +224,4 @@ function force_timers(timestr) {
 	fetch("/timer-force-all/" + tm, {credentials: "include"}).catch(err => console.error(err));
 }
 document.getElementById("set-timer").onclick = () => force_timers(document.getElementById("targettime").value);
+document.querySelectorAll(".timer-force").forEach(btn => btn.onclick = function() {force_timers(this.innerHTML);});
