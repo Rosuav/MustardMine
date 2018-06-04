@@ -373,15 +373,23 @@ def restore_backup():
 	# Signature (from footer)
 	if data[""] != "Mustard-Mine Backup":
 		return "Backup file corrupt - signature missing.", 400
+	# First, prepopulate the communities. This could require HTTP transactions, so
+	# do it before we begin a database transaction.
+	if "setups" in data:
+		try:
+			for setup in data["setups"]:
+				for comm in (setup or {}).get("communities", ()):
+					if not database.get_community_id(comm):
+						database.cache_community(query("communities", params={"name": comm}))
+		except (ValueError, KeyError, TypeError):
+			return "Invalid data format", 400 # Probably means someone messed up the dict.
+	# Now we open a database transaction and do all the real work.
 	with database.Restorer(twitchid) as r:
 		if "setups" in data:
 			r.wipe_setups()
 			for setup in data["setups"]:
 				if setup == "": continue # The shim at the end
 				r.check_dict(setup)
-				for comm in setup.get("communities", ()):
-					if not database.get_community_id(comm):
-						database.cache_community(query("communities", params={"name": comm}))
 				r.restore_setup(**setup)
 		if "schedule" in data:
 			sched = data["schedule"]
