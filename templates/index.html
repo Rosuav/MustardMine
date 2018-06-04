@@ -82,7 +82,7 @@ perfectly is even harder.)</li>
 <h2>Timers</h2>
 <ul>
 {% for id, title in timers %}
-<li><a href="/countdown/{{id}}" target="_new">{{title or id}}</a> | <a href="/timer/{{id}}">[edit]</a></li>
+<li><a href="/countdown/{{id}}" target="_blank">{{title or id}}</a> | <a href="/timer/{{id}}">[edit]</a></li>
 {% endfor-%}
 </ul>
 <form action="/timer/new" method=post><input type=submit value="Create new timer"></form>
