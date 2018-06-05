@@ -213,6 +213,7 @@ def login():
 		scope="user_read channel_editor")
 	uri, state = twitch.authorization_url("https://id.twitch.tv/oauth2/authorize",
 		redirect_uri=url_for("authorized", _external=True, _scheme=request.scheme))
+	print("scheme:", request.scheme)
 	print("redirect_uri:", url_for("authorized", _external=True, _scheme=request.scheme))
 	session["login_state"] = state
 	return redirect(uri)
