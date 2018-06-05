@@ -214,9 +214,8 @@ def login():
 	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
 		scope="user_read channel_editor")
 	uri, state = twitch.authorization_url("https://id.twitch.tv/oauth2/authorize",
-		redirect_uri=url_for("authorized", _external=True, _scheme=request.scheme))
-	print("scheme:", request.scheme)
-	print("redirect_uri:", url_for("authorized", _external=True, _scheme=request.scheme))
+		redirect_uri=url_for("authorized", _external=True))
+	print("redirect_uri:", url_for("authorized", _external=True))
 	session["login_state"] = state
 	return redirect(uri)
 
@@ -227,7 +226,7 @@ def authorized():
 	resp = twitch.fetch_access_token("https://id.twitch.tv/oauth2/token",
 		code=request.args["code"],
 		# For some bizarre reason, we need to pass this information along.
-		client_secret=config.CLIENT_SECRET, redirect_uri=url_for("authorized", _external=True, _scheme=request.scheme))
+		client_secret=config.CLIENT_SECRET, redirect_uri=url_for("authorized", _external=True))
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
 	user = query("user")
