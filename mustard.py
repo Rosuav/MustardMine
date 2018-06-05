@@ -14,6 +14,7 @@ from flask import Flask, request, redirect, session, url_for, g, render_template
 from flask_sockets import Sockets
 from authlib.client import OAuth1Session, OAuth2Session
 import requests
+from werkzeug.contrib.fixers import ProxyFix
 
 try:
 	import config
@@ -38,6 +39,7 @@ app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET or base64.b64encode(os.urandom(12))
 scheduler = utils.Scheduler()
 sockets = Sockets(app)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
