@@ -293,6 +293,13 @@ def countdown(id):
 	if not info: return "Timer not found", 404
 	return render_template("countdown.html", id=id, **info)
 
+# ---- Live search API ----
+
+@app.route("/search/game")
+def findgame():
+	games = query("search/games", params={"query": request.args["q"], "type": "suggest"})
+	return jsonify([{key: game[key] for key in ("name", "localized_name", "box")} for game in games["games"] or ()])
+
 # ---- Config management API ----
 
 @app.route("/api/hello")

@@ -76,3 +76,19 @@ details {
 	height: 1.75em;
 	width: 1.75em;
 }
+
+.modal {
+	display: none;
+	position: fixed;
+	width: 30em; height: 20em;
+	top: calc(50% - 15em);
+	left: calc(50% - 10em);
+	background: white;
+	border: 5px solid black;
+	padding: 1em;
+	overflow: auto;
+}
+
+#picker li {
+	cursor: pointer;
+}

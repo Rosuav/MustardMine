@@ -225,3 +225,35 @@ function force_timers(timestr) {
 }
 document.getElementById("set-timer").onclick = () => force_timers(document.getElementById("targettime").value);
 document.querySelectorAll(".timer-force").forEach(btn => btn.onclick = function() {force_timers(this.innerHTML);});
+
+document.getElementById("pick_cat").onclick = function(ev) {
+	document.getElementById("picker_search").value = "";
+	document.getElementById("picker_results").innerHTML = "";
+	document.getElementById("picker").style.display = "block";
+	ev.preventDefault();
+}
+
+let searching = false;
+document.getElementById("picker_search").oninput = async function() {
+	const val = this.value;
+	if (val === "" || searching) return;
+	try {
+		searching = true;
+		const res = await fetch("/search/game?q=" + encodeURIComponent(val), {credentials: "include"});
+		const games = await res.json();
+		document.getElementById("picker_results").innerHTML = games.map(game =>
+			`<li><img src="${game.box.small}" alt="">${game.localized_name}</li>`
+		).join("");
+	}
+	finally {
+		searching = false;
+	}
+}
+
+document.getElementById("picker_results").onclick = function(event) {
+	let li = event.target;
+	while (li && li.tagName != "LI" && li != event.currentTarget) li = li.parentElement;
+	if (li.tagName != "LI") return;
+	document.getElementById("category").value = li.innerText.trim();
+	document.getElementById("picker").style.removeProperty("display");
+}
