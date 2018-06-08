@@ -53,6 +53,7 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 		"Authorization": "OAuth " + token,
 	})
 	if auto_refresh and r.status_code == 401 and r.json()["message"] == "invalid oauth token":
+		print("Auto-refreshing auth token")
 		r = requests.post("https://id.twitch.tv/oauth2/token", data={
 			"grant_type": "refresh_token",
 			"refresh_token": session["twitch_refresh_token"],
