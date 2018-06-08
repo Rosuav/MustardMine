@@ -257,3 +257,4 @@ document.getElementById("picker_results").onclick = function(event) {
 	document.getElementById("category").value = li.innerText.trim();
 	document.getElementById("picker").style.removeProperty("display");
 }
+document.getElementById("picker_cancel").onclick = () => document.getElementById("picker").style.removeProperty("display");
