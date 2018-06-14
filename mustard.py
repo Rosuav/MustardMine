@@ -113,7 +113,14 @@ def update():
 		if name == "": continue
 		community_id = database.get_community_id(name)
 		if community_id is None:
-			resp = query("communities", params={"name": name})
+			try:
+				resp = query("communities", params={"name": name})
+			except requests.exceptions.HTTPError:
+				# Duff community? Not much we can do; just ignore it.
+				# You'll be in two communities instead of three, most
+				# likely. If there's a lookup failure or something,
+				# you'll be able to join communities in cache only.
+				continue
 			community_id = resp["_id"]
 			database.cache_community(resp)
 		communities.append(community_id)
