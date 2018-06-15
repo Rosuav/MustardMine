@@ -18,7 +18,7 @@ TODO:
     calls to database.py (and single transactions within that), but the
     landing page has a ton of separate (read-only) queries.
 * Bug: On load, the Twitter box says "immediate" - should respond to sched.
-* Show scheduled tweets on page load
+* Show scheduled tweets on page load, with the ability to cancel them
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
