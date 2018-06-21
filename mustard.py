@@ -63,6 +63,12 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 		data = r.json()
 		session["twitch_token"] = data["access_token"]
 		session["twitch_refresh_token"] = data["refresh_token"]
+
+		# HACK: After refreshing auth, MM seems to be unable to update anything.
+		# If this makes things work, I'll have to look into exactly what is going
+		# on, and maybe be able to figure something out. I don't know.
+		# time.sleep(1) # Nope, I guess it doesn't.
+
 		# Recurse for simplicity. Do NOT pass the original token, and be sure to
 		# prevent infinite loops by disabling auto-refresh. Otherwise, pass-through.
 		return query(endpoint, method=method, params=params, data=data, auto_refresh=False)
