@@ -47,10 +47,12 @@ function try_delete_setup(i) {
 	delete_setup(setups[i].id);
 }
 
+/*
 document.getElementById("hello").onclick = async function() {
 	const result = await (await fetch("/api/hello", {credentials: "include"})).json();
 	console.log(result);
 }
+*/
 
 document.getElementById("save").onclick = async function() {
 	const result = await (await fetch("/api/setups", {
