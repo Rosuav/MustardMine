@@ -1,6 +1,11 @@
 #display_one:checked ~ section {display: none;}
 #display_one:checked ~ section.current {display: block;}
-#pagination {display: none;}
+#pagination {
+	display: none;
+	position: fixed;
+	bottom: 0;
+	padding: 1em;
+}
 #display_one:checked ~ #pagination {display: block;}
 
 
