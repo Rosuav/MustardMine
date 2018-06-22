@@ -17,7 +17,7 @@ TODO:
   - Currently all operations that *require* atomicity are done with single
     calls to database.py (and single transactions within that), but the
     landing page has a ton of separate (read-only) queries.
-* Show scheduled tweets on page load, with the ability to cancel them
+* Allow the user to cancel a scheduled tweet (no editing, just cancel)
 * Work on styling... lots.
 * Create a landing page
 
