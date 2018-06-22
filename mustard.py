@@ -67,7 +67,7 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 		# HACK: After refreshing auth, MM seems to be unable to update anything.
 		# If this makes things work, I'll have to look into exactly what is going
 		# on, and maybe be able to figure something out. I don't know.
-		# time.sleep(1) # Nope, I guess it doesn't.
+		# time.sleep(1) # Nope, I guess it doesn't. Not even 30 seconds. So it's not time-based, yay!
 
 		# Recurse for simplicity. Do NOT pass the original token, and be sure to
 		# prevent infinite loops by disabling auto-refresh. Otherwise, pass-through.
