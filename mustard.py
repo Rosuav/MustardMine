@@ -526,6 +526,6 @@ if __name__ == "__main__":
 	logging.basicConfig(level=logging.INFO)
 	# Load us up using gunicorn, configured via the Procfile
 	with open("Procfile") as f: cmd = f.read().strip().replace("web: ", "")
-	os.environ["PORT"] = "5000" # hack - pick a different default port
+	if "PORT" not in os.environ: os.environ["PORT"] = "5000" # hack - pick a different default port
 	sys.argv = cmd.split(" ")[1:] # TODO: Split more smartly
 	from gunicorn.app.wsgiapp import run; run()
