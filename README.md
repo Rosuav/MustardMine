@@ -19,6 +19,7 @@ TODO:
     landing page has a ton of separate (read-only) queries.
 * Show scheduled tweets on page load, with the ability to cancel them
 * Work on styling... lots.
+* Create a landing page
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
