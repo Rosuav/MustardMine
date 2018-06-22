@@ -1,7 +1,7 @@
 flask
 authlib
 requests
-psycopg2
+psycopg2 --no-binary psycopg2
 pytz
 gunicorn
 Flask-Sockets
