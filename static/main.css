@@ -1,3 +1,9 @@
+#display_one:checked ~ section {display: none;}
+#display_one:checked ~ section.current {display: block;}
+#pagination {display: none;}
+#display_one:checked ~ #pagination {display: block;}
+
+
 section, details {
 	border: 1px solid black;
 	padding: 10px;

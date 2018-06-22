@@ -258,3 +258,21 @@ document.getElementById("picker_results").onclick = function(event) {
 	document.getElementById("picker").style.removeProperty("display");
 }
 document.getElementById("picker_cancel").onclick = () => document.getElementById("picker").style.removeProperty("display");
+
+document.getElementById("prev_section").onclick = () => {
+	const cur = document.querySelector("section.current");
+	let next = cur.previousElementSibling;
+	if (next.tagName != "SECTION") {
+		const all = document.querySelectorAll("section");
+		next = all[all.length - 1];
+	}
+	next.classList.add("current");
+	cur.classList.remove("current");
+}
+document.getElementById("next_section").onclick = () => {
+	const cur = document.querySelector("section.current");
+	let next = cur.nextElementSibling;
+	if (next.tagName != "SECTION") next = document.querySelector("section"); //Loop back to start
+	next.classList.add("current");
+	cur.classList.remove("current");
+}

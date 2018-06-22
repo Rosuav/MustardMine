@@ -12,14 +12,16 @@ const schedule = {{ schedule | tojson }};
 </script>
 </head>
 <body>
-
 <header>
 <!-- TODO: Have a logo or something -->
 <h1>Mustard Mine</h1>
 <p>Welcome, {{ username }}!</p>
 </header>
 
-<section>
+<input type=radio id=display_all name=display checked><label for=display_all>Show all</label>
+<input type=radio id=display_one name=display><label for=display_one>Sequential</label>
+
+<section class=current>
 <h2>Stream setups</h2>
 <table border=1 id=setups></table>
 <form name=setups method=post action="/update">
@@ -128,6 +130,11 @@ functionality behind it.</p>
 </ul>
 <p><a href="/logout">Logout</a></p>
 </section>
+
+<div id=pagination>
+<button id=prev_section>&lt;-</button>
+<button id=next_section>-&gt;</button>
+</div>
 <script src="/static/mustard.js"></script>
 </body>
 </html>
