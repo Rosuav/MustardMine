@@ -190,9 +190,13 @@ def tweet():
 		# happen without someone messing around
 		return "Can't schedule tweets without a schedule!", 400
 	target += schedule
-	if target - time.time() > 3600:
+	if target - time.time() > 1800:
 		# Protect against schedule mistakes and various forms of insanity
-		return "Refusing to schedule a tweet more than an hour in advance", 400
+		# The half-hour limit aligns with the Heroku policy of shutting a
+		# dyno down after 30 mins of inactivity, which means we guarantee
+		# that this tweet will indeed happen prior to dyno sleep.
+		# (Dyno sleep? Not the "Slumbering Dragon" from M13 methinks.)
+		return "Refusing to schedule a tweet more than half an hour in advance", 400
 	# TODO: Retain the tweet and token in Postgres in case the server restarts
 	# We'll assume the token won't need changing - but we assume that already.
 	# Keep the one-hour limit (give or take) to minimize the likelihood of the
