@@ -17,7 +17,6 @@ TODO:
   - Currently all operations that *require* atomicity are done with single
     calls to database.py (and single transactions within that), but the
     landing page has a ton of separate (read-only) queries.
-* Bug: On load, the Twitter box says "immediate" - should respond to sched.
 * Show scheduled tweets on page load, with the ability to cancel them
 * Work on styling... lots.
 
