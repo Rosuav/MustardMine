@@ -1,9 +1,11 @@
 import base64
 import collections
+import datetime
 import json
 import os
 import sys
 import time
+import pytz
 from pprint import pprint
 # Hack: Get gevent to do its monkeypatching as early as possible.
 # I have no idea what this is actually doing, but if you let the
@@ -71,13 +73,27 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 	if r.status_code == 204: return {}
 	return r.json()
 
+def format_time(tm, tz):
+	"""Format a time_t in a human-readable way, based on the timezone"""
+	if not tz:
+		# Without a timezone, all we can do is say "in X seconds"
+		tm -= int(time.time())
+		if tm < 60: return "in %d seconds" % tm
+		return "in %d:%02d" % (tm // 60, tm % 60)
+	tm = datetime.datetime.fromtimestamp(tm, tz=pytz.timezone(tz))
+	return tm.strftime("at %H:%M")
+
 @app.route("/")
 def mainpage():
 	if "twitter_oauth" in session:
-		username = session["twitter_oauth"]["screen_name"]
+		auth = session["twitter_oauth"]
+		username = auth["screen_name"]
 		twitter = "Twitter connected: " + username
+		cred = (auth["oauth_token"], auth["oauth_token_secret"])
+		tweets = [(tm, args[1]) for tm, args in scheduler.search(send_tweet) if args[0] == cred]
 	else:
 		twitter = """<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>"""
+		tweets = []
 	if "twitch_token" not in session:
 		return render_template("login.html", twitter=twitter)
 	token = session["twitch_token"]
@@ -88,6 +104,7 @@ def mainpage():
 		database.cache_community(community)
 	commnames = sorted(comm["name"] for comm in communities["communities"])
 	sched_tz, schedule = database.get_schedule(user["_id"])
+	tweets = [(format_time(tm, sched_tz), tweet) for tm, tweet in tweets]
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
 		channel=channel, commnames=commnames,
@@ -95,6 +112,7 @@ def mainpage():
 		sched_tz=sched_tz, schedule=schedule,
 		checklist=database.get_checklist(user["_id"]),
 		timers=database.list_timers(user["_id"]),
+		tweets=tweets,
 	)
 
 @app.route("/update", methods=["POST"])

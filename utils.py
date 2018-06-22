@@ -45,3 +45,7 @@ class Scheduler:
 
 	def put(self, tm, func, *args):
 		return self.queue.put((tm, func, args))
+
+	def search(self, func):
+		"""Return a list of all queued calls to a given function"""
+		return [(t, a) for t, f, a in self.queue.queue if f is func]

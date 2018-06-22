@@ -16,6 +16,14 @@ const schedule = {{ schedule | tojson }};
 <!-- TODO: Have a logo or something -->
 <h1>Mustard Mine</h1>
 <p>Welcome, {{ username }}!</p>
+{% if tweets %}
+Scheduled tweet(s):
+<ul>
+{% for tm, tweet in tweets %}
+<li>{{tm}}: {{tweet}}</li>
+{% endfor-%}
+</ul>
+{% endif %}
 </header>
 
 <input type=radio id=display_all name=display checked><label for=display_all>Show all</label>
