@@ -181,15 +181,11 @@ function format_schedule_time(offset) {
 
 setInterval(function() {
 	document.getElementById("nextsched").innerHTML = format_schedule_time() || "(none)";
+	const tweet = document.getElementById("tweetschedule");
+	document.getElementById("tweettime").innerHTML =
+		tweet.value === "now" ? "Immediate" :
+		format_schedule_time(+tweet.value) || "(need schedule)";
 }, 1000);
-
-document.getElementById("tweetschedule").onchange = function() {
-	if (this.value === "now") {
-		document.getElementById("tweettime").innerHTML = "Immediate";
-		return;
-	}
-	document.getElementById("tweettime").innerHTML = format_schedule_time(+this.value) || "(need schedule)";
-}
 
 setupform.category.value = channel.game;
 setupform.title.value = channel.status;
