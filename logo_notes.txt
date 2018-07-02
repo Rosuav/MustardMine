@@ -2,9 +2,8 @@ The Mustard Mine logo
 ---------------------
 
 Basic concept: Minecart on tracks coming out of a mine tunnel, bracketed by the
-words "Mustard" and "Mine". The minecart contains mustard ore - either yellow
-material (not shiny like gold), or some sort of rock with yellow flecks (hard
-to show that it's not gold that way though).
+words "Mustard" and "Mine". The minecart contains mustard ore - yellow material
+(not shiny like gold) with no obvious texture.
 
 The general flow of movement is from top left to bottom right.
 
