@@ -123,7 +123,6 @@ def update():
 		"channel[game]": request.form["category"],
 		"channel[status]": request.form["title"],
 	})
-	print("UPDATE:", resp)
 	communities = []
 	for i in range(1, 4):
 		name = request.form.get("comm%d" % i)
@@ -141,9 +140,9 @@ def update():
 			community_id = resp["_id"]
 			database.cache_community(resp)
 		communities.append(community_id)
-	print("Communities:", query("channels/" + user["_id"] + "/communities", method="PUT", data={
+	query("channels/" + user["_id"] + "/communities", method="PUT", data={
 		"community_ids[]": communities,
-	}))
+	})
 	return redirect(url_for("mainpage"))
 
 @app.route("/schedule", methods=["POST"])
