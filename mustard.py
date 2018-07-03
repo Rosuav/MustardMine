@@ -55,7 +55,6 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 		"Authorization": "OAuth " + token,
 	})
 	if auto_refresh and r.status_code == 401 and r.json()["message"] == "invalid oauth token":
-		print("Auto-refreshing auth token")
 		r = requests.post("https://id.twitch.tv/oauth2/token", data={
 			"grant_type": "refresh_token",
 			"refresh_token": session["twitch_refresh_token"],
@@ -119,7 +118,6 @@ def mainpage():
 def update():
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
-	# TODO: Report failures - there seems to be something wrong with first update
 	user = session["twitch_user"]
 	resp = query("channels/" + user["_id"], method="PUT", data={
 		"channel[game]": request.form["category"],
