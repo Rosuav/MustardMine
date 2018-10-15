@@ -66,7 +66,7 @@ function init_socket() {
 			//That would allow the admin to say "okay now recalculate for a new event"
 		}
 	};
-	socket.onclose = init_socket;
+	socket.onclose = ev => setTimeout(init_socket, 1000);
 }
 init_socket();
 </script>
