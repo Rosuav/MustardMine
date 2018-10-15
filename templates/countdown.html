@@ -42,7 +42,9 @@ function set_delay(wanted_delay) {
 update();
 
 const protocol = window.location.protocol == "https:" ? "wss://" : "ws://";
-const socket = new WebSocket(protocol + window.location.host + "/countdown_ctrl");
+let socket;
+function init_socket() {
+socket = new WebSocket(protocol + window.location.host + "/countdown_ctrl");
 socket.onopen = () => {socket.send(JSON.stringify({type: "init", id: "{{id}}"}));};
 socket.onmessage = (ev) => {
 	const msg = JSON.parse(ev.data);
@@ -69,6 +71,8 @@ socket.onclose = ev => {
 	if (ev.wasClean) console.info("Was a clean shutdown");
 	else console.error("Not a clean shutdown");
 };
+}
+init_socket();
 </script>
 </body>
 </html>
