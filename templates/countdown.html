@@ -65,7 +65,7 @@ socket.onmessage = (ev) => {
 	}
 };
 socket.onclose = ev => {
-	console.error("Socket closed:", ev.code, ev.reason);
+	console.error("Socket closed: " + ev.code + " " + ev.reason);
 	if (ev.wasClean) console.info("Was a clean shutdown");
 	else console.error("Not a clean shutdown");
 };
