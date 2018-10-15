@@ -66,11 +66,7 @@ function init_socket() {
 			//That would allow the admin to say "okay now recalculate for a new event"
 		}
 	};
-	socket.onclose = ev => {
-		console.error("Socket closed: " + ev.code + " " + ev.reason);
-		if (ev.wasClean) console.info("Was a clean shutdown");
-		else console.error("Not a clean shutdown");
-	};
+	socket.onclose = init_socket;
 }
 init_socket();
 </script>
