@@ -66,6 +66,7 @@ function init_socket() {
 			//That would allow the admin to say "okay now recalculate for a new event"
 		}
 	};
+	//Automatically reconnect (after a one-second delay to prevent spinning)
 	socket.onclose = ev => setTimeout(init_socket, 1000);
 }
 init_socket();
