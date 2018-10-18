@@ -49,7 +49,7 @@ function init_socket() {
 	socket.onmessage = (ev) => {
 		const msg = JSON.parse(ev.data);
 		switch (msg.type) {
-			case "inited": console.log("Mustard-Mine control connection established."); break;
+			case "inited": /*console.log("Mustard-Mine control connection established.");*/ break;
 			case "adjust":
 				//Add or subtract some seconds from the clock
 				target_time += msg.delta;
