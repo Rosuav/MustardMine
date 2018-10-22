@@ -84,6 +84,8 @@ def format_time(tm, tz):
 
 @app.route("/")
 def mainpage():
+	if "twitch_token" not in session:
+		return render_template("login.html")
 	if "twitter_oauth" in session:
 		auth = session["twitter_oauth"]
 		username = auth["screen_name"]
@@ -93,8 +95,6 @@ def mainpage():
 	else:
 		twitter = """<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>"""
 		tweets = []
-	if "twitch_token" not in session:
-		return render_template("login.html", twitter=twitter)
 	token = session["twitch_token"]
 	user = session["twitch_user"]
 	channel = query("channels/" + user["_id"])
