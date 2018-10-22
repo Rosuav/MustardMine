@@ -43,7 +43,7 @@ class Scheduler:
 		while True:
 			tm, func, id, args = self.queue.wait()
 			assert tm <= time.time()
-			if self.deleted.pop(id): continue # Deleted event
+			if self.deleted.pop(id, False): continue # Deleted event
 			func(*args)
 
 	def put(self, tm, func, *args):
