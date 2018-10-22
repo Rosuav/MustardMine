@@ -85,7 +85,10 @@ async function delete_setup(i) {
 }
 
 function tidy_times(times) {
-	return times.replace(",", " ").split(" ").map(tm => {
+	times = times.replace(",", " ").split(" ");
+	for (let i = 0; i < times.length; ++i)
+	{
+		const tm = times[i];
 		//Reformat tm tidily
 		//TODO: If tm is exactly "AM" or "PM" (case insensitively),
 		//apply the transformation to the previous entry, and discard
@@ -99,7 +102,7 @@ function tidy_times(times) {
 		//mean that "2:30AMPM" will match. Simple rule: PM wins. (Just ask
 		//Jim Hacker if you don't believe me. Except when he's PM.)
 		const parts = /^([0-9][0-9]?)(?::([0-9][0-9]?))?(AM)?(PM)?$/i.exec(tm);
-		if (!parts) return ""; //Will end up getting completely suppressed
+		if (!parts) {times[i] = ""; continue;} //Will end up getting completely suppressed
 		let hour = parseInt(parts[1], 10);
 		let min = parseInt(parts[2] || "00", 10);
 		if (parts[3] || parts[4]) //AM or PM was set
@@ -107,8 +110,9 @@ function tidy_times(times) {
 			if (hour == 12) hour = 0;
 			if (parts[4]) hour += 12; //PM
 		}
-		return ("0" + hour).slice(-2) + ":" + ("0" + min).slice(-2);
-	}).sort().join(" ").trim();
+		times[i] = ("0" + hour).slice(-2) + ":" + ("0" + min).slice(-2);
+	}
+	return times.sort().join(" ").trim();
 }
 
 event(".sched", "change", function() {
