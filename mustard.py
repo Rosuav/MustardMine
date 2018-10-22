@@ -86,20 +86,19 @@ def format_time(tm, tz):
 def mainpage():
 	if "twitch_token" not in session:
 		return render_template("login.html")
+	token = session["twitch_token"]
+	user = session["twitch_user"]
+	channel = query("channels/" + user["_id"])
+	sched_tz, schedule = database.get_schedule(user["_id"])
 	if "twitter_oauth" in session:
 		auth = session["twitter_oauth"]
 		username = auth["screen_name"]
 		twitter = "Twitter connected: " + username
 		cred = (auth["oauth_token"], auth["oauth_token_secret"])
-		tweets = [(tm, id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
+		tweets = [(format_time(tm, sched_tz), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
 	else:
 		twitter = """<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>"""
 		tweets = []
-	token = session["twitch_token"]
-	user = session["twitch_user"]
-	channel = query("channels/" + user["_id"])
-	sched_tz, schedule = database.get_schedule(user["_id"])
-	tweets = [(format_time(tm, sched_tz), id, tweet) for tm, id, tweet in tweets]
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
 		channel=channel,
