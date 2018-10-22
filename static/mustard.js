@@ -90,9 +90,20 @@ function tidy_times(times) {
 	{
 		const tm = times[i];
 		//Reformat tm tidily
-		//TODO: If tm is exactly "AM" or "PM" (case insensitively),
+		//If tm is exactly "AM" or "PM" (case insensitively),
 		//apply the transformation to the previous entry, and discard
 		//this one. That will allow "9 pm" to parse correctly.
+		//Edge case: "9  pm" still doesn't parse. Whatevs.
+		const which = /^(AM)?(PM)?$/i.exec(tm);
+		if (which && i && times[i-1] != "")
+		{
+			let [hr, min] = times[i-1].split(":");
+			if (hr == "12") hr = "00";
+			if (which[2]) hr = ("0" + (parseInt(hr, 10) + 12)).slice(-2);
+			times[i-1] = hr + ":" + min;
+			times[i] = "";
+			continue;
+		}
 		//Yes, that's "?::" in a regex. Don't you just LOVE it when a
 		//character is sometimes special, sometimes literal?
 		//I'm abusing regex a little here; the last bit really should be
