@@ -270,6 +270,10 @@ def login_twitter():
 
 @app.route("/authorized-twitter")
 def authorized_twitter():
+	if "denied" in request.args:
+		# User cancelled the auth flow - discard auth (most likely there won't be any)
+		if "twitter_oauth" in session: del session["twitter_oauth"]
+		return redirect(url_for("mainpage"))
 	req_token = session["twitter_state"]
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
 		req_token["oauth_token"], req_token["oauth_token_secret"])
