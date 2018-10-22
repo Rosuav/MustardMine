@@ -19,6 +19,7 @@ TODO:
     landing page has a ton of separate (read-only) queries.
 * Allow the user to cancel a scheduled tweet (no editing, just cancel)
 * Work on styling... lots.
+* Support tags, just as soon as Twitch's API allows that
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 

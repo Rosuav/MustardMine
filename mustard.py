@@ -98,15 +98,11 @@ def mainpage():
 	token = session["twitch_token"]
 	user = session["twitch_user"]
 	channel = query("channels/" + user["_id"])
-	communities = query("channels/" + user["_id"] + "/communities")
-	for community in communities["communities"]:
-		database.cache_community(community)
-	commnames = sorted(comm["name"] for comm in communities["communities"])
 	sched_tz, schedule = database.get_schedule(user["_id"])
 	tweets = [(format_time(tm, sched_tz), tweet) for tm, tweet in tweets]
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
-		channel=channel, commnames=commnames,
+		channel=channel,
 		setups=database.list_setups(user["_id"]),
 		sched_tz=sched_tz, schedule=schedule,
 		checklist=database.get_checklist(user["_id"]),
@@ -122,26 +118,6 @@ def update():
 	resp = query("channels/" + user["_id"], method="PUT", data={
 		"channel[game]": request.form["category"],
 		"channel[status]": request.form["title"],
-	})
-	communities = []
-	for i in range(1, 4):
-		name = request.form.get("comm%d" % i)
-		if name == "": continue
-		community_id = database.get_community_id(name)
-		if community_id is None:
-			try:
-				resp = query("communities", params={"name": name})
-			except requests.exceptions.HTTPError:
-				# Duff community? Not much we can do; just ignore it.
-				# You'll be in two communities instead of three, most
-				# likely. If there's a lookup failure or something,
-				# you'll be able to join communities in cache only.
-				continue
-			community_id = resp["_id"]
-			database.cache_community(resp)
-		communities.append(community_id)
-	query("channels/" + user["_id"] + "/communities", method="PUT", data={
-		"community_ids[]": communities,
 	})
 	return redirect(url_for("mainpage"))
 
@@ -351,13 +327,9 @@ def list_setups():
 @app.route("/api/setups", methods=["POST"])
 def create_setup():
 	if not request.json: return jsonify({}), 400
-	missing = {"category", "title", "communities"} - set(request.json)
+	missing = {"category", "title"} - set(request.json)
 	if missing:
 		return jsonify({"error": "Missing: " + ", ".join(sorted(missing))}), 400
-	for name in request.json["communities"]:
-		if database.get_community_id(name) is None:
-			resp = query("communities", params={"name": name})
-			database.cache_community(resp)
 	setup = database.create_setup(session["twitch_user"]["_id"], **request.json)
 	return jsonify(setup)
 
@@ -374,7 +346,7 @@ def make_backup():
 	# Setups
 	setups = database.list_setups(twitchid)
 	response += '\t"setups": [\n'
-	fields = "category", "title", "communities", "tweet"
+	fields = "category", "title", "tweet"
 	for setup in setups:
 		setup = {field: setup[field] for field in fields}
 		response += "\t\t" + json.dumps(setup) + ",\n"
@@ -418,22 +390,16 @@ def restore_backup():
 	# Signature (from footer)
 	if data[""] != "Mustard-Mine Backup":
 		return "Backup file corrupt - signature missing.", 400
-	# First, prepopulate the communities. This could require HTTP transactions, so
-	# do it before we begin a database transaction.
-	if "setups" in data:
-		try:
-			for setup in data["setups"]:
-				for comm in (setup or {}).get("communities", ()):
-					if not database.get_community_id(comm):
-						database.cache_community(query("communities", params={"name": comm}))
-		except (ValueError, KeyError, TypeError):
-			return "Invalid data format", 400 # Probably means someone messed up the dict.
-	# Now we open a database transaction and do all the real work.
+	# Open a single database transaction and do all the work.
 	with database.Restorer(twitchid) as r:
 		if "setups" in data:
 			r.wipe_setups()
 			for setup in data["setups"]:
 				if setup == "": continue # The shim at the end
+				if "communities" in setup:
+					# Previously, Twitch had "communities", which no longer do anything.
+					# Silently remove them from the data.
+					del setup["communities"]
 				r.check_dict(setup)
 				r.restore_setup(**setup)
 		if "schedule" in data:

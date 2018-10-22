@@ -10,13 +10,12 @@ function render_setups() {
 		<tr onclick="pick_setup(${i})">
 			<td>${s.category}</td>
 			<td>${s.title}</td>
-			<td>${s.communities.join(", ")}</td>
 			<td>${s.tweet}</td>
 			<td><button class="deleting" id="del${i}" onclick="try_delete_setup(${i})">X</button></td>
 		</tr>
 	`);
 	document.getElementById("setups").innerHTML =
-		"<tr><th>Category</th><th>Title</th><th>Communities</th><th>Tweet</th></tr>" +
+		"<tr><th>Category</th><th>Title</th><th>Tweet</th></tr>" +
 		html.join("");
 }
 
@@ -25,7 +24,6 @@ function pick_setup(i) {
 	if (!setup) return; //Shouldn't happen
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
-	for (let i=1; i<=3; ++i) setupform["comm"+i].value = setup.communities[i-1] || "";
 	document.getElementById("tweet").value = setup.tweet;
 }
 
@@ -62,11 +60,6 @@ document.getElementById("save").onclick = async function() {
 		body: JSON.stringify({
 			category: setupform.category.value,
 			title: setupform.title.value,
-			communities: [
-				setupform.comm1.value,
-				setupform.comm2.value,
-				setupform.comm3.value,
-			].filter(x=>x), //Remove any blank communities
 			tweet: document.getElementById("tweet").value,
 		})
 	})).json();
@@ -204,7 +197,6 @@ setInterval(function() {
 
 setupform.category.value = channel.game;
 setupform.title.value = channel.status;
-communities.forEach((c, i) => setupform["comm"+(i+1)].value = c);
 render_setups();
 
 const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
