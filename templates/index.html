@@ -18,8 +18,8 @@ const schedule = {{ schedule | tojson }};
 {% if tweets %}
 Scheduled tweet(s):
 <ul>
-{% for tm, tweet in tweets %}
-<li>{{tm}}: {{tweet}}</li>
+{% for tm, id, tweet in tweets %}
+<li><form action="/deltweet/{{id}}">{{tm}}: {{tweet}} <input type=submit value=Cancel></form></li>
 {% endfor-%}
 </ul>
 {% endif %}

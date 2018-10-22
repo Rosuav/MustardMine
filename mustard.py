@@ -91,7 +91,7 @@ def mainpage():
 		username = auth["screen_name"]
 		twitter = "Twitter connected: " + username
 		cred = (auth["oauth_token"], auth["oauth_token_secret"])
-		tweets = [(tm, args[1]) for tm, args in scheduler.search(send_tweet) if args[0] == cred]
+		tweets = [(tm, id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
 	else:
 		twitter = """<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>"""
 		tweets = []
@@ -99,7 +99,7 @@ def mainpage():
 	user = session["twitch_user"]
 	channel = query("channels/" + user["_id"])
 	sched_tz, schedule = database.get_schedule(user["_id"])
-	tweets = [(format_time(tm, sched_tz), tweet) for tm, tweet in tweets]
+	tweets = [(format_time(tm, sched_tz), id, tweet) for tm, id, tweet in tweets]
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
 		channel=channel,
@@ -212,6 +212,16 @@ def send_tweet(auth, tweet):
 		print(resp.json())
 		print("---")
 	# print("Tweet sent.")
+
+@app.route("/deltweet/<int:id>")
+def cancel_tweet(id):
+	auth = session["twitter_oauth"]
+	cred = (auth["oauth_token"], auth["oauth_token_secret"])
+	for tm, i, args in scheduler.search(send_tweet):
+		if args[0] == cred and id == i:
+			scheduler.remove(id)
+			return redirect(url_for("mainpage"))
+	return "No such tweet to remove (might have already been sent)"
 
 @app.route("/login")
 def login():

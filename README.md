@@ -17,7 +17,6 @@ TODO:
   - Currently all operations that *require* atomicity are done with single
     calls to database.py (and single transactions within that), but the
     landing page has a ton of separate (read-only) queries.
-* Allow the user to cancel a scheduled tweet (no editing, just cancel)
 * Work on styling... lots.
 * Support tags, just as soon as Twitch's API allows that
 

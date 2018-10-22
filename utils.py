@@ -35,17 +35,24 @@ class Scheduler:
 		self.queue = ScheduleQueue()
 		self.thread = threading.Thread(target=self.pump)
 		self.thread.daemon = True
+		self.counter = 0
+		self.deleted = {}
 		self.thread.start()
 
 	def pump(self):
 		while True:
-			tm, func, args = self.queue.wait()
+			tm, func, id, args = self.queue.wait()
 			assert tm <= time.time()
+			if self.deleted.pop(id): continue # Deleted event
 			func(*args)
 
 	def put(self, tm, func, *args):
-		return self.queue.put((tm, func, args))
+		self.counter += 1
+		return self.queue.put((tm, func, self.counter, args))
 
 	def search(self, func):
 		"""Return a list of all queued calls to a given function"""
-		return [(t, a) for t, f, a in self.queue.queue if f is func]
+		return [(t, i, a) for t, f, i, a in self.queue.queue if f is func and i not in self.deleted]
+
+	def remove(self, id):
+		self.deleted[id] = True
