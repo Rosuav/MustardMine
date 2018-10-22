@@ -99,7 +99,7 @@ function tidy_times(times) {
 		//mean that "2:30AMPM" will match. Simple rule: PM wins. (Just ask
 		//Jim Hacker if you don't believe me. Except when he's PM.)
 		const parts = /^([0-9][0-9]?)(?::([0-9][0-9]?))?(AM)?(PM)?$/i.exec(tm);
-		if (!parts) return "";
+		if (!parts) return ""; //Will end up getting completely suppressed
 		let hour = parseInt(parts[1], 10);
 		let min = parseInt(parts[2] || "00", 10);
 		if (parts[3] || parts[4]) //AM or PM was set
@@ -108,7 +108,7 @@ function tidy_times(times) {
 			if (parts[4]) hour += 12; //PM
 		}
 		return ("0" + hour).slice(-2) + ":" + ("0" + min).slice(-2);
-	}).sort().join(" ");
+	}).sort().join(" ").trim();
 }
 
 event(".sched", "change", function() {
