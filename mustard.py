@@ -248,6 +248,10 @@ def login():
 
 @app.route("/login/authorized")
 def authorized():
+	if "error" in request.args:
+		# User cancelled the auth flow - discard auth (most likely there won't be any)
+		session.pop("twitch_token", None)
+		return redirect(url_for("mainpage"))
 	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
 		state=session["login_state"])
 	resp = twitch.fetch_access_token("https://id.twitch.tv/oauth2/token",
@@ -272,7 +276,7 @@ def login_twitter():
 def authorized_twitter():
 	if "denied" in request.args:
 		# User cancelled the auth flow - discard auth (most likely there won't be any)
-		if "twitter_oauth" in session: del session["twitter_oauth"]
+		session.pop("twitter_oauth", None)
 		return redirect(url_for("mainpage"))
 	req_token = session["twitter_state"]
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
