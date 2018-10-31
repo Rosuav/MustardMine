@@ -242,6 +242,7 @@ def authorized():
 	resp = twitch.fetch_access_token("https://id.twitch.tv/oauth2/token",
 		code=request.args["code"],
 		# For some bizarre reason, we need to pass this information along.
+		client_id=config.CLIENT_ID,
 		client_secret=config.CLIENT_SECRET, redirect_uri=url_for("authorized", _external=True))
 	if "access_token" not in resp:
 		# Something went wrong with the retrieval. No idea what or why,
