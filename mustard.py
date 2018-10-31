@@ -248,7 +248,7 @@ def authorized():
 		# so I'm doing a cop-out and just dumping to console.
 		print("Unable to log in")
 		pprint(resp)
-		print("Returning generic failure."
+		print("Returning generic failure.")
 		raise Exception
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
