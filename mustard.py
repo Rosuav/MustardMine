@@ -243,6 +243,13 @@ def authorized():
 		code=request.args["code"],
 		# For some bizarre reason, we need to pass this information along.
 		client_secret=config.CLIENT_SECRET, redirect_uri=url_for("authorized", _external=True))
+	if "access_token" not in resp:
+		# Something went wrong with the retrieval. No idea what or why,
+		# so I'm doing a cop-out and just dumping to console.
+		print("Unable to log in")
+		pprint(resp)
+		print("Returning generic failure."
+		raise Exception
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
 	user = query("user")
