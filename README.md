@@ -20,7 +20,8 @@ TODO:
 * Work on styling... lots.
 * Support tags, just as soon as Twitch's API allows that
 * Check which buttons get hit when you press Enter in each form. Seems to
-  be borked in some places (check category box).
+  be borked in some places (check category box). Audit that buttons are
+  all type=button if inside a form.
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
