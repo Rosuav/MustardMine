@@ -22,6 +22,8 @@ TODO:
 * Check which buttons get hit when you press Enter in each form. Seems to
   be borked in some places (check category box). Audit that buttons are
   all type=button if inside a form.
+* Bombs with a 500 if the title is too long. Seems to be thinking it's an
+  auth failure? Possible misinterpretation of an upstream 403??
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
