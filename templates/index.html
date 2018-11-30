@@ -23,6 +23,9 @@ Scheduled tweet(s):
 {% endfor-%}
 </ul>
 {% endif %}
+{% if error %}
+<div id=errormessage>{{error}}</div>
+{% endif %}
 </header>
 
 <input type=radio id=display_all name=display checked><label for=display_all>Show all</label>

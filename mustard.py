@@ -43,6 +43,11 @@ scheduler = utils.Scheduler()
 sockets = Sockets(app)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
+class TwitchDataError(Exception):
+	def __init__(self, error):
+		self.__dict__.update(error)
+		super().__init__(error["message"])
+
 def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
 	# the auth token, and set auto_refresh to False.
@@ -68,6 +73,9 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 		# Recurse for simplicity. Do NOT pass the original token, and be sure to
 		# prevent infinite loops by disabling auto-refresh. Otherwise, pass-through.
 		return query(endpoint, method=method, params=params, data=data, auto_refresh=False)
+	if r.status_code == 403:
+		# TODO: What if it *isn't* of this form??
+		raise TwitchDataError(json.loads(r.json()["message"]))
 	r.raise_for_status()
 	if r.status_code == 204: return {}
 	return r.json()
@@ -99,9 +107,11 @@ def mainpage():
 	else:
 		twitter = """<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>"""
 		tweets = []
+	error = session.get("last_error_message", "")
+	session["last_error_message"] = ""
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
-		channel=channel,
+		channel=channel, error=error,
 		setups=database.list_setups(user["_id"]),
 		sched_tz=sched_tz, schedule=schedule,
 		checklist=database.get_checklist(user["_id"]),
@@ -114,10 +124,13 @@ def update():
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
 	user = session["twitch_user"]
-	resp = query("channels/" + user["_id"], method="PUT", data={
-		"channel[game]": request.form["category"],
-		"channel[status]": request.form["title"],
-	})
+	try:
+		resp = query("channels/" + user["_id"], method="PUT", data={
+			"channel[game]": request.form["category"],
+			"channel[status]": request.form["title"],
+		})
+	except TwitchDataError as e:
+		session["last_error_message"] = "Stream status update not accepted: " + e.message
 	return redirect(url_for("mainpage"))
 
 @app.route("/schedule", methods=["POST"])
