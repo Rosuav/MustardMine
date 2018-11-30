@@ -271,6 +271,7 @@ def authorized():
 	session["twitch_user"] = user
 	return redirect(url_for("mainpage"))
 
+# TODO: This is dropping deprecation warnings regarding create_authorization_url and OAuth1
 @app.route("/login-twitter")
 def login_twitter():
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
