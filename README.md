@@ -24,6 +24,8 @@ TODO:
   all type=button if inside a form.
 * Support chat integrations? Have reserved the Twitch username MustardMine
   for this purpose.
+  - Maybe after sending a scheduled tweet, format a message for chat with
+    the link? Could be handy for a few channels.
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
