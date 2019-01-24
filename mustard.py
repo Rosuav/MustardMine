@@ -53,7 +53,11 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 	# the auth token, and set auto_refresh to False.
 	if token is None:
 		token = session["twitch_token"]
-	r = requests.request(method, "https://api.twitch.tv/kraken/" + endpoint,
+	# 20190125: Default is currently kraken. Progressively convert to explicit
+	# krakenification, then switch the default to helix. (Then progressively
+	# change the requests themselves so we use helix everywhere.)
+	if not endpoint.startswith(("kraken/", "helix/")): endpoint = "kraken/" + endpoint
+	r = requests.request(method, "https://api.twitch.tv/" + endpoint,
 		params=params, data=data, headers={
 		"Accept": "application/vnd.twitchtv.v5+json",
 		"Client-ID": config.CLIENT_ID,
@@ -96,6 +100,7 @@ def mainpage():
 		return render_template("login.html")
 	token = session["twitch_token"]
 	user = session["twitch_user"]
+	# TODO: Switch to the new API /helix/streams
 	channel = query("channels/" + user["_id"])
 	sched_tz, schedule = database.get_schedule(user["_id"])
 	if "twitter_oauth" in session:
