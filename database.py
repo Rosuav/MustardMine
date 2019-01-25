@@ -37,6 +37,11 @@ TABLES = {
 		"maxtime integer not null default 3600", # If time to event exceeds this, shows "NOW"
 		"styling text not null default ''", # custom CSS??
 	],
+	"tags": [ # Cache only. If we loaded tags on startup, it'd lag us out for ten seconds or so, so we cache.
+		"id text primary key",
+		"english_name text not null", # Twitch has localized names, but we keep only the en-us one
+		"english_desc text not null", # Ditto. If there is no en-us, we'll probably crash somewhere.
+	],
 }
 
 # https://postgrespro.com/list/thread-id/1544890
@@ -341,4 +346,26 @@ class Restorer(contextlib.ExitStack):
 			self.cur.execute("delete from mustard.timers where id=%s", (id,))
 			self.summary += "Deleted timer %s\n" % id
 
+def tags_need_updating():
+	"""Check if the tags cache needs to be updated.
 
+	Uses magic to determine this, unless there are none in cache, in
+	which case they obviously DO need to be updated.
+	"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("select count(*) from mustard.tags")
+		if not cur.fetchone()[0]: return True
+	# TODO: Use more magic
+	# It may be worth retaining a "last updated" timestamp - if it's been
+	# more than a week, do an update.
+	return False
+
+def replace_all_tags(tags):
+	"""Replace all tags in the cache with the given collection.
+
+	tags should be a collection of (id, name, desc) tuples.
+	"""
+	with postgres, postgres.cursor() as cur:
+		psycopg2.extras.execute_values(cur,
+			"insert into mustard.tags (id, english_name, english_desc) values %s",
+			tags)

@@ -4,6 +4,7 @@ import datetime
 import json
 import os
 import sys
+import threading
 import time
 import pytz
 from pprint import pprint
@@ -98,15 +99,23 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 	return r.json()
 
 def get_all_tags():
+	print("Fetching tags into cache...")
 	t = time.time()
 	cursor = ""
+	all_tags = []
+	seen = 0
 	while cursor is not None:
 		data = query("helix/tags/streams", params={"first": 100, "after": cursor}, token="app", auto_refresh=False)
 		# with open("dump.json", "w") as f: json.dump(data, f)
-		pprint([(tag["is_auto"], tag["tag_id"], tag["localization_names"]["en-us"]) for tag in data["data"]])
+		all_tags.extend(
+			(tag["tag_id"], tag["localization_names"]["en-us"], tag["localization_descriptions"]["en-us"])
+			for tag in data["data"] if not tag["is_auto"]
+		)
+		seen += len(data["data"])
 		cursor = data["pagination"].get("cursor")
-	print("Time taken:", time.time() - t)
-# get_all_tags()
+		print("Fetching more... %d/%d" % (len(all_tags), seen))
+	database.replace_all_tags(all_tags)
+	print(len(all_tags), "tags fetched. Time taken:", time.time() - t)
 
 def format_time(tm, tz):
 	"""Format a time_t in a human-readable way, based on the timezone"""
@@ -562,3 +571,8 @@ if __name__ == "__main__":
 	if "PORT" not in os.environ: os.environ["PORT"] = "5000" # hack - pick a different default port
 	sys.argv = cmd.split(" ")[1:] # TODO: Split more smartly
 	from gunicorn.app.wsgiapp import run; run()
+else:
+	# Worker startup. This is the place to put any actual initialization work
+	# as it won't be done on master startup.
+	if database.tags_need_updating():
+		threading.Thread(target=get_all_tags).start()
