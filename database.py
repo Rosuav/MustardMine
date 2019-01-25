@@ -67,8 +67,8 @@ def create_tables():
 				# the end of the table.
 				want = {c.split()[0]: c for c in columns}
 				have = tables[table]
-				need = [c for c in want if c not in have]
-				xtra = [c for c in have if c not in want]
+				need = [c for c in want if c not in have] # Set operations but preserving order to
+				xtra = [c for c in have if c not in want] # the greatest extent possible.
 				if not need and not xtra: continue # All's well!
 				actions = ["add " + want[c] for c in need] + ["drop column " + c for c in xtra]
 				cur.execute("alter table mustard." + table + " " + ", ".join(actions))
