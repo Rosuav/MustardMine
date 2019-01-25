@@ -27,6 +27,7 @@ TABLES = {
 		"twitchid integer not null references mustard.users",
 		"category text not null default ''",
 		"title text not null default ''",
+		"tags text not null default ''", # Comma-separated
 		"tweet text not null default ''",
 	],
 	"timers": [
@@ -91,14 +92,14 @@ def create_user(twitchid):
 	except psycopg2.IntegrityError:
 		pass # TODO: Update any extra info eg Twitter OAuth
 
-def create_setup(twitchid, *, category, title, tweet="", **extra):
+def create_setup(twitchid, *, category, title, tags="", tweet="", **extra):
 	"""Create a new 'setup' - a loadable stream config
 
 	Returns the full record just created, including its ID.
 	"""
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-		cur.execute("insert into mustard.setups (twitchid, category, title, tweet) values (%s, %s, %s, %s) returning *",
-			(twitchid, category, title, tweet))
+		cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet) values (%s, %s, %s, %s, %s) returning *",
+			(twitchid, category, title, tags, tweet))
 		ret = cur.fetchone()
 	return ret
 
@@ -305,9 +306,9 @@ class Restorer(contextlib.ExitStack):
 	def wipe_setups(self):
 		self.cur.execute("delete from mustard.setups where twitchid = %s", (self.twitchid,))
 
-	def restore_setup(self, *, category=None, title=None, tweet=""):
+	def restore_setup(self, *, category=None, title=None, tags="", tweet=""):
 		if not category or not title: raise ValidationError("Setups: Category and title are required")
-		self.cur.execute("insert into mustard.setups (twitchid, category, title, tweet) values (%s, %s, %s, %s) returning id",
+		self.cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet) values (%s, %s, %s, %s, %s) returning id",
 			(self.twitchid, category, title, tweet))
 		self.summary += "Restored %r setup\n" % category
 

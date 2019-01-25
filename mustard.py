@@ -415,7 +415,7 @@ def make_backup():
 	# Setups
 	setups = database.list_setups(twitchid)
 	response += '\t"setups": [\n'
-	fields = "category", "title", "tweet"
+	fields = "category", "title", "tags", "tweet"
 	for setup in setups:
 		setup = {field: setup[field] for field in fields}
 		response += "\t\t" + json.dumps(setup) + ",\n"
