@@ -54,6 +54,9 @@ class TwitchDataError(Exception):
 def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
 	# the auth token, and set auto_refresh to False.
+	# TODO: Tidy up all this mess of auth patterns. It'll probably be easiest
+	# to migrate everything to Helix first, and then probably everything will
+	# use Bearer or App authentication.
 	if token is None:
 		auth = "OAuth " + session["twitch_token"]
 	elif token == "bearer":
