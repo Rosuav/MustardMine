@@ -52,7 +52,20 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 	# If this is called outside of a Flask request context, be sure to provide
 	# the auth token, and set auto_refresh to False.
 	if token is None:
-		token = session["twitch_token"]
+		auth = "OAuth " + session["twitch_token"]
+	elif token == "app":
+		r = requests.post("https://id.twitch.tv/oauth2/token", data={
+			"grant_type": "client_credentials",
+			"client_id": config.CLIENT_ID, "client_secret": config.CLIENT_SECRET,
+		})
+		r.raise_for_status()
+		data = r.json()
+		auth = "Bearer " + data["access_token"]
+		# TODO: Save the token so long as it's valid
+		# expires = int(time.time()) + data["expires_in"] - 120
+	else:
+		auth = "OAuth " + token
+
 	# 20190125: Default is currently kraken. Progressively convert to explicit
 	# krakenification, then switch the default to helix. (Then progressively
 	# change the requests themselves so we use helix everywhere.)
@@ -61,7 +74,7 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 		params=params, data=data, headers={
 		"Accept": "application/vnd.twitchtv.v5+json",
 		"Client-ID": config.CLIENT_ID,
-		"Authorization": "OAuth " + token,
+		"Authorization": auth,
 	})
 	if auto_refresh and r.status_code == 401 and r.json()["message"] == "invalid oauth token":
 		r = requests.post("https://id.twitch.tv/oauth2/token", data={
@@ -83,6 +96,17 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 	r.raise_for_status()
 	if r.status_code == 204: return {}
 	return r.json()
+
+def get_all_tags():
+	t = time.time()
+	cursor = ""
+	while cursor is not None:
+		data = query("helix/tags/streams", params={"first": 100, "after": cursor}, token="app", auto_refresh=False)
+		# with open("dump.json", "w") as f: json.dump(data, f)
+		pprint([(tag["is_auto"], tag["tag_id"], tag["localization_names"]["en-us"]) for tag in data["data"]])
+		cursor = data["pagination"].get("cursor")
+	print("Time taken:", time.time() - t)
+# get_all_tags()
 
 def format_time(tm, tz):
 	"""Format a time_t in a human-readable way, based on the timezone"""
