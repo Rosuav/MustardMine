@@ -91,7 +91,7 @@ def create_user(twitchid):
 	except psycopg2.IntegrityError:
 		pass # TODO: Update any extra info eg Twitter OAuth
 
-def create_setup(twitchid, category, title="", tweet="", **extra):
+def create_setup(twitchid, *, category, title, tweet="", **extra):
 	"""Create a new 'setup' - a loadable stream config
 
 	Returns the full record just created, including its ID.
