@@ -200,6 +200,7 @@ setInterval(function() {
 
 setupform.category.value = channel.game;
 setupform.title.value = channel.status;
+setupform.tags.value = channel.tags;
 render_setups();
 
 const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;

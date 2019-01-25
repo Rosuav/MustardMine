@@ -135,6 +135,8 @@ def mainpage():
 	user = session["twitch_user"]
 	# TODO: Switch to the new API /helix/streams
 	channel = query("channels/" + user["_id"])
+	tags = query("helix/streams/tags", params={"broadcaster_id": user["_id"]})
+	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
 	sched_tz, schedule = database.get_schedule(user["_id"])
 	if "twitter_oauth" in session:
 		auth = session["twitter_oauth"]
