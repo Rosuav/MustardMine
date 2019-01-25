@@ -10,12 +10,13 @@ function render_setups() {
 		<tr onclick="pick_setup(${i})">
 			<td>${s.category}</td>
 			<td>${s.title}</td>
+			<td>${s.tags}</td>
 			<td>${s.tweet}</td>
 			<td><button class="deleting" id="del${i}" onclick="try_delete_setup(${i})">X</button></td>
 		</tr>
 	`);
 	document.getElementById("setups").innerHTML =
-		"<tr><th>Category</th><th>Title</th><th>Tweet</th></tr>" +
+		"<tr><th>Category</th><th>Title</th><th>Tags</th><th>Tweet</th></tr>" +
 		html.join("");
 }
 
@@ -24,6 +25,7 @@ function pick_setup(i) {
 	if (!setup) return; //Shouldn't happen
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
+	setupform.tags.value = setup.tags;
 	document.getElementById("tweet").value = setup.tweet;
 }
 
@@ -60,6 +62,7 @@ document.getElementById("save").onclick = async function() {
 		body: JSON.stringify({
 			category: setupform.category.value,
 			title: setupform.title.value,
+			tags: setupform.tags.value,
 			tweet: document.getElementById("tweet").value,
 		})
 	})).json();
