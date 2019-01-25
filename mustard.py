@@ -44,6 +44,8 @@ scheduler = utils.Scheduler()
 sockets = Sockets(app)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
+REQUIRED_SCOPES = "channel_editor user:edit:broadcast user_read" # Ensure that these are sorted
+
 class TwitchDataError(Exception):
 	def __init__(self, error):
 		self.__dict__.update(error)
@@ -54,6 +56,8 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 	# the auth token, and set auto_refresh to False.
 	if token is None:
 		auth = "OAuth " + session["twitch_token"]
+	elif token == "bearer":
+		auth = "Bearer " + session["twitch_token"]
 	elif token == "app":
 		r = requests.post("https://id.twitch.tv/oauth2/token", data={
 			"grant_type": "client_credentials",
@@ -129,7 +133,9 @@ def format_time(tm, tz):
 
 @app.route("/")
 def mainpage():
-	if "twitch_token" not in session:
+	# NOTE: If we've *reduced* the required scopes, this will still force a re-login.
+	# However, it'll be an easy login, as Twitch will recognize the existing auth.
+	if "twitch_token" not in session or session.get("twitch_auth_scopes") != REQUIRED_SCOPES:
 		return render_template("login.html")
 	token = session["twitch_token"]
 	user = session["twitch_user"]
@@ -171,6 +177,23 @@ def update():
 		})
 	except TwitchDataError as e:
 		session["last_error_message"] = "Stream status update not accepted: " + e.message
+		return redirect(url_for("mainpage"))
+
+	if "tags" in request.form:
+		# Convert tag names into IDs
+		tags = tuple(t.strip() for t in request.form["tags"].split(","))
+		tag_ids = database.get_tag_ids(tags)
+		if len(tag_ids) != len(tags):
+			session["last_error_message"] = "Tag names not all found in Twitch" # TODO: Make this error friendlier
+			return redirect(url_for("mainpage"))
+		try:
+			resp = query("helix/streams/tags", method="PUT", token="bearer",
+				params={"broadcaster_id": user["_id"]},
+				data={"tag_ids": tag_ids},
+			)
+		except TwitchDataError as e:
+			session["last_error_message"] = "Stream tags update not accepted: " + e.message
+
 	return redirect(url_for("mainpage"))
 
 @app.route("/schedule", methods=["POST"])
@@ -278,7 +301,7 @@ def cancel_tweet(id):
 @app.route("/login")
 def login():
 	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
-		scope="user_read channel_editor")
+		scope=REQUIRED_SCOPES)
 	uri, state = twitch.authorization_url("https://id.twitch.tv/oauth2/authorize",
 		redirect_uri=url_for("authorized", _external=True))
 	session["login_state"] = state
@@ -306,6 +329,7 @@ def authorized():
 		raise Exception
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
+	session["twitch_auth_scopes"] = " ".join(sorted(resp["scope"]))
 	user = query("user")
 	database.create_user(user["_id"])
 	session["twitch_user"] = user

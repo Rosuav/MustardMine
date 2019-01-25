@@ -370,3 +370,10 @@ def replace_all_tags(tags):
 		psycopg2.extras.execute_values(cur,
 			"insert into mustard.tags (id, english_name, english_desc) values %s",
 			tags)
+
+def get_tag_ids(tag_names):
+	"""Convert tag names into IDs"""
+	tag_names = tuple(tag_names)
+	with postgres, postgres.cursor() as cur:
+		cur.execute("select id from mustard.tags where english_name in %s", (tag_names,))
+		return [row[0] for row in cur]
