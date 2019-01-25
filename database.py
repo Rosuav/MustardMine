@@ -7,6 +7,10 @@ import base64
 import pytz
 from datetime import datetime, timedelta
 
+# NOTE: We use one single connection per process, but every function in this module
+# creates its own dedicated cursor. This means that these functions should be thread
+# safe; psycopg2 has thread-safe connections but not thread-safe cursors.
+assert psycopg2.threadsafety >= 2
 postgres = psycopg2.connect(config.DATABASE_URI)
 
 # Assumes that dict preserves insertion order (CPython 3.6+, other Python 3.7+, possible 3.5)
