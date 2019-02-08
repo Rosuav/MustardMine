@@ -108,6 +108,11 @@ textarea {
 	cursor: pointer;
 }
 
+#picker_cancel {
+	position: absolute;
+	right: 1em; top: 1em;
+}
+
 #errormessage {
 	border: 3px solid red;
 	background: #fcc;
