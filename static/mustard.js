@@ -279,7 +279,15 @@ document.getElementById("picker_results").onclick = function(event) {
 		document.getElementById("category").value = li.dataset.pick;
 		document.getElementById("picker").style.removeProperty("display");
 	}
-	else document.getElementById("tags").value += ", " + li.dataset.pick;
+	else
+	{
+		const t = document.getElementById("tags");
+		const tags = t.value.split(", "); //NOTE: The back end splits on "," and strips spaces.
+		if (tags.includes(li.dataset.pick)) return; //Already got it
+		tags.push(li.dataset.pick); tags.sort();
+		while (tags[0] === "") tags.shift(); //Any empty string(s) should have sorted first
+		t.value = tags.join(", ");
+	}
 }
 document.getElementById("picker_cancel").onclick = () => document.getElementById("picker").style.removeProperty("display");
 
