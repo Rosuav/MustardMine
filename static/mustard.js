@@ -235,10 +235,12 @@ function force_timers(timestr) {
 document.getElementById("set-timer").onclick = () => force_timers(document.getElementById("targettime").value);
 document.querySelectorAll(".timer-force").forEach(btn => btn.onclick = function() {force_timers(this.innerHTML);});
 
+let picking = "";
 document.getElementById("pick_cat").onclick = function(ev) {
 	document.getElementById("picker_search").value = "";
 	document.getElementById("picker_results").innerHTML = "";
 	document.getElementById("picker").style.display = "block";
+	picking = "game";
 	ev.preventDefault();
 }
 
@@ -250,9 +252,8 @@ document.getElementById("picker_search").oninput = async function() {
 	{
 		try {
 			searching = true;
-			const res = await fetch("/search/game?q=" + encodeURIComponent(val), {credentials: "include"});
-			const games = await res.json();
-			document.getElementById("picker_results").innerHTML = games.map(game =>
+			const res = await (await fetch(`/search/${picking}?q=` + encodeURIComponent(val))).json();
+			document.getElementById("picker_results").innerHTML = res.map(game =>
 				`<li><img src="${game.box.small}" alt="">${game.localized_name}</li>`
 			).join("");
 		}
