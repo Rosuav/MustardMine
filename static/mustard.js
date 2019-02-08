@@ -235,6 +235,9 @@ function force_timers(timestr) {
 document.getElementById("set-timer").onclick = () => force_timers(document.getElementById("targettime").value);
 document.querySelectorAll(".timer-force").forEach(btn => btn.onclick = function() {force_timers(this.innerHTML);});
 
+const pickmapper = {
+	game: function(game) {return `<li><img src="${game.box.small}" alt="">${game.localized_name}</li>`;},
+};
 let picking = "";
 document.getElementById("pick_cat").onclick = function(ev) {
 	document.getElementById("picker_search").value = "";
@@ -253,9 +256,7 @@ document.getElementById("picker_search").oninput = async function() {
 		try {
 			searching = true;
 			const res = await (await fetch(`/search/${picking}?q=` + encodeURIComponent(val))).json();
-			document.getElementById("picker_results").innerHTML = res.map(game =>
-				`<li><img src="${game.box.small}" alt="">${game.localized_name}</li>`
-			).join("");
+			document.getElementById("picker_results").innerHTML = res.map(pickmapper[picking]).join("");
 		}
 		finally {
 			searching = false;
