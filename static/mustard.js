@@ -236,16 +236,19 @@ document.getElementById("set-timer").onclick = () => force_timers(document.getEl
 document.querySelectorAll(".timer-force").forEach(btn => btn.onclick = function() {force_timers(this.innerHTML);});
 
 const pickmapper = {
-	game: function(game) {return `<li><img src="${game.box.small}" alt="">${game.localized_name}</li>`;},
+	game: function(game) {return `<li data-pick="${game.localized_name}"><img src="${game.box.small}" alt="">${game.localized_name}</li>`;},
+	tag: function(tag) {return `<li data-pick="${tag.english_name}">${tag.english_name}: ${tag.english_desc}</li>`;},
 };
 let picking = "";
-document.getElementById("pick_cat").onclick = function(ev) {
+function open_picker(now_picking, heading) {
+	picking = now_picking;
 	document.getElementById("picker_search").value = "";
 	document.getElementById("picker_results").innerHTML = "";
+	document.getElementById("picker_heading").innerHTML = heading;
 	document.getElementById("picker").style.display = "block";
-	picking = "game";
-	ev.preventDefault();
 }
+document.getElementById("pick_cat").onclick = function(ev) {open_picker("game", "Pick a category:"); ev.preventDefault();}
+document.getElementById("pick_tag").onclick = function(ev) {open_picker("tag", "Select tags:"); ev.preventDefault();}
 
 let searching = false;
 document.getElementById("picker_search").oninput = async function() {
@@ -271,8 +274,12 @@ document.getElementById("picker_results").onclick = function(event) {
 	let li = event.target;
 	while (li && li.tagName != "LI" && li != event.currentTarget) li = li.parentElement;
 	if (li.tagName != "LI") return;
-	document.getElementById("category").value = li.innerText.trim();
-	document.getElementById("picker").style.removeProperty("display");
+	if (picking === "game")
+	{
+		document.getElementById("category").value = li.dataset.pick;
+		document.getElementById("picker").style.removeProperty("display");
+	}
+	else document.getElementById("tags").value += ", " + li.dataset.pick;
 }
 document.getElementById("picker_cancel").onclick = () => document.getElementById("picker").style.removeProperty("display");
 

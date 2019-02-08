@@ -38,13 +38,13 @@ Scheduled tweet(s):
 <table>
 <tr><td><label for=category>Category:</label></td><td><input id=category name=category size=30><button id=pick_cat type=button>Pick</button></td></tr>
 <tr><td><label for=title>Stream title:</label></td><td><input id=title name=title size=125></td></tr>
-<tr><td>Tags:</td><td><input id=tags name=tags size=125></td></tr>
-<tr><td colspan=2>Separate multiple tags with commas. (A tag picker is on my TODO list.)</td></tr>
+<tr><td>Tags:</td><td><input id=tags name=tags size=125> <button id=pick_tag type=button>Pick</button></td></tr>
+<tr><td colspan=2>Separate multiple tags with commas.</td></tr>
 </table>
 <input type=submit value="Update stream info"> <button type=button id=save>Save this setup</button>
 </form>
 <div id=picker class=modal>
-<h3>Pick a category:</h3>
+<h3 id=picker_heading>Pick a category:</h3>
 <input id=picker_search size=30>
 <ul id=picker_results></ul>
 <button id=picker_cancel>Cancel</button>
