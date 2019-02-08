@@ -300,3 +300,11 @@ document.getElementById("next_section").onclick = () => {
 	next.classList.add("current");
 	cur.classList.remove("current");
 }
+
+document.querySelectorAll("form").forEach(form => form.onkeydown = function(ev) {
+	//On Ctrl-Enter, submit the form.
+	//TODO: What do Mac users expect? Check specifically with Twitter.
+	//If they expect Meta-Enter, can we handle that? Better still, is
+	//there a generic event that we should be hooking?
+	if (ev.ctrlKey && ev.keyCode === 13) ev.currentTarget.submit();
+});
