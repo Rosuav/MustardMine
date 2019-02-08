@@ -410,6 +410,10 @@ def findgame():
 	games = query("search/games", params={"query": request.args["q"], "type": "suggest"})
 	return jsonify([{key: game[key] for key in ("name", "localized_name", "box")} for game in games["games"] or ()])
 
+@app.route("/search/tag")
+def findtag():
+	return jsonify(database.find_tags_by_prefix(request.args["q"]))
+
 # ---- Config management API ----
 
 @app.route("/api/hello")

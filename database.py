@@ -377,3 +377,9 @@ def get_tag_ids(tag_names):
 	with postgres, postgres.cursor() as cur:
 		cur.execute("select id from mustard.tags where english_name in %s", (tag_names,))
 		return [row[0] for row in cur]
+
+def find_tags_by_prefix(prefix):
+	"""Get a list of all tags that start with some string"""
+	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+		cur.execute("select * from mustard.tags where english_name ilike %s", (prefix + "%",))
+		return cur.fetchall()
