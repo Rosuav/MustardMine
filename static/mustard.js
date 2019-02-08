@@ -244,18 +244,24 @@ document.getElementById("pick_cat").onclick = function(ev) {
 
 let searching = false;
 document.getElementById("picker_search").oninput = async function() {
-	const val = this.value;
+	let val = this.value;
 	if (val === "" || searching) return;
-	try {
-		searching = true;
-		const res = await fetch("/search/game?q=" + encodeURIComponent(val), {credentials: "include"});
-		const games = await res.json();
-		document.getElementById("picker_results").innerHTML = games.map(game =>
-			`<li><img src="${game.box.small}" alt="">${game.localized_name}</li>`
-		).join("");
-	}
-	finally {
-		searching = false;
+	while (true)
+	{
+		try {
+			searching = true;
+			const res = await fetch("/search/game?q=" + encodeURIComponent(val), {credentials: "include"});
+			const games = await res.json();
+			document.getElementById("picker_results").innerHTML = games.map(game =>
+				`<li><img src="${game.box.small}" alt="">${game.localized_name}</li>`
+			).join("");
+		}
+		finally {
+			searching = false;
+		}
+		//If the input has changed since we started searching, redo the search.
+		if (val === this.value) break;
+		val = this.value;
 	}
 }
 
