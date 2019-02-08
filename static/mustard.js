@@ -253,7 +253,7 @@ document.getElementById("pick_tag").onclick = function(ev) {open_picker("tag", "
 let searching = false;
 document.getElementById("picker_search").oninput = async function() {
 	let val = this.value;
-	if (val === "" || searching) return;
+	if (searching) return;
 	while (true)
 	{
 		try {

@@ -407,6 +407,7 @@ def countdown(id):
 
 @app.route("/search/game")
 def findgame():
+	if request.args["q"] == "": return jsonify([]) # Prevent failure in Twitch API call
 	games = query("search/games", params={"query": request.args["q"], "type": "suggest"})
 	return jsonify([{key: game[key] for key in ("name", "localized_name", "box")} for game in games["games"] or ()])
 
