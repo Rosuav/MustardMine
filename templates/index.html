@@ -55,7 +55,7 @@ Scheduled tweet(s):
 <h2>Twitter</h2>
 <ul class=menu><li>{{ twitter | safe }}</li></ul>
 <form method=post action="/tweet">
-<p><label>Tweet that you're live: <input name=tweet id=tweet size=100></label><span id=tweetlen>0</span> / 280</p>
+<p><label>Tweet that you're live: <textarea name=tweet id=tweet rows=3 cols=100></textarea></label><span id=tweetlen>0</span> / 280</p>
 <p><select name=tweetschedule id=tweetschedule>
 <option value="now">Right now</option>
 <option value="0" selected>At schedule</option>
