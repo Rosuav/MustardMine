@@ -246,6 +246,7 @@ function open_picker(now_picking, heading) {
 	document.getElementById("picker_results").innerHTML = "";
 	document.getElementById("picker_heading").innerHTML = heading;
 	document.getElementById("picker").style.display = "block";
+	document.getElementById("picker_search").oninput(); //Do an initial search immediately
 }
 document.getElementById("pick_cat").onclick = function(ev) {open_picker("game", "Pick a category:"); ev.preventDefault();}
 document.getElementById("pick_tag").onclick = function(ev) {open_picker("tag", "Select tags:"); ev.preventDefault();}
