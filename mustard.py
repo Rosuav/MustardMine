@@ -74,10 +74,11 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 	else:
 		auth = "OAuth " + token
 
-	# 20190125: Default is currently kraken. Progressively convert to explicit
-	# krakenification, then switch the default to helix. (Then progressively
+	# 20190212: All endpoints should have explicit API selection. After a
+	# while, change so the default is helix. (Then progressively
 	# change the requests themselves so we use helix everywhere.)
-	if not endpoint.startswith(("kraken/", "helix/")): endpoint = "kraken/" + endpoint
+	if not endpoint.startswith(("kraken/", "helix/")): raise ValueError("Need explicit selection of API (helix or kraken)")
+	# if not endpoint.startswith(("kraken/", "helix/")): endpoint = "helix/" + endpoint
 	r = requests.request(method, "https://api.twitch.tv/" + endpoint,
 		params=params, data=data, headers={
 		"Accept": "application/vnd.twitchtv.v5+json",
@@ -145,7 +146,7 @@ def mainpage():
 	token = session["twitch_token"]
 	user = session["twitch_user"]
 	# TODO: Switch to the new API /helix/streams
-	channel = query("channels/" + user["_id"])
+	channel = query("kraken/channels/" + user["_id"])
 	tags = query("helix/streams/tags", params={"broadcaster_id": user["_id"]})
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
 	sched_tz, schedule = database.get_schedule(user["_id"])
@@ -176,7 +177,7 @@ def update():
 		return redirect(url_for("mainpage"))
 	user = session["twitch_user"]
 	try:
-		resp = query("channels/" + user["_id"], method="PUT", data={
+		resp = query("kraken/channels/" + user["_id"], method="PUT", data={
 			"channel[game]": request.form["category"],
 			"channel[status]": request.form["title"],
 		})
@@ -335,7 +336,7 @@ def authorized():
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
 	session["twitch_auth_scopes"] = " ".join(sorted(resp["scope"]))
-	user = query("user")
+	user = query("kraken/user")
 	database.create_user(user["_id"])
 	session["twitch_user"] = user
 	return redirect(url_for("mainpage"))
@@ -410,7 +411,7 @@ def countdown(id):
 @app.route("/search/game")
 def findgame():
 	if request.args["q"] == "": return jsonify([]) # Prevent failure in Twitch API call
-	games = query("search/games", params={"query": request.args["q"], "type": "suggest"})
+	games = query("kraken/search/games", params={"query": request.args["q"], "type": "suggest"})
 	return jsonify([{key: game[key] for key in ("name", "localized_name", "box")} for game in games["games"] or ()])
 
 @app.route("/search/tag")
