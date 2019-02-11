@@ -97,7 +97,9 @@ def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_re
 
 		# Recurse for simplicity. Do NOT pass the original token, and be sure to
 		# prevent infinite loops by disabling auto-refresh. Otherwise, pass-through.
-		return query(endpoint, method=method, params=params, data=data, auto_refresh=False)
+		# (But DO pass the token-passing mode.)
+		return query(endpoint, token="bearer" if token == "bearer" else None,
+			method=method, params=params, data=data, auto_refresh=False)
 	if r.status_code == 403:
 		# TODO: What if it *isn't* of this form??
 		raise TwitchDataError(json.loads(r.json()["message"]))
