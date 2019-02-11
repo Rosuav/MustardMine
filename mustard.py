@@ -411,6 +411,8 @@ def countdown(id):
 @app.route("/search/game")
 def findgame():
 	if request.args["q"] == "": return jsonify([]) # Prevent failure in Twitch API call
+	# Game search doesn't seem to be available in Helix yet. Worst case, can
+	# cache it in Postgres same as tags are.
 	games = query("kraken/search/games", params={"query": request.args["q"], "type": "suggest"})
 	return jsonify([{key: game[key] for key in ("name", "localized_name", "box")} for game in games["games"] or ()])
 
