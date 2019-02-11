@@ -26,6 +26,9 @@ TODO:
   for this purpose.
   - Maybe after sending a scheduled tweet, format a message for chat with
     the link? Could be handy for a few channels.
+* Get someone on a Mac to test things in Safari
+  - The <dialog> tag isn't officially supported. Is my monkeypatch enough?
+  - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
