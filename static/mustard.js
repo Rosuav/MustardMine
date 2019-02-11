@@ -343,6 +343,6 @@ document.querySelectorAll("form").forEach(form => form.onkeydown = function(ev) 
 //On browsers with full support, there are many advantages to using dialog rather than
 //plain old div, but this way, other browsers at least have it pop up and down.
 document.querySelectorAll("dialog").forEach(dlg => {
-	if (!dlg.showModal) dlg.showModal = function() {console.log("show"); this.style.display = "block";}
+	if (!dlg.showModal) dlg.showModal = function() {this.style.display = "block";}
 	if (!dlg.close) dlg.close = function() {this.style.removeProperty("display");}
 });
