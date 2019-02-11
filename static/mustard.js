@@ -257,8 +257,8 @@ document.getElementById("set-timer").onclick = () => force_timers(document.getEl
 event(".timer-force", "click", function() {force_timers(this.innerHTML);});
 
 const pickmapper = {
-	game: function(game) {return `<li data-pick="${game.localized_name}"><img src="${game.box.small}" alt="">${game.localized_name}</li>`;},
-	tag: function(tag) {return `<li data-pick="${tag.english_name}">${tag.english_name}: ${tag.english_desc}</li>`;},
+	game: game => build("li", {dataset: {pick: game.localized_name}}, [build("img", {src: game.box.small, alt: ""}), game.localized_name]),
+	tag: tag => build("li", {dataset: {pick: tag.english_name}}, tag.english_name + ": " + tag.english_desc),
 };
 let picking = "";
 function open_picker(now_picking, heading) {
@@ -281,7 +281,7 @@ document.getElementById("picker_search").oninput = async function() {
 		try {
 			searching = true;
 			const res = await (await fetch(`/search/${picking}?q=` + encodeURIComponent(val))).json();
-			document.getElementById("picker_results").innerHTML = res.map(pickmapper[picking]).join("");
+			set_content(document.getElementById("picker_results"), res.map(pickmapper[picking]));
 		}
 		finally {
 			searching = false;
