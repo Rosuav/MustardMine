@@ -15,9 +15,8 @@ function set_content(elem, children) {
 function build(tag, attributes, children) {
 	const ret = document.createElement(tag);
 	if (attributes) for (let attr in attributes) {
-		if (attr === "dataset") //Merge the datasets
-			for (let data in attributes.dataset)
-				ret.dataset[data] = attributes.dataset[data]
+		if (attr.startsWith("data-")) //Simplistic - we don't transform "data-foo-bar" into "fooBar" per HTML.
+			ret.dataset[data.slice(5)] = attributes[attr];
 		else ret[attr] = attributes[attr];
 	}
 	if (children) set_content(ret, children);
@@ -257,8 +256,8 @@ document.getElementById("set-timer").onclick = () => force_timers(document.getEl
 event(".timer-force", "click", function() {force_timers(this.innerHTML);});
 
 const pickmapper = {
-	game: game => build("li", {dataset: {pick: game.localized_name}}, [build("img", {src: game.box.small, alt: ""}), game.localized_name]),
-	tag: tag => build("li", {dataset: {pick: tag.english_name}}, tag.english_name + ": " + tag.english_desc),
+	game: game => build("li", {"data-pick": game.localized_name}, [build("img", {src: game.box.small, alt: ""}), game.localized_name]),
+	tag: tag => build("li", {"data-pick": tag.english_name}, tag.english_name + ": " + tag.english_desc),
 };
 let picking = "";
 function open_picker(now_picking, heading) {
