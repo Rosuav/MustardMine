@@ -103,6 +103,11 @@ dialog {
 	cursor: pointer;
 }
 
+#picker li img {
+	vertical-align: middle;
+	margin-top: 0.25em;
+}
+
 #picker_cancel {
 	position: absolute;
 	right: 1em; top: 1em;
