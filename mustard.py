@@ -51,13 +51,15 @@ class TwitchDataError(Exception):
 		self.__dict__.update(error)
 		super().__init__(error["message"])
 
-def query(endpoint, *, token=None, method="GET", params=None, data=None, auto_refresh=True):
+def query(endpoint, *, token="oauth", method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
 	# the auth token, and set auto_refresh to False.
 	# TODO: Tidy up all this mess of auth patterns. It'll probably be easiest
 	# to migrate everything to Helix first, and then probably everything will
 	# use Bearer or App authentication.
 	if token is None:
+		auth = None
+	elif token == "oauth":
 		auth = "OAuth " + session["twitch_token"]
 	elif token == "bearer":
 		auth = "Bearer " + session["twitch_token"]
@@ -143,11 +145,10 @@ def mainpage():
 	# However, it'll be an easy login, as Twitch will recognize the existing auth.
 	if "twitch_token" not in session or session.get("twitch_auth_scopes") != REQUIRED_SCOPES:
 		return render_template("login.html")
-	token = session["twitch_token"]
 	user = session["twitch_user"]
 	# TODO: Switch to the new API /helix/streams
-	channel = query("kraken/channels/" + user["_id"])
-	tags = query("helix/streams/tags", params={"broadcaster_id": user["_id"]})
+	channel = query("kraken/channels/" + user["_id"], token="bearer")
+	tags = query("helix/streams/tags", params={"broadcaster_id": user["_id"]}, token="bearer")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
 	sched_tz, schedule = database.get_schedule(user["_id"])
 	if "twitter_oauth" in session:
@@ -180,7 +181,7 @@ def update():
 		resp = query("kraken/channels/" + user["_id"], method="PUT", data={
 			"channel[game]": request.form["category"],
 			"channel[status]": request.form["title"],
-		})
+		}, token="oauth")
 	except TwitchDataError as e:
 		session["last_error_message"] = "Stream status update not accepted: " + e.message
 		return redirect(url_for("mainpage"))
@@ -336,7 +337,7 @@ def authorized():
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
 	session["twitch_auth_scopes"] = " ".join(sorted(resp["scope"]))
-	# kraken_user = query("kraken/user")
+	# kraken_user = query("kraken/user", token="oauth")
 	# The Kraken response includes fields not in Helix, including created_at,
 	# and email (though Helix gives us the latter if we add an OAuth scope).
 	user = query("helix/users", token="bearer")["data"][0]
@@ -417,7 +418,7 @@ def findgame():
 	if request.args["q"] == "": return jsonify([]) # Prevent failure in Twitch API call
 	# Game search doesn't seem to be available in Helix yet. Worst case, can
 	# always cache it in Postgres same as tags are. This needs no authentication.
-	games = query("kraken/search/games", params={"query": request.args["q"], "type": "suggest"}, token="nil")
+	games = query("kraken/search/games", params={"query": request.args["q"], "type": "suggest"}, token=None)
 	return jsonify([{key: game[key] for key in ("name", "localized_name", "box")} for game in games["games"] or ()])
 
 @app.route("/search/tag")
