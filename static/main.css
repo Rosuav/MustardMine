@@ -24,6 +24,7 @@ details {
 
 #login-twitter {
 	background-color: #1DA1F2;
+	max-width: 135px;
 }
 
 #login-twitter a {
@@ -35,12 +36,6 @@ details {
 
 #login-twitter img {
 	max-height: 32px;
-}
-
-.menu {
-	display: flex;
-	flex-direction: row;
-	list-style: none;
 }
 
 /* The header row doesn't get styled like the others */

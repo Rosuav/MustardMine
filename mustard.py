@@ -13,7 +13,7 @@ from pprint import pprint
 # patching happen automatically, it happens too late, and we get
 # RecursionErrors and such. There's a helpful warning on startup.
 from gevent import monkey; monkey.patch_all(subprocess=True)
-from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response
+from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response, Markup
 from flask_sockets import Sockets
 from authlib.client import OAuth1Session, OAuth2Session
 import requests
@@ -154,7 +154,7 @@ def mainpage():
 		cred = (auth["oauth_token"], auth["oauth_token_secret"])
 		tweets = [(format_time(tm, sched_tz), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
 	else:
-		twitter = """<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>"""
+		twitter = Markup("""<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>""")
 		tweets = []
 	error = session.get("last_error_message", "")
 	session["last_error_message"] = ""
