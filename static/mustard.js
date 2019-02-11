@@ -16,7 +16,7 @@ function build(tag, attributes, children) {
 	const ret = document.createElement(tag);
 	if (attributes) for (let attr in attributes) {
 		if (attr === "dataset") //Merge the datasets
-			for (let data of attributes.dataset)
+			for (let data in attributes.dataset)
 				ret.dataset[data] = attributes.dataset[data]
 		else ret[attr] = attributes[attr];
 	}
