@@ -18,9 +18,6 @@ TODO:
     calls to database.py (and single transactions within that), but the
     landing page has a ton of separate (read-only) queries.
 * Work on styling... lots.
-* Check which buttons get hit when you press Enter in each form. Seems to
-  be borked in some places (check category box). Audit that buttons are
-  all type=button if inside a form.
 * Support chat integrations? Have reserved the Twitch username MustardMine
   for this purpose.
   - Maybe after sending a scheduled tweet, format a message for chat with
