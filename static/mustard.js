@@ -243,7 +243,7 @@ set_content(document.getElementById("checklist"),
 
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
 
-document.querySelectorAll(".timer-adjust").forEach(btn => btn.onclick = function() {
+event(".timer-adjust", "click", function() {
 	fetch("/timer-adjust-all/" + this.dataset.delta, {credentials: "include"}).catch(err => console.error(err));
 });
 function force_timers(timestr) {
@@ -330,7 +330,7 @@ document.getElementById("next_section").onclick = () => {
 	cur.classList.remove("current");
 }
 
-document.querySelectorAll("form").forEach(form => form.onkeydown = function(ev) {
+event("form", "keydown", function(ev) {
 	//On Ctrl-Enter, submit the form.
 	//TODO: What do Mac users expect? Check specifically with Twitter.
 	//If they expect Meta-Enter, can we handle that? Better still, is
