@@ -51,7 +51,7 @@ class TwitchDataError(Exception):
 		self.__dict__.update(error)
 		super().__init__(error["message"])
 
-def query(endpoint, *, token="oauth", method="GET", params=None, data=None, auto_refresh=True):
+def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
 	# the auth token, and set auto_refresh to False.
 	# TODO: Tidy up all this mess of auth patterns. It'll probably be easiest
@@ -101,7 +101,7 @@ def query(endpoint, *, token="oauth", method="GET", params=None, data=None, auto
 		# Recurse for simplicity. Do NOT pass the original token, and be sure to
 		# prevent infinite loops by disabling auto-refresh. Otherwise, pass-through.
 		# (But DO pass the token-passing mode.)
-		return query(endpoint, token="bearer" if token == "bearer" else None,
+		return query(endpoint, token="bearer" if token == "bearer" else "oauth",
 			method=method, params=params, data=data, auto_refresh=False)
 	if r.status_code == 403:
 		# TODO: What if it *isn't* of this form??
