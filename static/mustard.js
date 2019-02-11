@@ -2,6 +2,16 @@ function event(selector, ev, func) {
 	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
 }
 
+function set_content(elem, children) {
+	while (elem.lastChild) elem.removeChild(elem.lastChild);
+	if (!Array.isArray(children)) children = [children];
+	for (let child of children) {
+		if (child === "") continue;
+		if (typeof child === "string") child = document.createTextNode(child);
+		elem.appendChild(child);
+	}
+	return elem;
+}
 function build(tag, attributes, children) {
 	const ret = document.createElement(tag);
 	if (attributes) for (let attr in attributes) {
@@ -10,13 +20,7 @@ function build(tag, attributes, children) {
 				ret.dataset[data] = attributes.dataset[data]
 		else ret[attr] = attributes[attr];
 	}
-	if (children) {
-		if (!Array.isArray(children)) children = [children];
-		for (let child of children) {
-			if (typeof child === "string") child = document.createTextNode(child);
-			ret.appendChild(child);
-		}
-	}
+	if (children) set_content(ret, children);
 	return ret;
 }
 
@@ -232,10 +236,11 @@ if (sched_tz === "") {
 	}
 }
 
-document.getElementById("checklist").innerHTML = document.forms.checklist.elements.checklist.value
+set_content(document.getElementById("checklist"),
+	document.forms.checklist.elements.checklist.value
 	.trim().split("\n")
-	.map(item => item && "<li><label><input type=checkbox>" + item + "</label></li>")
-	.join("");
+	.map(item => item && build("li", 0, build("label", 0, [build("input", {type: "checkbox"}), item])))
+);
 
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
 
