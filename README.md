@@ -18,7 +18,6 @@ TODO:
     calls to database.py (and single transactions within that), but the
     landing page has a ton of separate (read-only) queries.
 * Work on styling... lots.
-* Support tags, just as soon as Twitch's API allows that
 * Check which buttons get hit when you press Enter in each form. Seems to
   be borked in some places (check category box). Audit that buttons are
   all type=button if inside a form.
