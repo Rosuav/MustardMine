@@ -31,7 +31,5 @@ TODO:
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
-CAUTION: On Python 3.7+, gunicorn.workers.async collides with the keyword.
-This may need to be hacked, until such time as a new release of gunicorn
-fixes this. See https://github.com/benoitc/gunicorn/pull/1796 for info.
-Last checked 20180622 and still a problem (gevent 1.3.4, gunicorn 19.8.1).
+NOTE: On Python 3.7+, gunicorn version 19.9.0 or newer is required, to
+avoid a keyword collision on gunicorn.workers.async (renamed in 19.9).
