@@ -245,7 +245,7 @@ function open_picker(now_picking, heading) {
 	document.getElementById("picker_search").value = "";
 	document.getElementById("picker_results").innerHTML = "";
 	document.getElementById("picker_heading").innerHTML = heading;
-	document.getElementById("picker").style.display = "block";
+	document.getElementById("picker").showModal();
 	document.getElementById("picker_search").oninput(); //Do an initial search immediately
 }
 document.getElementById("pick_cat").onclick = function(ev) {open_picker("game", "Pick a category:"); ev.preventDefault();}
@@ -278,7 +278,7 @@ document.getElementById("picker_results").onclick = function(event) {
 	if (picking === "game")
 	{
 		document.getElementById("category").value = li.dataset.pick;
-		document.getElementById("picker").style.removeProperty("display");
+		document.getElementById("picker").close();
 	}
 	else
 	{
@@ -290,7 +290,7 @@ document.getElementById("picker_results").onclick = function(event) {
 		t.value = tags.join(", ");
 	}
 }
-document.getElementById("picker_cancel").onclick = () => document.getElementById("picker").style.removeProperty("display");
+document.getElementById("picker_cancel").onclick = () => document.getElementById("picker").close();
 
 document.getElementById("prev_section").onclick = () => {
 	const cur = document.querySelector("section.current");
@@ -316,4 +316,12 @@ document.querySelectorAll("form").forEach(form => form.onkeydown = function(ev) 
 	//If they expect Meta-Enter, can we handle that? Better still, is
 	//there a generic event that we should be hooking?
 	if (ev.ctrlKey && ev.keyCode === 13) ev.currentTarget.submit();
+});
+
+//For browsers with only partial support for the <dialog> tag, add the barest minimum.
+//On browsers with full support, there are many advantages to using dialog rather than
+//plain old div, but this way, other browsers at least have it pop up and down.
+document.querySelectorAll("dialog").forEach(dlg => {
+	if (!dlg.showModal) dlg.showModal = function() {console.log("show"); this.style.display = "block";}
+	if (!dlg.close) dlg.close = function() {this.style.removeProperty("display");}
 });
