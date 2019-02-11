@@ -2,22 +2,38 @@ function event(selector, ev, func) {
 	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
 }
 
+function build(tag, attributes, children) {
+	const ret = document.createElement(tag);
+	if (attributes) for (let attr in attributes) {
+		if (attr === "dataset") //Merge the datasets
+			for (let data of attributes.dataset)
+				ret.dataset[data] = attributes.dataset[data]
+		else ret[attr] = attributes[attr];
+	}
+	if (children) {
+		if (!Array.isArray(children)) children = [children];
+		for (let child of children) {
+			if (typeof child === "string") child = document.createTextNode(child);
+			ret.appendChild(child);
+		}
+	}
+	return ret;
+}
+
 const setupform = document.forms.setups.elements;
 const schedform = document.forms.schedule.elements;
 
 function render_setups() {
-	const html = setups.map((s, i) => `
-		<tr onclick="pick_setup(${i})">
-			<td>${s.category}</td>
-			<td>${s.title}</td>
-			<td>${s.tags}</td>
-			<td>${s.tweet}</td>
-			<td><button class="deleting" id="del${i}" onclick="try_delete_setup(${i})">X</button></td>
-		</tr>
-	`);
-	document.getElementById("setups").innerHTML =
-		"<tr><th>Category</th><th>Title</th><th>Tags</th><th>Tweet</th></tr>" +
-		html.join("");
+	const rows = setups.map((s, i) => build("tr", {onclick: () => pick_setup(i)}, [
+		build("td", 0, s.category),
+		build("td", 0, s.title),
+		build("td", 0, s.tags),
+		build("td", 0, s.tweet),
+		build("td", 0, build("button", {className: "deleting", id: "del"+i, onclick: () => try_delete_setup(i)}, "X")),
+	]));
+	const table = document.getElementById("setups");
+	while (table.lastChild != table.firstChild) table.removeChild(table.lastChild); //Keep the header row only
+	rows.forEach(row => table.appendChild(row));
 }
 
 function pick_setup(i) {
