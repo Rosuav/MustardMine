@@ -16,7 +16,7 @@ function build(tag, attributes, children) {
 	const ret = document.createElement(tag);
 	if (attributes) for (let attr in attributes) {
 		if (attr.startsWith("data-")) //Simplistic - we don't transform "data-foo-bar" into "fooBar" per HTML.
-			ret.dataset[data.slice(5)] = attributes[attr];
+			ret.dataset[attr.slice(5)] = attributes[attr];
 		else ret[attr] = attributes[attr];
 	}
 	if (children) set_content(ret, children);
