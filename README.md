@@ -25,6 +25,8 @@ TODO:
 * Get someone on a Mac to test things in Safari
   - The <dialog> tag isn't officially supported. Is my monkeypatch enough?
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
+* Can it be made so mods can be given permission to update stuff? Maybe just
+  selecting a pre-built setup?
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
