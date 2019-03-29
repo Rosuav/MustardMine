@@ -84,7 +84,7 @@ def create_tables():
 				cur.execute("alter table mustard." + table + " " + ", ".join(actions))
 create_tables()
 
-def create_user(twitchid):
+def create_user(twitchid): # Really "ensure_user" as it's quite happy to not-create if exists
 	# TODO: Save the user's OAuth info, incl Twitter.
 	try:
 		with postgres, postgres.cursor() as cur:
