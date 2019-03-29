@@ -140,15 +140,26 @@ def format_time(tm, tz):
 	return tm.strftime("at %H:%M")
 
 @app.route("/")
-def mainpage():
+@app.route("/editor/<channelid>")
+def mainpage(channelid=None):
 	# NOTE: If we've *reduced* the required scopes, this will still force a re-login.
 	# However, it'll be an easy login, as Twitch will recognize the existing auth.
 	if "twitch_token" not in session or session.get("twitch_auth_scopes") != REQUIRED_SCOPES:
 		return render_template("login.html")
 	user = session["twitch_user"]
+	if channelid is None: channelid = user["_id"]
+	try: channelid = str(int(channelid))
+	except ValueError:
+		# If you go to /editor/somename, redirect to /editor/equivalent-id
+		# Bookmarking the version with the ID will be slightly faster, but
+		# streamers will usually want to share the version with the name.
+		users = query("helix/users", token=None, params={"login": channelid})["data"]
+		# users is either an empty list (bad login) or a list of one.
+		if not users: return redirect("/")
+		return redirect("/editor/" + users[0]["id"])
 	# TODO: Switch to the new API /helix/streams
-	channel = query("kraken/channels/" + user["_id"], token="bearer")
-	tags = query("helix/streams/tags", params={"broadcaster_id": user["_id"]}, token="bearer")
+	channel = query("kraken/channels/" + channelid, token="bearer")
+	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="bearer")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
 	sched_tz, schedule = database.get_schedule(user["_id"])
 	if "twitter_oauth" in session:
@@ -164,7 +175,7 @@ def mainpage():
 	session["last_error_message"] = ""
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
-		channel=channel, error=error,
+		channel=channel, channelid=channelid, error=error,
 		setups=database.list_setups(user["_id"]),
 		sched_tz=sched_tz, schedule=schedule,
 		checklist=database.get_checklist(user["_id"]),
@@ -177,14 +188,20 @@ def update():
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
 	user = session["twitch_user"]
+	channelid = request.form.get("channelid") or user["_id"] # Use the login if blank or missing
+	if channelid == user["_id"]: # Even if it was explicitly stating the default
+		dest = url_for("mainpage")
+	else:
+		dest = url_for("mainpage", channelid=channelid)
+	print("Updating data for channel", channelid);
 	try:
-		resp = query("kraken/channels/" + user["_id"], method="PUT", data={
+		resp = query("kraken/channels/" + channelid, method="PUT", data={
 			"channel[game]": request.form["category"],
 			"channel[status]": request.form["title"],
 		}, token="oauth")
 	except TwitchDataError as e:
 		session["last_error_message"] = "Stream status update not accepted: " + e.message
-		return redirect(url_for("mainpage"))
+		return redirect(dest)
 
 	if "tags" in request.form:
 		# Convert tag names into IDs
@@ -195,13 +212,13 @@ def update():
 			return redirect(url_for("mainpage"))
 		try:
 			resp = query("helix/streams/tags", method="PUT", token="bearer",
-				params={"broadcaster_id": user["_id"]},
+				params={"broadcaster_id": channelid},
 				data={"tag_ids": tag_ids},
 			)
 		except TwitchDataError as e:
 			session["last_error_message"] = "Stream tags update not accepted: " + e.message
 
-	return redirect(url_for("mainpage"))
+	return redirect(dest)
 
 @app.route("/schedule", methods=["POST"])
 def update_schedule():
