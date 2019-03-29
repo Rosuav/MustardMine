@@ -424,6 +424,7 @@ def create_timer(channelid):
 
 @app.route("/timer/<id>")
 def edit_timer(id):
+	# TODO: Need channelid
 	info = database.get_timer_details(session["twitch_user"]["_id"], id)
 	if not info: return "Timer not found, or not owned by you", 404
 	return render_template("timer.html", info=info)
@@ -441,6 +442,7 @@ def parse_time(timestr):
 
 @app.route("/timer/<id>", methods=["POST"])
 def save_timer(id):
+	# TODO: Need channelid
 	database.update_timer_details(session["twitch_user"]["_id"], id,
 		title=request.form["title"],
 		delta=parse_time(request.form["delta"]),
