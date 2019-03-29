@@ -1,6 +1,7 @@
 import base64
 import collections
 import datetime
+import functools
 import json
 import os
 import sys
@@ -139,6 +140,21 @@ def format_time(tm, tz):
 	tm = datetime.datetime.fromtimestamp(tm, tz=pytz.timezone(tz))
 	return tm.strftime("at %H:%M")
 
+def wants_channelid(f):
+	"""Wrap a routed function to provide a channel ID
+
+	If the function returns a redirect to the main page, will mutate it.
+	"""
+	@functools.wraps(f)
+	def handler(*a, **kw):
+		user = session["twitch_user"]
+		channelid = request.form.get("channelid") or user["_id"] # Use the login if blank or missing
+		resp = f(*a, **kw, channelid=channelid)
+		if resp.status_code == 302 and resp.location == url_for("mainpage") and channelid != user["_id"]:
+			return redirect(url_for("mainpage", channelid=channelid))
+		return resp
+	return handler
+
 @app.route("/")
 @app.route("/editor/<channelid>")
 def mainpage(channelid=None):
@@ -162,7 +178,7 @@ def mainpage(channelid=None):
 	channel = query("kraken/channels/" + channelid, token="bearer")
 	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="bearer")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
-	sched_tz, schedule = database.get_schedule(user["_id"])
+	sched_tz, schedule = database.get_schedule(channelid)
 	if "twitter_oauth" in session:
 		auth = session["twitter_oauth"]
 		username = auth["screen_name"]
@@ -177,23 +193,19 @@ def mainpage(channelid=None):
 	return render_template("index.html",
 		twitter=twitter, username=user["display_name"],
 		channel=channel, channelid=channelid, error=error,
-		setups=database.list_setups(user["_id"]),
+		setups=database.list_setups(channelid),
 		sched_tz=sched_tz, schedule=schedule,
-		checklist=database.get_checklist(user["_id"]),
-		timers=database.list_timers(user["_id"]),
+		checklist=database.get_checklist(channelid),
+		timers=database.list_timers(channelid),
 		tweets=tweets,
 	)
 
 @app.route("/update", methods=["POST"])
-def update():
+@wants_channelid
+def update(channelid):
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
 	user = session["twitch_user"]
-	channelid = request.form.get("channelid") or user["_id"] # Use the login if blank or missing
-	if channelid == user["_id"]: # Even if it was explicitly stating the default
-		dest = url_for("mainpage")
-	else:
-		dest = url_for("mainpage", channelid=channelid)
 	print("Updating data for channel", channelid);
 	try:
 		resp = query("kraken/channels/" + channelid, method="PUT", data={
@@ -202,7 +214,7 @@ def update():
 		}, token="oauth")
 	except TwitchDataError as e:
 		session["last_error_message"] = "Stream status update not accepted: " + e.message
-		return redirect(dest)
+		return redirect(url_for("mainpage"))
 
 	if "tags" in request.form:
 		# Convert tag names into IDs
@@ -219,10 +231,11 @@ def update():
 		except TwitchDataError as e:
 			session["last_error_message"] = "Stream tags update not accepted: " + e.message
 
-	return redirect(dest)
+	return redirect(url_for("mainpage"))
 
 @app.route("/schedule", methods=["POST"])
-def update_schedule():
+@wants_channelid
+def update_schedule(channelid):
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
 	user = session["twitch_user"]
@@ -250,18 +263,18 @@ def update_schedule():
 		# demand one from the user. The front end will normally try
 		# to provide a default timezone, so most users won't have
 		# to worry about this.
-		tz = database.get_schedule(user["_id"])[0]
+		tz = database.get_schedule(channelid)[0]
 		if not tz:
 			return "Please specify a timezone", 400
-	database.set_schedule(user["_id"], tz, schedule)
+	database.set_schedule(channelid, tz, schedule)
 	return redirect(url_for("mainpage"))
 
 @app.route("/checklist", methods=["POST"])
-def update_checklist():
+@wants_channelid
+def update_checklist(channelid):
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
-	user = session["twitch_user"]
-	database.set_checklist(user["_id"], request.form["checklist"].strip().replace("\r", ""))
+	database.set_checklist(channelid, request.form["checklist"].strip().replace("\r", ""))
 	return redirect(url_for("mainpage"))
 
 @app.route("/tweet", methods=["POST"])

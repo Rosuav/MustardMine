@@ -73,6 +73,7 @@ to save yourself the trouble of writing it out every time.</p>
 <section id=schedule>
 <h2>Schedule</h2>
 <form name=schedule method=post action="/schedule">
+<input type=hidden name=channelid value={{channelid}}>
 <p>Specify schedule in timezone: <input name=sched_tz size=40> <span id=othertz></span></p>
 <p>Next scheduled time: <span id=nextsched></span></p>
 <table>
@@ -120,6 +121,7 @@ All timers will be instantly extended/shortened by the specified time.
 <ul id=checklist></ul>
 <details><summary>Edit checklist</summary>
 <form name=checklist action="/checklist" method=post>
+<input type=hidden name=channelid value={{channelid}}>
 <div class="columns">
 <textarea name=checklist rows=10 cols=80>
 {{checklist}}
