@@ -74,7 +74,7 @@ document.getElementById("hello").onclick = async function() {
 */
 
 document.getElementById("save").onclick = async function() {
-	const result = await (await fetch("/api/setups", {
+	const result = await (await fetch("/api/setups?channelid=" + channel._id, {
 		credentials: "include",
 		headers: {"Content-Type": "application/json"},
 		method: "POST",
@@ -90,12 +90,12 @@ document.getElementById("save").onclick = async function() {
 }
 
 async function delete_setup(i) {
-	const result = await fetch("/api/setups/" + i, {
+	const result = await fetch("/api/setups/" + i + "?channelid=" + channel._id, {
 		credentials: "include",
 		method: "DELETE",
 	});
 	if (!result.ok) return;
-	setups = await (await fetch("/api/setups", {credentials: "include"})).json();
+	setups = await (await fetch("/api/setups?channelid=" + channel._id, {credentials: "include"})).json();
 	render_setups();
 }
 
@@ -244,13 +244,15 @@ set_content(document.getElementById("checklist"),
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
 
 event(".timer-adjust", "click", function() {
-	fetch("/timer-adjust-all/" + this.dataset.delta, {credentials: "include"}).catch(err => console.error(err));
+	fetch("/timer-adjust-all/" + this.dataset.delta + "?channelid=" + channel._id, {credentials: "include"})
+		.catch(err => console.error(err));
 });
 function force_timers(timestr) {
 	const [min, sec] = timestr.split(":");
 	const tm = parseInt(min, 10) * 60 + parseInt(sec||"0", 10);
 	if (tm <= 0 || tm > 3600) return; //TODO: Handle these better
-	fetch("/timer-force-all/" + tm, {credentials: "include"}).catch(err => console.error(err));
+	fetch("/timer-force-all/" + tm + "?channelid=" + channel._id, {credentials: "include"})
+		.catch(err => console.error(err));
 }
 document.getElementById("set-timer").onclick = () => force_timers(document.getElementById("targettime").value);
 event(".timer-force", "click", function() {force_timers(this.innerHTML);});

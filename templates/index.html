@@ -56,6 +56,7 @@ Scheduled tweet(s):
 <h2>Twitter</h2>
 {{ twitter }}
 <form method=post action="/tweet">
+<input type=hidden name=channelid value={{channelid}}>
 <p><label>Tweet that you're live: <textarea name=tweet id=tweet rows=3 cols=100></textarea></label><span id=tweetlen>0</span> / 280</p>
 <p><select name=tweetschedule id=tweetschedule>
 <option value="now">Right now</option>
@@ -106,7 +107,7 @@ perfectly is even harder.)</li>
 <li><a href="/countdown/{{id}}" target="_blank">{{title or id}}</a> | <a href="/timer/{{id}}">[edit]</a></li>
 {% endfor-%}
 </ul>
-<form action="/timer/new" method=post><input type=submit value="Create new timer"></form>
+<form action="/timer/new" method=post><input type=hidden name=channelid value={{channelid}}><input type=submit value="Create new timer"></form>
 <details><summary>Adjust timers</summary>
 <p><button class="timer-adjust" data-delta="60">+1 min</button> <button class="timer-adjust" data-delta="300">+5 min</button> <button class="timer-adjust" data-delta="900">+15 min</button></p>
 <p><button class="timer-adjust" data-delta="-60">-1 min</button> <button class="timer-adjust" data-delta="-300">-5 min</button> <button class="timer-adjust" data-delta="-900">-15 min</button></p>
@@ -139,8 +140,11 @@ functionality behind it.</p>
 <h2>Administrivia</h2>
 <!-- <button type=button id=hello>Hello, world</button> -->
 <ul>
-<li><a href="/mustard-backup.json">Backup/export settings</a></li>
-<li><form action="/restore-backup" enctype="multipart/form-data" method=post>Restore backup: <input type=file name=backup><input type=submit value="Submit"></form></li>
+<li><a href="/mustard-backup.json?channelid={{channelid}}">Backup/export settings</a></li>
+<li><form action="/restore-backup" enctype="multipart/form-data" method=post>
+Restore backup: <input type=file name=backup>
+<input type=hidden name=channelid value={{channelid}}>
+<input type=submit value="Submit"></form></li>
 </ul>
 <p><a href="/logout">Logout</a></p>
 </section>

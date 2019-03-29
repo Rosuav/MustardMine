@@ -218,7 +218,6 @@ def mainpage(channelid=None):
 def update(channelid):
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
-	user = session["twitch_user"]
 	print("Updating data for channel", channelid);
 	try:
 		resp = query("kraken/channels/" + channelid, method="PUT", data={
@@ -251,7 +250,6 @@ def update(channelid):
 def update_schedule(channelid):
 	if "twitch_user" not in session:
 		return redirect(url_for("mainpage"))
-	user = session["twitch_user"]
 	# Perform simple validation on the schedule. Tidying up human entry
 	# is the job of the front end; if you send "1pm" to the back end,
 	# you will simply get back an error, nothing more. The front end is
@@ -291,7 +289,8 @@ def update_checklist(channelid):
 	return redirect(url_for("mainpage"))
 
 @app.route("/tweet", methods=["POST"])
-def tweet():
+@wants_channelid
+def tweet(channelid):
 	tweet = request.form.get("tweet")
 	if not tweet or "twitter_oauth" not in session:
 		return redirect(url_for("mainpage"))
@@ -301,7 +300,7 @@ def tweet():
 		send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
 		return redirect(url_for("mainpage"))
 	schedule = int(schedule)
-	target = database.get_next_event(session["twitch_user"]["_id"], schedule)
+	target = database.get_next_event(channelid, schedule)
 	if not target:
 		# TODO: Catch this on the front end, so this ugly message won't
 		# happen without someone messing around
@@ -418,8 +417,9 @@ def logout():
 	return redirect(url_for("mainpage"))
 
 @app.route("/timer/new", methods=["POST"])
-def create_timer():
-	database.create_timer(session["twitch_user"]["_id"])
+@wants_channelid
+def create_timer(channelid):
+	database.create_timer(channelid)
 	return redirect(url_for("mainpage"))
 
 @app.route("/timer/<id>")
@@ -481,27 +481,31 @@ def helloworld():
 	return jsonify({"user": None})
 
 @app.route("/api/setups")
-def list_setups():
-	return jsonify(database.list_setups(session["twitch_user"]["_id"]))
+@wants_channelid
+def list_setups(channelid):
+	return jsonify(database.list_setups(channelid))
 
 @app.route("/api/setups", methods=["POST"])
-def create_setup():
+@wants_channelid
+def create_setup(channelid):
 	if not request.json: return jsonify({}), 400
 	missing = {"category", "title"} - set(request.json)
 	if missing:
 		return jsonify({"error": "Missing: " + ", ".join(sorted(missing))}), 400
-	setup = database.create_setup(session["twitch_user"]["_id"], **request.json)
+	setup = database.create_setup(channelid, **request.json)
 	return jsonify(setup)
 
 @app.route("/api/setups/<int:setupid>", methods=["DELETE"])
-def delete_setup(setupid):
-	deleted = database.delete_setup(session["twitch_user"]["_id"], setupid)
+@wants_channelid
+def delete_setup(channelid, setupid):
+	deleted = database.delete_setup(channelid, setupid)
 	if deleted: return "", 204
 	return "", 404
 
 @app.route("/mustard-backup.json")
-def make_backup():
-	twitchid = session["twitch_user"]["_id"]
+@wants_channelid
+def make_backup(channelid):
+	twitchid = channelid
 	response = "{\n"
 	# Setups
 	setups = database.list_setups(twitchid)
@@ -539,8 +543,8 @@ def make_backup():
 		headers={"Content-disposition": "attachment"})
 
 @app.route("/restore-backup", methods=["POST"])
-def restore_backup():
-	twitchid = session["twitch_user"]["_id"]
+def restore_backup(channelid):
+	twitchid = channelid
 	if not twitchid:
 		return redirect(url_for("mainpage"))
 	try:
@@ -634,21 +638,21 @@ def force_timer(id):
 # Normally the one-click adjustments apply to ALL your timers
 @app.route("/timer-adjust-all/<int:delta>")
 @app.route("/timer-adjust-all/-<int:delta>", defaults={"negative": True})
-def adjust_all_timers(delta, negative=False):
+@wants_channelid
+def adjust_all_timers(channelid, delta, negative=False):
 	if negative: delta = -delta # Since the int converter can't handle negatives, we do them manually.
-	twitchid = session["twitch_user"]["_id"]
-	if not twitchid: return redirect(url_for("mainpage"))
-	for id, timer in database.list_timers(twitchid):
+	if not channelid: return redirect(url_for("mainpage"))
+	for id, timer in database.list_timers(channelid):
 		if id in timer_sockets:
 			for ws in timer_sockets[id]:
 				ws.send(json.dumps({"type": "adjust", "delta": delta}))
 	return "", 204
 
 @app.route("/timer-force-all/<int:tm>")
-def force_all_timers(tm):
-	twitchid = session["twitch_user"]["_id"]
+@wants_channelid
+def force_all_timers(channelid, tm):
 	if not twitchid: return redirect(url_for("mainpage"))
-	for id, timer in database.list_timers(twitchid):
+	for id, timer in database.list_timers(channelid):
 		if id in timer_sockets:
 			for ws in timer_sockets[id]:
 				ws.send(json.dumps({"type": "force", "time": tm}))
