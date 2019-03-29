@@ -157,7 +157,7 @@ def wants_channelid(f):
 		# can't easily ask Twitch whether or not we have editor access, short of
 		# making a change or something. That might end up necessary; if it does,
 		# try to do it rarely and cache the results.
-		# if channelid != userid: return redirect(url_for("mainpage")) # NERF FOR SECURITY
+		if channelid != userid: return redirect(url_for("mainpage")) # NERF FOR SECURITY
 		resp = f(*a, **kw, channelid=channelid)
 		if (channelid != userid and
 			isinstance(resp, Response) and
