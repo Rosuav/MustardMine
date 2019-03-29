@@ -190,6 +190,7 @@ def mainpage(channelid=None):
 		# users is either an empty list (bad login) or a list of one.
 		if not users: return redirect("/")
 		return redirect("/editor/" + users[0]["id"])
+	if not may_edit_channel(user["_id"], channelid): return redirect(url_for("mainpage"))
 	database.create_user(channelid) # Just in case, make sure the database has the basic structure
 	# TODO: Switch to the new API /helix/streams
 	channel = query("kraken/channels/" + channelid, token="bearer")
