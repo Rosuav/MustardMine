@@ -147,10 +147,23 @@ def wants_channelid(f):
 	"""
 	@functools.wraps(f)
 	def handler(*a, **kw):
-		user = session["twitch_user"]
-		channelid = request.form.get("channelid") or user["_id"] # Use the login if blank or missing
+		userid = session["twitch_user"]["_id"]
+		channelid = request.form.get("channelid") or request.args.get("channelid") or userid
+		# FIXME: Need to figure out authentication somehow.
+		# Twitch will ensure that we have legit powers before making any actual
+		# channel changes, but we need to guard the Mustard Mine setups themselves.
+		# It may end up necessary for the owning account to authenticate _on the
+		# mine itself_, but I would REALLY like to avoid that. Unfortunately, we
+		# can't easily ask Twitch whether or not we have editor access, short of
+		# making a change or something. That might end up necessary; if it does,
+		# try to do it rarely and cache the results.
+		# if channelid != userid: return redirect(url_for("mainpage")) # NERF FOR SECURITY
 		resp = f(*a, **kw, channelid=channelid)
-		if resp.status_code == 302 and resp.location == url_for("mainpage") and channelid != user["_id"]:
+		if (channelid != userid and
+			isinstance(resp, Response) and
+			resp.status_code == 302 and
+			resp.location == url_for("mainpage")
+		):
 			return redirect(url_for("mainpage", channelid=channelid))
 		return resp
 	return handler
