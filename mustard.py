@@ -140,6 +140,18 @@ def format_time(tm, tz):
 	tm = datetime.datetime.fromtimestamp(tm, tz=pytz.timezone(tz))
 	return tm.strftime("at %H:%M")
 
+def may_edit_channel(userid, channelid):
+	# FIXME: Need to figure out authentication somehow.
+	# Twitch will ensure that we have legit powers before making any actual
+	# channel changes, but we need to guard the Mustard Mine setups themselves.
+	# It may end up necessary for the owning account to authenticate _on the
+	# mine itself_, but I would REALLY like to avoid that. Unfortunately, we
+	# can't easily ask Twitch whether or not we have editor access, short of
+	# making a change or something. That might end up necessary; if it does,
+	# try to do it rarely and cache the results.
+	if userid != channelid: return False # NERF FOR SECURITY
+	return True
+
 def wants_channelid(f):
 	"""Wrap a routed function to provide a channel ID
 
@@ -149,15 +161,7 @@ def wants_channelid(f):
 	def handler(*a, **kw):
 		userid = session["twitch_user"]["_id"]
 		channelid = request.form.get("channelid") or request.args.get("channelid") or userid
-		# FIXME: Need to figure out authentication somehow.
-		# Twitch will ensure that we have legit powers before making any actual
-		# channel changes, but we need to guard the Mustard Mine setups themselves.
-		# It may end up necessary for the owning account to authenticate _on the
-		# mine itself_, but I would REALLY like to avoid that. Unfortunately, we
-		# can't easily ask Twitch whether or not we have editor access, short of
-		# making a change or something. That might end up necessary; if it does,
-		# try to do it rarely and cache the results.
-		if channelid != userid: return redirect(url_for("mainpage")) # NERF FOR SECURITY
+		if not may_edit_channel(userid, channelid): return redirect(url_for("mainpage"))
 		resp = f(*a, **kw, channelid=channelid)
 		if (channelid != userid and
 			isinstance(resp, Response) and
