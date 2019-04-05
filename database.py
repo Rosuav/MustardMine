@@ -218,6 +218,9 @@ def get_public_timer_details(id):
 		cur.execute("select twitchid, title, delta, maxtime, styling from mustard.timers where id=%s", (id,))
 		info = cur.fetchone()
 		if not info: return None
+		# Survive psycopg2 2.8.0 bug by turning the RealDict into a real dict
+		# Otherwise, mutating the dictionary causes future iteration to crash.
+		info = {**info}
 		twitchid = info.pop("twitchid")
 		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
 		sched = cur.fetchone()
