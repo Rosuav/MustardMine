@@ -1,4 +1,4 @@
-flask
+flask==0.12.2
 authlib>=0.10
 requests
 psycopg2-binary
