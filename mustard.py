@@ -459,6 +459,8 @@ def save_timer(id):
 @app.route("/countdown/<id>")
 def countdown(id):
 	info = database.get_public_timer_details(id)
+	print("Got ID", id)
+	pprint(info)
 	if not info: return "Timer not found", 404
 	return render_template("countdown.html", id=id, **info)
 
