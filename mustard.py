@@ -462,6 +462,7 @@ def countdown(id):
 	print("Got ID", id)
 	pprint(info)
 	if not info: return "Timer not found", 404
+	print(type(info))
 	return render_template("countdown.html", id=id, **info)
 
 # ---- Live search API ----
