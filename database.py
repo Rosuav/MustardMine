@@ -220,6 +220,7 @@ def get_public_timer_details(id):
 		if not info: return None
 		print(info)
 		twitchid = info.pop("twitchid")
+		print("Got twitchid", twitchid)
 		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
 		sched = cur.fetchone()
 		info["next_event"] = find_next_event(sched["sched_timezone"], sched["schedule"], info["delta"])
