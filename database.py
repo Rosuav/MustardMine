@@ -218,14 +218,10 @@ def get_public_timer_details(id):
 		cur.execute("select twitchid, title, delta, maxtime, styling from mustard.timers where id=%s", (id,))
 		info = cur.fetchone()
 		if not info: return None
-		print(info)
 		twitchid = info.pop("twitchid")
-		print("Got twitchid", twitchid)
 		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
-		print("Got cursor")
 		sched = cur.fetchone()
 		info["next_event"] = find_next_event(sched["sched_timezone"], sched["schedule"], info["delta"])
-		print("Got final info", info)
 		return info
 
 def get_next_event(twitchid, delta=0):
