@@ -358,7 +358,7 @@ def login():
 	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
 		scope=REQUIRED_SCOPES)
 	uri, state = twitch.authorization_url("https://id.twitch.tv/oauth2/authorize",
-		redirect_uri=url_for("authorized", _external=True))
+		redirect_uri=os.environ.get("OVERRIDE_REDIRECT_URI") or url_for("authorized", _external=True))
 	session["login_state"] = state
 	return redirect(uri)
 
@@ -374,7 +374,7 @@ def authorized():
 		code=request.args["code"],
 		# For some bizarre reason, we need to pass this information along.
 		client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET,
-		redirect_uri=url_for("authorized", _external=True))
+		redirect_uri=os.environ.get("OVERRIDE_REDIRECT_URI") or url_for("authorized", _external=True))
 	if "access_token" not in resp:
 		# Something went wrong with the retrieval. No idea what or why,
 		# so I'm doing a cop-out and just dumping to console.
