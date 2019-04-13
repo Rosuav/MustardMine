@@ -419,6 +419,7 @@ def authorized_twitter():
 def logout():
 	session.pop("twitch_token", None)
 	session.pop("twitter_oauth", None)
+	print("LOGGING OUT", url_for("mainpage"))
 	return redirect(url_for("mainpage"))
 
 @app.route("/timer/new", methods=["POST"])
