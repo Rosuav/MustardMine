@@ -380,6 +380,7 @@ def authorized():
 		return redirect(url_for("mainpage"))
 	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
 		state=session["login_state"])
+	print("Deduced URI:", url_for("authorized", _external=True))
 	resp = twitch.fetch_access_token("https://id.twitch.tv/oauth2/token",
 		code=request.args["code"],
 		# For some bizarre reason, we need to pass this information along.
