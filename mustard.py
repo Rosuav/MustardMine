@@ -29,6 +29,9 @@ def redirect(*a, **kw):
 	resp = _redirect(*a, **kw)
 	resp.autocorrect_location_header = False
 	return resp
+if os.environ.get("OVERRIDE_REDIRECT_HTTPS"):
+	_url_for = url_for
+	def url_for(*a, **kw): return _url_for(*a, **kw).replace("http://", "https://")
 
 try:
 	import config
@@ -384,7 +387,7 @@ def authorized():
 		code=request.args["code"],
 		# For some bizarre reason, we need to pass this information along.
 		client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET,
-		redirect_uri=os.environ.get("OVERRIDE_REDIRECT_URI") or url_for("authorized", _external=True))
+		redirect_uri=url_for("authorized", _external=True))
 	if "access_token" not in resp:
 		# Something went wrong with the retrieval. No idea what or why,
 		# so I'm doing a cop-out and just dumping to console.
