@@ -14,7 +14,7 @@ from pprint import pprint
 # patching happen automatically, it happens too late, and we get
 # RecursionErrors and such. There's a helpful warning on startup.
 from gevent import monkey; monkey.patch_all(subprocess=True)
-from flask import Flask, request, session, url_for, g, render_template, jsonify, Response, Markup
+from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response, Markup
 from flask_sockets import Sockets
 from authlib.client import OAuth1Session, OAuth2Session
 import requests
@@ -24,12 +24,12 @@ from werkzeug.contrib.fixers import ProxyFix
 # gets stuff flat-out wrong. Also, the spec now says that relative
 # headers are fine (and even when the spec said that the Location should
 # to be absolute, everyone accepted relative URIs).
-from flask import redirect as _redirect
-def redirect(*a, **kw):
-	resp = _redirect(*a, **kw)
-	resp.autocorrect_location_header = False
-	return resp
 if os.environ.get("OVERRIDE_REDIRECT_HTTPS"):
+	_redirect = redirect
+	def redirect(*a, **kw):
+		resp = _redirect(*a, **kw)
+		resp.autocorrect_location_header = False
+		return resp
 	_url_for = url_for
 	def url_for(*a, **kw): return _url_for(*a, **kw).replace("http://", "https://")
 
