@@ -43,13 +43,13 @@ app = Flask(__name__)
 app.secret_key = config.SESSION_SECRET or base64.b64encode(os.urandom(12))
 scheduler = utils.Scheduler()
 sockets = Sockets(app)
-app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # Override Flask's forcing of Location headers to be absolute, since it
 # gets stuff flat-out wrong. Also, the spec now says that relative
 # headers are fine (and even when the spec said that the Location should
 # to be absolute, everyone accepted relative URIs).
 if os.environ.get("OVERRIDE_REDIRECT_HTTPS"):
+	app.wsgi_app = ProxyFix(app.wsgi_app) # Grab info from Forwarded headers
 	_redirect = redirect
 	def redirect(*a, **kw):
 		resp = _redirect(*a, **kw)
