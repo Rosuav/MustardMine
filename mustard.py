@@ -249,7 +249,7 @@ def update(channelid):
 	if "tags" in request.form:
 		# Convert tag names into IDs
 		tags = tuple(t.strip() for t in request.form["tags"].split(","))
-		if len(tags) > 5:
+		if len(tags) > 5: # (magic number 5 is the Twitch limit)
 			# Note that the saved setup will include all of them.
 			# Maybe some day I'll have a UI for prioritizing tags, and
 			# then have an easy way to turn one off (eg "Warming Up")
