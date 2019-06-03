@@ -128,7 +128,7 @@ document.getElementById("tweet").oninput = function() {
 	document.getElementById("tweetlen").innerHTML = this.value.length;
 };
 
-document.forms.setups.onsubmit = async function(ev) {
+event("form.ajax", "submit", async function(ev) {
 	ev.preventDefault();
 	const dest = new URL(this.action);
 	const data = {}; new FormData(this).forEach((v,k) => data[k] = v);
@@ -142,7 +142,7 @@ document.forms.setups.onsubmit = async function(ev) {
 	if (err) err.remove(); //Remove any languishing error messages
 	if (result.ok) return;
 	document.querySelector("header").appendChild(DIV({id: "errormessage"}, result.error));
-}
+});
 
 function timediff(timestr, date) {
 	//Calculate the difference between a time string and a date.
