@@ -55,7 +55,7 @@ Scheduled tweet(s):
 <section>
 <h2>Twitter</h2>
 {{ twitter }}
-<form method=post action="/tweet">
+<form method=post class=ajax action="/tweet">
 <input type=hidden name=channelid value={{channelid}}>
 <p><label>Tweet that you're live: <textarea name=tweet id=tweet rows=3 cols=100></textarea></label><span id=tweetlen>0</span> / 280</p>
 <p><select name=tweetschedule id=tweetschedule>

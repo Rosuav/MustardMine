@@ -380,6 +380,14 @@ def form_tweet(channelid):
 	if err: return err, 400
 	return redirect(url_for("mainpage"))
 
+@app.route("/api/tweet", methods=["POST"])
+@wants_channelid
+def api_tweet(channelid):
+	err = do_tweet(channelid, request.json.get("tweet"),
+		request.json.get("tweetschedule", "now"), session.get("twitter_oauth"))
+	if err: return jsonify({"ok": False, "error": err})
+	return jsonify({"ok": True})
+
 @app.route("/deltweet/<int:id>")
 def cancel_tweet(id):
 	auth = session["twitter_oauth"]
