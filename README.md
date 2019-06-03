@@ -32,3 +32,8 @@ Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
 NOTE: On Python 3.7+, gunicorn version 19.9.0 or newer is required, to
 avoid a keyword collision on gunicorn.workers.async (renamed in 19.9).
+
+NOTE: On Python 3.8, gevent may not build unless the version is labelled
+3.8.0b1 or newer. Also, newer versions of gevent and werkzeug may be needed:
+pip install -v git+git://github.com/gevent/gevent.git#egg=gevent
+pip install -v git+git://github.com/pallets/werkzeug
