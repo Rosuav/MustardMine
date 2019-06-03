@@ -18,7 +18,6 @@ from flask import Flask, request, redirect, session, url_for, g, render_template
 from flask_sockets import Sockets
 from authlib.client import OAuth1Session, OAuth2Session
 import requests
-from werkzeug.contrib.fixers import ProxyFix
 
 try:
 	import config
@@ -49,6 +48,7 @@ sockets = Sockets(app)
 # headers are fine (and even when the spec said that the Location should
 # to be absolute, everyone accepted relative URIs).
 if os.environ.get("OVERRIDE_REDIRECT_HTTPS"):
+	from werkzeug.contrib.fixers import ProxyFix
 	app.wsgi_app = ProxyFix(app.wsgi_app) # Grab info from Forwarded headers
 	_redirect = redirect
 	def redirect(*a, **kw):
