@@ -329,6 +329,8 @@ def update_checklist(channelid):
 	return redirect(url_for("mainpage"))
 
 def do_tweet(channelid, tweet, schedule, auth):
+	if not tweet: return "Can't send an empty tweet"
+	if not auth: return "Need to authenticate with Twitter before sending tweets"
 	if schedule == "now":
 		send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
 		return None # TODO: Carry failure messages through
@@ -373,10 +375,8 @@ def send_tweet(auth, tweet):
 @app.route("/tweet", methods=["POST"])
 @wants_channelid
 def form_tweet(channelid):
-	tweet = request.form.get("tweet")
-	if not tweet or "twitter_oauth" not in session:
-		return redirect(url_for("mainpage"))
-	err = do_tweet(channelid, tweet, request.form.get("tweetschedule", "now"), session["twitter_oauth"])
+	err = do_tweet(channelid, request.form.get("tweet"),
+		request.form.get("tweetschedule", "now"), session.get("twitter_oauth"))
 	if err: return err, 400
 	return redirect(url_for("mainpage"))
 
