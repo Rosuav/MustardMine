@@ -128,6 +128,24 @@ document.getElementById("tweet").oninput = function() {
 	document.getElementById("tweetlen").innerHTML = this.value.length;
 };
 
+document.forms.setups.onsubmit = async function(ev) {
+	ev.preventDefault();
+	const result = await (await fetch("/api/update?channelid=" + channel._id, {
+		credentials: "include",
+		headers: {"Content-Type": "application/json"},
+		method: "POST",
+		body: JSON.stringify({
+			category: setupform.category.value,
+			title: setupform.title.value,
+			tags: setupform.tags.value,
+		})
+	})).json();
+	const err = document.getElementById("errormessage");
+	if (err) err.remove(); //Remove any languishing error messages
+	if (result.ok) return;
+	document.querySelector("header").appendChild(DIV({id: "errormessage"}, result.error));
+}
+
 function timediff(timestr, date) {
 	//Calculate the difference between a time string and a date.
 	//Yes, it's weird. It's a helper for g_n_s_t below. Nothing more.

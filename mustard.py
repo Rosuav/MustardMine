@@ -278,6 +278,13 @@ def update(channelid):
 	if err: session["last_error_message"] = err
 	return redirect(url_for("mainpage"))
 
+@app.route("/api/update", methods=["POST"])
+@wants_channelid
+def api_update(channelid):
+	err = do_update(channelid, request.json)
+	if err: return jsonify({"ok": False, "error": err})
+	return jsonify({"ok": True})
+
 @app.route("/schedule", methods=["POST"])
 @wants_channelid
 def update_schedule(channelid):
