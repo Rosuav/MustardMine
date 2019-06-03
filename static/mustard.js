@@ -2,37 +2,16 @@ function event(selector, ev, func) {
 	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
 }
 
-function set_content(elem, children) {
-	while (elem.lastChild) elem.removeChild(elem.lastChild);
-	if (!Array.isArray(children)) children = [children];
-	for (let child of children) {
-		if (child === "") continue;
-		if (typeof child === "string") child = document.createTextNode(child);
-		elem.appendChild(child);
-	}
-	return elem;
-}
-function build(tag, attributes, children) {
-	const ret = document.createElement(tag);
-	if (attributes) for (let attr in attributes) {
-		if (attr.startsWith("data-")) //Simplistic - we don't transform "data-foo-bar" into "fooBar" per HTML.
-			ret.dataset[attr.slice(5)] = attributes[attr];
-		else ret[attr] = attributes[attr];
-	}
-	if (children) set_content(ret, children);
-	return ret;
-}
-
 const setupform = document.forms.setups.elements;
 const schedform = document.forms.schedule.elements;
 
 function render_setups() {
-	const rows = setups.map((s, i) => build("tr", {onclick: () => pick_setup(i)}, [
-		build("td", 0, s.category),
-		build("td", 0, s.title),
-		build("td", 0, s.tags),
-		build("td", 0, s.tweet),
-		build("td", 0, build("button", {className: "deleting", id: "del"+i, onclick: () => try_delete_setup(i)}, "X")),
+	const rows = setups.map((s, i) => TR({onclick: () => pick_setup(i)}, [
+		TD(0, s.category),
+		TD(0, s.title),
+		TD(0, s.tags),
+		TD(0, s.tweet),
+		TD(0, BUTTON({className: "deleting", id: "del"+i, onclick: () => try_delete_setup(i)}, "X")),
 	]));
 	const table = document.getElementById("setups");
 	while (table.lastChild != table.firstChild) table.removeChild(table.lastChild); //Keep the header row only
@@ -238,7 +217,7 @@ if (sched_tz === "") {
 set_content(document.getElementById("checklist"),
 	document.forms.checklist.elements.checklist.value
 	.trim().split("\n")
-	.map(item => item && build("li", 0, build("label", 0, [build("input", {type: "checkbox"}), item])))
+	.map(item => item && LI(0, LABEL(0, [INPUT({type: "checkbox"}), item])))
 );
 
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
@@ -258,8 +237,8 @@ document.getElementById("set-timer").onclick = () => force_timers(document.getEl
 event(".timer-force", "click", function() {force_timers(this.innerHTML);});
 
 const pickmapper = {
-	game: game => build("li", {"data-pick": game.localized_name}, [build("img", {src: game.box.small, alt: ""}), game.localized_name]),
-	tag: tag => build("li", {"data-pick": tag.english_name}, tag.english_name + ": " + tag.english_desc),
+	game: game => LI({"data-pick": game.localized_name}, [IMG({src: game.box.small, alt: ""}), game.localized_name]),
+	tag: tag => LI({"data-pick": tag.english_name}, tag.english_name + ": " + tag.english_desc),
 };
 let picking = "";
 function open_picker(now_picking, heading) {
