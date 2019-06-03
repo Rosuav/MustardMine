@@ -231,43 +231,51 @@ def mainpage(channelid=None):
 		tweets=tweets,
 	)
 
-@app.route("/update", methods=["POST"])
-@wants_channelid
-def update(channelid):
-	if "twitch_user" not in session:
-		return redirect(url_for("mainpage"))
+def do_update(channelid, info):
+	"""Update channel status (category, title, etc)
+
+	Returns None if successful, else a string of error/warning text.
+	"""
 	print("Updating data for channel", channelid);
 	try:
 		resp = query("kraken/channels/" + channelid, method="PUT", data={
-			"channel[game]": request.form["category"],
-			"channel[status]": request.form["title"],
+			"channel[game]": info["category"],
+			"channel[status]": info["title"],
 		}, token="oauth")
 	except TwitchDataError as e:
-		session["last_error_message"] = "Stream status update not accepted: " + e.message
-		return redirect(url_for("mainpage"))
+		return "Stream status update not accepted: " + e.message
 
-	if "tags" in request.form:
+	ret = None
+	if "tags" in info:
 		# Convert tag names into IDs
-		tags = tuple(t.strip() for t in request.form["tags"].split(","))
+		tags = tuple(t.strip() for t in info["tags"].split(","))
 		if len(tags) > 5: # (magic number 5 is the Twitch limit)
 			# Note that the saved setup will include all of them.
 			# Maybe some day I'll have a UI for prioritizing tags, and
 			# then have an easy way to turn one off (eg "Warming Up")
 			# such that the next one along appears.
-			session["last_error_message"] = "%d tags used, first five kept" % len(tags)
+			ret = "%d tags used, first five kept" % len(tags) # Warning, not error
 			tags = tags[:5]
 		tag_ids = database.get_tag_ids(tags)
 		if len(tag_ids) != len(tags):
-			session["last_error_message"] = "Tag names not all found in Twitch" # TODO: Make this error friendlier
-			return redirect(url_for("mainpage"))
+			return "Tag names not all found in Twitch" # TODO: Make this error friendlier
 		try:
 			resp = query("helix/streams/tags", method="PUT", token="bearer",
 				params={"broadcaster_id": channelid},
 				data={"tag_ids": tag_ids},
 			)
 		except TwitchDataError as e:
-			session["last_error_message"] = "Stream tags update not accepted: " + e.message
+			return "Stream tags update not accepted: " + e.message
 
+	return ret
+
+@app.route("/update", methods=["POST"])
+@wants_channelid
+def update(channelid):
+	if "twitch_user" not in session:
+		return redirect(url_for("mainpage"))
+	err = do_update(channelid, request.form)
+	if err: session["last_error_message"] = err
 	return redirect(url_for("mainpage"))
 
 @app.route("/schedule", methods=["POST"])
