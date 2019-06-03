@@ -130,15 +130,13 @@ document.getElementById("tweet").oninput = function() {
 
 document.forms.setups.onsubmit = async function(ev) {
 	ev.preventDefault();
-	const result = await (await fetch("/api/update?channelid=" + channel._id, {
+	const dest = new URL(this.action);
+	const data = {}; new FormData(this).forEach((v,k) => data[k] = v);
+	const result = await (await fetch("/api" + dest.pathname + "?channelid=" + channel._id, {
 		credentials: "include",
 		headers: {"Content-Type": "application/json"},
 		method: "POST",
-		body: JSON.stringify({
-			category: setupform.category.value,
-			title: setupform.title.value,
-			tags: setupform.tags.value,
-		})
+		body: JSON.stringify(data)
 	})).json();
 	const err = document.getElementById("errormessage");
 	if (err) err.remove(); //Remove any languishing error messages
