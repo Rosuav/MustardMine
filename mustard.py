@@ -328,23 +328,16 @@ def update_checklist(channelid):
 	database.set_checklist(channelid, request.form["checklist"].strip().replace("\r", ""))
 	return redirect(url_for("mainpage"))
 
-@app.route("/tweet", methods=["POST"])
-@wants_channelid
-def tweet(channelid):
-	tweet = request.form.get("tweet")
-	if not tweet or "twitter_oauth" not in session:
-		return redirect(url_for("mainpage"))
-	schedule = request.form.get("tweetschedule", "now")
+def do_tweet(channelid, tweet, schedule, auth):
 	if schedule == "now":
-		auth = session["twitter_oauth"]
 		send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
-		return redirect(url_for("mainpage"))
+		return None # TODO: Carry failure messages through
 	schedule = int(schedule)
 	target = database.get_next_event(channelid, schedule)
 	if not target:
 		# TODO: Catch this on the front end, so this ugly message won't
 		# happen without someone messing around
-		return "Can't schedule tweets without a schedule!", 400
+		return "Can't schedule tweets without a schedule!"
 	target += schedule
 	if target - time.time() > 1800:
 		# Protect against schedule mistakes and various forms of insanity
@@ -352,7 +345,7 @@ def tweet(channelid):
 		# dyno down after 30 mins of inactivity, which means we guarantee
 		# that this tweet will indeed happen prior to dyno sleep.
 		# (Dyno sleep? Not the "Slumbering Dragon" from M13 methinks.)
-		return "Refusing to schedule a tweet more than half an hour in advance", 400
+		return "Refusing to schedule a tweet more than half an hour in advance"
 	# TODO: Retain the tweet and token in Postgres in case the server restarts
 	# We'll assume the token won't need changing - but we assume that already.
 	# Keep the one-hour limit (give or take) to minimize the likelihood of the
@@ -362,9 +355,8 @@ def tweet(channelid):
 	# if tweeting fails, check to see if it was "duplicate status", and if so,
 	# remove the tweet from the database. (Otherwise, error means "try again",
 	# unless we just want to schedule tweets as fire-and-forget.)
-	auth = session["twitter_oauth"]
 	scheduler.put(target, send_tweet, (auth["oauth_token"], auth["oauth_token_secret"]), tweet)
-	return redirect(url_for("mainpage"))
+	return None
 
 def send_tweet(auth, tweet):
 	"""Actually send a tweet"""
@@ -377,6 +369,16 @@ def send_tweet(auth, tweet):
 		print(resp.json())
 		print("---")
 	# print("Tweet sent.")
+
+@app.route("/tweet", methods=["POST"])
+@wants_channelid
+def form_tweet(channelid):
+	tweet = request.form.get("tweet")
+	if not tweet or "twitter_oauth" not in session:
+		return redirect(url_for("mainpage"))
+	err = do_tweet(channelid, tweet, request.form.get("tweetschedule", "now"), session["twitter_oauth"])
+	if err: return err, 400
+	return redirect(url_for("mainpage"))
 
 @app.route("/deltweet/<int:id>")
 def cancel_tweet(id):
