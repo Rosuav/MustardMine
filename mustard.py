@@ -704,7 +704,7 @@ def adjust_all_timers(channelid, delta, negative=False):
 @app.route("/timer-force-all/<int:tm>")
 @wants_channelid
 def force_all_timers(channelid, tm):
-	if not twitchid: return redirect(url_for("mainpage"))
+	if not channelid: return redirect(url_for("mainpage"))
 	for id, timer in database.list_timers(channelid):
 		if id in timer_sockets:
 			for ws in timer_sockets[id]:
