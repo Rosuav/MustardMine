@@ -27,6 +27,10 @@ TODO:
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
 * Can it be made so mods can be given permission to update stuff? Maybe just
   selecting a pre-built setup?
+* Prepopulate new accounts with some examples, including several in the same
+  category, to show how this would be useful
+* Need feedback on update/tweet now that it's all AJAXy
+
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 
