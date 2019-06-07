@@ -327,6 +327,7 @@ def update_schedule(channelid):
 		if not tz:
 			return "Please specify a timezone", 400
 	database.set_schedule(channelid, tz, schedule)
+	# TODO: Figure out why this isn't carrying channelid through
 	return redirect(url_for("mainpage"))
 
 @app.route("/checklist", methods=["POST"])
