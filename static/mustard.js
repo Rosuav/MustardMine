@@ -138,10 +138,9 @@ event("form.ajax", "submit", async function(ev) {
 		method: "POST",
 		body: JSON.stringify(data)
 	})).json();
-	const err = document.getElementById("errormessage");
-	if (err) err.remove(); //Remove any languishing error messages
-	if (result.ok) return;
-	document.querySelector("header").appendChild(DIV({id: "errormessage"}, result.error));
+	const msg = document.getElementById("messages");
+	while (msg.lastChild) msg.removeChild(msg.lastChild); //Remove any languishing error messages
+	if (result.error) msg.appendChild(DIV({className: "errormessage"}, result.error));
 });
 
 function timediff(timestr, date) {

@@ -113,7 +113,7 @@ dialog {
 	right: 1em; top: 1em;
 }
 
-#errormessage {
+.errormessage {
 	border: 3px solid red;
 	background: #fcc;
 	min-height: 3em;
