@@ -29,8 +29,6 @@ TODO:
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
 * Can it be made so mods can be given permission to select a pre-built
   setup? Editors get full access (including seeing MM's own configs).
-* Prepopulate new accounts with some examples, including several in the same
-  category, to show how this would be useful
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
