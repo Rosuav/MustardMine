@@ -26,7 +26,10 @@ TODO:
   - The <dialog> tag isn't officially supported. Is my monkeypatch enough?
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
 * Can it be made so mods can be given permission to update stuff? Maybe just
-  selecting a pre-built setup?
+  selecting a pre-built setup? At very least, channel editors should be able
+  to see and manage the channel (they can't schedule tweets but can change
+  setups). Requires some way to probe Twitch and ask for permission prior to
+  showing the prewritten setups.
 * Prepopulate new accounts with some examples, including several in the same
   category, to show how this would be useful
 
