@@ -283,7 +283,7 @@ def update(channelid):
 def api_update(channelid):
 	err = do_update(channelid, request.json)
 	if err: return jsonify({"ok": False, "error": err})
-	return jsonify({"ok": True})
+	return jsonify({"ok": True, "success": "Stream status updated."})
 
 @app.route("/schedule", methods=["POST"])
 @wants_channelid
@@ -386,7 +386,8 @@ def api_tweet(channelid):
 	err = do_tweet(channelid, request.json.get("tweet"),
 		request.json.get("tweetschedule", "now"), session.get("twitter_oauth"))
 	if err: return jsonify({"ok": False, "error": err})
-	return jsonify({"ok": True})
+	# TODO: Have it actually return the new schedule as per route("/")
+	return jsonify({"ok": True, "success": "Tweet scheduled.", "reset_form": True})
 
 @app.route("/deltweet/<int:id>")
 def cancel_tweet(id):

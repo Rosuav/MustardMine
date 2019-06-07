@@ -29,9 +29,6 @@ TODO:
   selecting a pre-built setup?
 * Prepopulate new accounts with some examples, including several in the same
   category, to show how this would be useful
-* Need feedback on update/tweet now that it's all AJAXy
-  - Especially with the tweet - it needs to clear the form and add the
-    "Scheduled Tweets" entry at the top.
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.

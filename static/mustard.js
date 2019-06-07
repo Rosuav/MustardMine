@@ -143,6 +143,7 @@ event("form.ajax", "submit", async function(ev) {
 		result.warning && DIV({className: "warningmessage"}, result.warning),
 		result.success && DIV({className: "successmessage"}, result.success),
 	]);
+	if (result.reset_form) this.reset();
 	document.getElementById("messages").scrollIntoView();
 });
 
