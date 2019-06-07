@@ -312,7 +312,7 @@ class Restorer(contextlib.ExitStack):
 	def restore_setup(self, *, category=None, title=None, tags="", tweet=""):
 		if not category or not title: raise ValidationError("Setups: Category and title are required")
 		self.cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet) values (%s, %s, %s, %s, %s) returning id",
-			(self.twitchid, category, title, tweet))
+			(self.twitchid, category, title, tags, tweet))
 		self.summary += "Restored %r setup\n" % category
 
 	def restore_schedule(self, tz, schedule):
@@ -349,6 +349,39 @@ class Restorer(contextlib.ExitStack):
 		for id in self.timers:
 			self.cur.execute("delete from mustard.timers where id=%s", (id,))
 			self.summary += "Deleted timer %s\n" % id
+
+def restore_from_json(twitchid, data):
+	# Open a single database transaction and do all the work.
+	with Restorer(twitchid) as r:
+		if "setups" in data:
+			r.wipe_setups()
+			for setup in data["setups"]:
+				if setup == "": continue # The shim at the end
+				if "communities" in setup:
+					# Previously, Twitch had "communities", which no longer do anything.
+					# Silently remove them from the data.
+					del setup["communities"]
+				r.check_dict(setup)
+				r.restore_setup(**setup)
+		if "schedule" in data:
+			sched = data["schedule"]
+			if not isinstance(sched, list) or len(sched) != 8: r.fail()
+			r.restore_schedule(sched[-1], sched[:-1])
+		if "checklist" in data:
+			checklist = data["checklist"]
+			if isinstance(checklist, list): checklist = "\n".join(checklist).strip()
+			if not isinstance(checklist, str): r.fail()
+			r.restore_checklist(checklist)
+		if "timers" in data:
+			# This one is problematic. We can't simply wipe and recreate because IDs
+			# are significant (they're the external references, so people's OBS configs
+			# will have those same IDs in them).
+			for timer in data["timers"]:
+				if timer == "": continue # The shim
+				r.check_dict(timer)
+				r.restore_timer(**timer)
+			r.wipe_untouched_timers()
+	return r
 
 def tags_need_updating():
 	"""Check if the tags cache needs to be updated.

@@ -609,6 +609,7 @@ def make_backup(channelid):
 		headers={"Content-disposition": "attachment"})
 
 @app.route("/restore-backup", methods=["POST"])
+@wants_channelid
 def restore_backup(channelid):
 	twitchid = channelid
 	if not twitchid:
@@ -620,36 +621,7 @@ def restore_backup(channelid):
 	# Signature (from footer)
 	if data[""] != "Mustard-Mine Backup":
 		return "Backup file corrupt - signature missing.", 400
-	# Open a single database transaction and do all the work.
-	with database.Restorer(twitchid) as r:
-		if "setups" in data:
-			r.wipe_setups()
-			for setup in data["setups"]:
-				if setup == "": continue # The shim at the end
-				if "communities" in setup:
-					# Previously, Twitch had "communities", which no longer do anything.
-					# Silently remove them from the data.
-					del setup["communities"]
-				r.check_dict(setup)
-				r.restore_setup(**setup)
-		if "schedule" in data:
-			sched = data["schedule"]
-			if not isinstance(sched, list) or len(sched) != 8: r.fail()
-			r.restore_schedule(sched[-1], sched[:-1])
-		if "checklist" in data:
-			checklist = data["checklist"]
-			if isinstance(checklist, list): checklist = "\n".join(checklist).strip()
-			if not isinstance(checklist, str): r.fail()
-			r.restore_checklist(checklist)
-		if "timers" in data:
-			# This one is problematic. We can't simply wipe and recreate because IDs
-			# are significant (they're the external references, so people's OBS configs
-			# will have those same IDs in them).
-			for timer in data["timers"]:
-				if timer == "": continue # The shim
-				r.check_dict(timer)
-				r.restore_timer(**timer)
-			r.wipe_untouched_timers()
+	r = database.restore_from_json(twitchid, data)
 	return '<ul><li>%s</li></ul><a href="/">Back</a>' % r.summary.strip().replace("\n", "</li><li>"), 400 if r.failed else 200
 
 @app.route("/tz")
