@@ -2,6 +2,7 @@ import psycopg2.extras
 import config
 import contextlib
 import collections
+import json
 import os
 import base64
 import pytz
@@ -89,6 +90,11 @@ def create_user(twitchid): # Really "ensure_user" as it's quite happy to not-cre
 	try:
 		with postgres, postgres.cursor() as cur:
 			cur.execute("insert into mustard.users values (%s)", [twitchid])
+		# As a separate transaction (it's okay if this fails), load up
+		# the template data to give some samples.
+		with open("template.json") as f:
+			data = json.load(f)
+		restore_from_json(twitchid, data)
 	except psycopg2.IntegrityError:
 		pass # TODO: Update any extra info eg Twitter OAuth
 
