@@ -162,8 +162,8 @@ def may_edit_channel(userid, channelid):
 	# can't easily ask Twitch whether or not we have editor access, short of
 	# making a change or something. That might end up necessary; if it does,
 	# try to do it rarely and cache the results.
-	if userid != channelid: return False # NERF FOR SECURITY
-	return True
+	if userid == channelid: return True # Trivially true
+	return False # NERF FOR SECURITY
 
 def wants_channelid(f):
 	"""Wrap a routed function to provide a channel ID
