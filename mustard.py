@@ -153,17 +153,26 @@ def format_time(tm, tz):
 	tm = datetime.datetime.fromtimestamp(tm, tz=pytz.timezone(tz))
 	return tm.strftime("at %H:%M")
 
+channel_editor_cache = {}
 def may_edit_channel(userid, channelid):
-	# FIXME: Need to figure out authentication somehow.
 	# Twitch will ensure that we have legit powers before making any actual
 	# channel changes, but we need to guard the Mustard Mine setups themselves.
-	# It may end up necessary for the owning account to authenticate _on the
-	# mine itself_, but I would REALLY like to avoid that. Unfortunately, we
-	# can't easily ask Twitch whether or not we have editor access, short of
-	# making a change or something. That might end up necessary; if it does,
-	# try to do it rarely and cache the results.
+	# Unfortunately, we can't easily ask Twitch whether or not we have editor
+	# access, short of making a change (a null edit doesn't count - it has to
+	# actually specify a field to change). So we first query, then update, the
+	# category. That's two additional API calls, so we cache it for 15 mins.
 	if userid == channelid: return True # Trivially true
-	return False # NERF FOR SECURITY
+	if channel_editor_cache.get((userid, channelid), 0) > time.time():
+		# The user was an editor when last seen, recently
+		return True
+	try:
+		data = query("kraken/channels/" + channelid, method="GET", token=None)
+		resp = query("kraken/channels/" + channelid, method="PUT", token="oauth", data={"channel[game]": data["game"]})
+		channel_editor_cache[(userid, channelid)] = time.time() + 900
+		return True
+	except TwitchDataError as e:
+		return False # If anything goes wrong, assume not permitted.
+	return False # shouldn't happen
 
 def wants_channelid(f):
 	"""Wrap a routed function to provide a channel ID
