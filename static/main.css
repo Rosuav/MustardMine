@@ -113,11 +113,24 @@ dialog {
 	right: 1em; top: 1em;
 }
 
-.errormessage {
-	border: 3px solid red;
-	background: #fcc;
+#messages div {
 	min-height: 3em;
 	max-width: 30em;
 	padding: 0.5em;
 	margin: 1em;
+}
+
+.errormessage {
+	border: 3px solid red;
+	background: #fcc;
+}
+
+.warningmessage {
+	border: 3px solid orange;
+	background: #ffc;
+}
+
+.successmessage {
+	border: 3px solid green;
+	background: #cfc;
 }

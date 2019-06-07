@@ -138,9 +138,12 @@ event("form.ajax", "submit", async function(ev) {
 		method: "POST",
 		body: JSON.stringify(data)
 	})).json();
-	const msg = document.getElementById("messages");
-	while (msg.lastChild) msg.removeChild(msg.lastChild); //Remove any languishing error messages
-	if (result.error) msg.appendChild(DIV({className: "errormessage"}, result.error));
+	set_content(document.getElementById("messages"), [
+		result.error && DIV({className: "errormessage"}, result.error),
+		result.warning && DIV({className: "warningmessage"}, result.warning),
+		result.success && DIV({className: "successmessage"}, result.success),
+	]);
+	document.getElementById("messages").scrollIntoView();
 });
 
 function timediff(timestr, date) {
