@@ -29,6 +29,9 @@ TODO:
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
 * Can it be made so mods can be given permission to select a pre-built
   setup? Editors get full access (including seeing MM's own configs).
+* Maybe make a "copy setup to clipboard" to allow them to be shared? Use
+  the same JSON format as is in the backup file, so you can cherry-pick
+  from there too.
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
