@@ -376,7 +376,7 @@ def restore_from_json(twitchid, data):
 			sched = data["schedule"]
 			if not isinstance(sched, list): r.fail()
 			elif len(sched) == 8: r.restore_schedule(sched[-1], sched[:-1], 0) # Old format backups
-			elif len(sched) == 9: r.restore_schedule(sched[-2], sched[:-2], sched[-1]) # New backups
+			elif len(sched) == 9: r.restore_schedule(sched[-2], sched[:-2], int(sched[-1])) # New backups
 			else: r.fail()
 		if "checklist" in data:
 			checklist = data["checklist"]
