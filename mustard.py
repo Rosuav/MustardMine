@@ -194,6 +194,10 @@ def wants_channelid(f):
 		return resp
 	return handler
 
+def list_scheduled_tweets(token, secret, sched_tz):
+	cred = (token, secret)
+	return [(format_time(tm, sched_tz), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
+
 @app.route("/")
 @app.route("/editor/<channelid>")
 def mainpage(channelid=None):
@@ -223,8 +227,7 @@ def mainpage(channelid=None):
 		auth = session["twitter_oauth"]
 		username = auth["screen_name"]
 		twitter = "Twitter connected: " + username
-		cred = (auth["oauth_token"], auth["oauth_token_secret"])
-		tweets = [(format_time(tm, sched_tz), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
+		tweets = list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"], sched_tz)
 	else:
 		twitter = Markup("""<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>""")
 		tweets = []
