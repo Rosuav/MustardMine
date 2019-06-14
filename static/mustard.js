@@ -139,6 +139,7 @@ function update_messages(result) {
 const form_callbacks = {
 	"/tweet": (result, form) => {
 		form.reset();
+		select_tweet_schedule(sched_tweet);
 		if (result.ok) update_tweets(result.new_tweets);
 	},
 };
@@ -250,7 +251,7 @@ function format_time(delay) {
 	return mm + ":" + ss;
 }
 
-(function(time) {
+function select_tweet_schedule(time) {
 	const tweet = document.getElementById("tweetschedule");
 	for (let opt of tweet) {
 		if (opt.value == time) {tweet.value = time; return;}
@@ -261,7 +262,8 @@ function format_time(delay) {
 	else desc = "Custom: T+" + format_time(time);
 	tweet.add(OPTION({value: time}, desc));
 	tweet.value = time;
-})(sched_tweet);
+}
+select_tweet_schedule(sched_tweet);
 
 set_content(document.getElementById("checklist"),
 	document.forms.checklist.elements.checklist.value
