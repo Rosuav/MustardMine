@@ -244,6 +244,25 @@ if (sched_tz === "") {
 	}
 }
 
+function format_time(delay) {
+	const mm = ("0" + Math.floor((delay / 60) % 60)).slice(-2);
+	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
+	return mm + ":" + ss;
+}
+
+(function(time) {
+	const tweet = document.getElementById("tweetschedule");
+	for (let opt of tweet) {
+		if (opt.value == time) {tweet.value = time; return;}
+	}
+	//Guess we need to add an entry.
+	let desc;
+	if (time < 0) desc = "Custom: T-" + format_time(-time);
+	else desc = "Custom: T+" + format_time(time);
+	tweet.add(OPTION({value: time}, desc));
+	tweet.value = time;
+})(sched_tweet);
+
 set_content(document.getElementById("checklist"),
 	document.forms.checklist.elements.checklist.value
 	.trim().split("\n")
