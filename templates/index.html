@@ -8,6 +8,7 @@ const channel = {{ channel | tojson }};
 let setups = {{ setups | tojson }};
 const sched_tz = {{ sched_tz | tojson }};
 const schedule = {{ schedule | tojson }};
+const initial_tweets = {{ tweets | tojson }};
 </script>
 </head>
 <body>
@@ -15,14 +16,7 @@ const schedule = {{ schedule | tojson }};
 <!-- TODO: Have a logo or something -->
 <h1>Mustard Mine</h1>
 <p>Welcome, {{ username }}!</p>
-{% if tweets %}
-Scheduled tweet(s):
-<ul>
-{% for tm, id, tweet in tweets %}
-<li><form action="/deltweet/{{id}}">{{tm}}: {{tweet}} <input type=submit value=Cancel></form></li>
-{% endfor-%}
-</ul>
-{% endif %}
+<div id=tweets class=hidden>Scheduled tweet(s):<ul></ul></div>
 <div id=messages>
 {% if error %}
 <div class=errormessage>{{error}}</div>

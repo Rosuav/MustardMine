@@ -134,3 +134,7 @@ dialog {
 	border: 3px solid green;
 	background: #cfc;
 }
+
+.hidden {
+	display: none;
+}

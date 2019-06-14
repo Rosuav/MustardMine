@@ -128,6 +128,14 @@ document.getElementById("tweet").oninput = function() {
 	document.getElementById("tweetlen").innerHTML = this.value.length;
 };
 
+function update_messages(result) {
+	set_content(document.getElementById("messages"), [
+		result.error && DIV({className: "errormessage"}, result.error),
+		result.warning && DIV({className: "warningmessage"}, result.warning),
+		result.success && DIV({className: "successmessage"}, result.success),
+	]);
+}
+
 event("form.ajax", "submit", async function(ev) {
 	ev.preventDefault();
 	const dest = new URL(this.action);
@@ -138,11 +146,7 @@ event("form.ajax", "submit", async function(ev) {
 		method: "POST",
 		body: JSON.stringify(data)
 	})).json();
-	set_content(document.getElementById("messages"), [
-		result.error && DIV({className: "errormessage"}, result.error),
-		result.warning && DIV({className: "warningmessage"}, result.warning),
-		result.success && DIV({className: "successmessage"}, result.success),
-	]);
+	update_messages(result);
 	if (result.reset_form) this.reset();
 	document.getElementById("messages").scrollIntoView();
 });
@@ -337,6 +341,24 @@ event("form", "keydown", function(ev) {
 	//there a generic event that we should be hooking?
 	if (ev.ctrlKey && ev.keyCode === 13) ev.currentTarget.submit();
 });
+
+async function deltweet(ev, id) {
+	ev.preventDefault();
+	const result = await (await fetch("/api/tweet/" + id, {method: "DELETE", credentials: "include"})).json();
+	update_messages(result);
+	if (result.ok) update_tweets(result.new_tweets);
+}
+
+function update_tweets(tweets) {
+	set_content(document.querySelector("#tweets ul"),
+		tweets.map(([tm, id, tweet]) => LI({}, [
+			tm + ": " + tweet + " ",
+			BUTTON({type: "button", onclick: ev => deltweet(ev, id)}, "Cancel"),
+		]))
+	);
+	document.getElementById("tweets").classList.toggle("hidden", !tweets.length);
+}
+update_tweets(initial_tweets);
 
 //For browsers with only partial support for the <dialog> tag, add the barest minimum.
 //On browsers with full support, there are many advantages to using dialog rather than
