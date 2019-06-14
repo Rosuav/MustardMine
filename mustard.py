@@ -395,14 +395,19 @@ def form_tweet(channelid):
 	if err: return err, 400
 	return redirect(url_for("mainpage"))
 
+def get_user_tweets():
+	auth = session["twitter_oauth"]
+	sched_tz, schedule = database.get_schedule(session["twitch_user"]["_id"])
+	return list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"], sched_tz)
+
 @app.route("/api/tweet", methods=["POST"])
 @wants_channelid
 def api_tweet(channelid):
 	err = do_tweet(channelid, request.json.get("tweet"),
 		request.json.get("tweetschedule", "now"), session.get("twitter_oauth"))
 	if err: return jsonify({"ok": False, "error": err})
-	# TODO: Have it actually return the new schedule as per route("/")
-	return jsonify({"ok": True, "success": "Tweet scheduled.", "reset_form": True})
+	return jsonify({"ok": True, "success": "Tweet scheduled.",
+		"new_tweets": get_user_tweets()})
 
 @app.route("/deltweet/<int:id>") # Deprecated
 def cancel_tweet(id):
@@ -424,8 +429,7 @@ def api_cancel_tweet(id):
 			scheduler.remove(id)
 			ret = {"ok": True, "success": "Tweet cancelled"}
 			break
-	sched_tz, schedule = database.get_schedule(session["twitch_user"]["_id"])
-	ret["new_tweets"] = list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"], sched_tz)
+	ret["new_tweets"] = get_user_tweets()
 	return jsonify(ret)
 
 @app.route("/login")

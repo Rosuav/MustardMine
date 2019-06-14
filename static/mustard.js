@@ -136,6 +136,14 @@ function update_messages(result) {
 	]);
 }
 
+const form_callbacks = {
+	"/tweet": (result, form) => {
+		form.reset();
+		console.log("Got tweet result:", result);
+		if (result.ok) update_tweets(result.new_tweets);
+	},
+};
+
 event("form.ajax", "submit", async function(ev) {
 	ev.preventDefault();
 	const dest = new URL(this.action);
@@ -147,7 +155,7 @@ event("form.ajax", "submit", async function(ev) {
 		body: JSON.stringify(data)
 	})).json();
 	update_messages(result);
-	if (result.reset_form) this.reset();
+	const cb = form_callbacks[dest.pathname]; if (cb) cb(result, this);
 	document.getElementById("messages").scrollIntoView();
 });
 
