@@ -139,7 +139,6 @@ function update_messages(result) {
 const form_callbacks = {
 	"/tweet": (result, form) => {
 		form.reset();
-		console.log("Got tweet result:", result);
 		if (result.ok) update_tweets(result.new_tweets);
 	},
 };
