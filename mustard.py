@@ -222,7 +222,7 @@ def mainpage(channelid=None):
 	channel = query("kraken/channels/" + channelid, token="bearer")
 	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="bearer")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
-	sched_tz, schedule = database.get_schedule(channelid)
+	sched_tz, schedule, sched_tweet = database.get_schedule(channelid)
 	if "twitter_oauth" in session:
 		auth = session["twitter_oauth"]
 		username = auth["screen_name"]
@@ -237,7 +237,7 @@ def mainpage(channelid=None):
 		twitter=twitter, username=user["display_name"],
 		channel=channel, channelid=channelid, error=error,
 		setups=database.list_setups(channelid),
-		sched_tz=sched_tz, schedule=schedule,
+		sched_tz=sched_tz, schedule=schedule, sched_tweet=sched_tweet,
 		checklist=database.get_checklist(channelid),
 		timers=database.list_timers(channelid),
 		tweets=tweets,
@@ -329,7 +329,9 @@ def update_schedule(channelid):
 		tz = database.get_schedule(channelid)[0]
 		if not tz:
 			return "Please specify a timezone", 400
-	database.set_schedule(channelid, tz, schedule)
+	try: sched_tweet = int(request.form.get("sched_tz"))
+	except ValueError: sched_tweet = 0
+	database.set_schedule(channelid, tz, schedule, sched_tweet)
 	# TODO: Figure out why this isn't carrying channelid through
 	return redirect(url_for("mainpage"))
 
@@ -603,11 +605,11 @@ def make_backup(channelid):
 		response += "\t\t" + json.dumps(setup) + ",\n"
 	response += '\t\t""\n\t],\n'
 	# Schedule
-	tz, sched = database.get_schedule(twitchid)
+	tz, sched, sched_tweet = database.get_schedule(twitchid)
 	response += '\t"schedule": [\n'
 	for day in sched:
 		response += "\t\t" + json.dumps(day) + ",\n"
-	response += "\t\t" + json.dumps(tz) + "\n\t],\n"
+	response += "\t\t" + json.dumps(tz) + "\n\t],\n" # FIXME: Back up the tweet time too
 	# Checklist
 	checklist = database.get_checklist(twitchid).strip().split("\n")
 	response += '\t"checklist": [\n'

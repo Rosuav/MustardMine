@@ -21,6 +21,7 @@ TABLES = {
 		"twitchid integer primary key",
 		"sched_timezone varchar not null default ''",
 		"schedule varchar not null default ''",
+		"sched_tweet integer not null default 0",
 		"checklist text not null default ''",
 	],
 	"setups": [
@@ -131,14 +132,15 @@ def get_schedule(twitchid):
 	Schedule is split into seven (Sun through Sat) space-delimited strings.
 	"""
 	with postgres, postgres.cursor() as cur:
-		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
-		tz, sched = cur.fetchone()
+		cur.execute("select sched_timezone, schedule, sched_tweet from mustard.users where twitchid=%s", (twitchid,))
+		tz, sched, tweet = cur.fetchone()
 		sched = sched.split(",") + [""] * 7
-		return tz, sched[:7]
+		return tz, sched[:7], int(tweet)
 
-def set_schedule(twitchid, tz, schedule):
+def set_schedule(twitchid, tz, schedule, tweet):
 	with postgres, postgres.cursor() as cur:
-		cur.execute("update mustard.users set sched_timezone=%s, schedule=%s where twitchid=%s", (tz, ",".join(schedule), twitchid))
+		cur.execute("update mustard.users set sched_timezone=%s, schedule=%s, sched_tweet=%s where twitchid=%s",
+			(tz, ",".join(schedule), tweet, twitchid))
 
 def get_checklist(twitchid):
 	"""Return the user's checklist
@@ -322,6 +324,7 @@ class Restorer(contextlib.ExitStack):
 		self.summary += "Restored %r setup\n" % category
 
 	def restore_schedule(self, tz, schedule):
+		# FIXME: Restore the tweet time too
 		self.cur.execute("update mustard.users set sched_timezone=%s, schedule=%s where twitchid=%s", (tz, ",".join(schedule), self.twitchid))
 		self.summary += "Restored schedule and timezone\n"
 
@@ -371,6 +374,7 @@ def restore_from_json(twitchid, data):
 				r.restore_setup(**setup)
 		if "schedule" in data:
 			sched = data["schedule"]
+			# FIXME: Restore the tweet time too
 			if not isinstance(sched, list) or len(sched) != 8: r.fail()
 			r.restore_schedule(sched[-1], sched[:-1])
 		if "checklist" in data:
