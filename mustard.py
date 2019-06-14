@@ -397,7 +397,7 @@ def form_tweet(channelid):
 
 def get_user_tweets():
 	auth = session["twitter_oauth"]
-	sched_tz, schedule = database.get_schedule(session["twitch_user"]["_id"])
+	sched_tz = database.get_schedule(session["twitch_user"]["_id"])[0]
 	return list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"], sched_tz)
 
 @app.route("/api/tweet", methods=["POST"])
