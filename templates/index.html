@@ -16,12 +16,12 @@ const initial_tweets = {{ tweets | tojson }};
 <!-- TODO: Have a logo or something -->
 <h1>Mustard Mine</h1>
 <p>Welcome, {{ username }}!</p>
-<div id=tweets class=hidden>Scheduled tweet(s):<ul></ul></div>
 <div id=messages>
 {% if error %}
 <div class=errormessage>{{error}}</div>
 {% endif %}
 </div>
+<div id=tweets class=hidden>Scheduled tweet(s):<ul></ul></div>
 </header>
 
 <input type=radio id=display_all name=display checked><label for=display_all>Show all</label>
