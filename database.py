@@ -323,10 +323,10 @@ class Restorer(contextlib.ExitStack):
 			(self.twitchid, category, title, tags, tweet))
 		self.summary += "Restored %r setup\n" % category
 
-	def restore_schedule(self, tz, schedule):
-		# FIXME: Restore the tweet time too
-		self.cur.execute("update mustard.users set sched_timezone=%s, schedule=%s where twitchid=%s", (tz, ",".join(schedule), self.twitchid))
-		self.summary += "Restored schedule and timezone\n"
+	def restore_schedule(self, tz, schedule, tweet):
+		self.cur.execute("update mustard.users set sched_timezone=%s, schedule=%s, sched_tweet=%s where twitchid=%s",
+			(tz, ",".join(schedule), tweet, self.twitchid))
+		self.summary += "Restored schedule, timezone, and default tweet schedule\n"
 
 	def restore_checklist(self, checklist):
 		self.cur.execute("update mustard.users set checklist=%s where twitchid=%s", (checklist, self.twitchid,))
@@ -374,9 +374,10 @@ def restore_from_json(twitchid, data):
 				r.restore_setup(**setup)
 		if "schedule" in data:
 			sched = data["schedule"]
-			# FIXME: Restore the tweet time too
-			if not isinstance(sched, list) or len(sched) != 8: r.fail()
-			r.restore_schedule(sched[-1], sched[:-1])
+			if not isinstance(sched, list): r.fail()
+			elif len(sched) == 8: r.restore_schedule(sched[-1], sched[:-1], 0) # Old format backups
+			elif len(sched) == 9: r.restore_schedule(sched[-2], sched[:-2], sched[-1]) # New backups
+			else: r.fail()
 		if "checklist" in data:
 			checklist = data["checklist"]
 			if isinstance(checklist, list): checklist = "\n".join(checklist).strip()

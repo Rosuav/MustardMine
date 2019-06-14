@@ -609,7 +609,7 @@ def make_backup(channelid):
 	response += '\t"schedule": [\n'
 	for day in sched:
 		response += "\t\t" + json.dumps(day) + ",\n"
-	response += "\t\t" + json.dumps(tz) + "\n\t],\n" # FIXME: Back up the tweet time too
+	response += "\t\t%s,\n\t\t%d\n\t],\n" % (json.dumps(tz), sched_tweet)
 	# Checklist
 	checklist = database.get_checklist(twitchid).strip().split("\n")
 	response += '\t"checklist": [\n'
