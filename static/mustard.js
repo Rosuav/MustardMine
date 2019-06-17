@@ -344,6 +344,11 @@ document.getElementById("picker_results").onclick = function(event) {
 }
 event(".dialog_cancel", "click", function() {this.parentElement.close();});
 
+document.getElementById("twitter_config").onclick = ev => {
+	ev.preventDefault();
+	document.getElementById("twitter_cfg").showModal();
+}
+
 document.getElementById("prev_section").onclick = () => {
 	const cur = document.querySelector("section.current");
 	let next = cur.previousElementSibling;

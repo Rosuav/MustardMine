@@ -66,7 +66,11 @@ const initial_tweets = {{ tweets | tojson }};
 <input type=submit value="Tweet!"><span id=tweettime>Immediate</span></p>
 <p>Tip: The tweet is included in a saved setup. Retain an entire ready-to-go tweet, or pre-write parts of it (eg a list of hashtags),
 to save yourself the trouble of writing it out every time.</p>
+<p><a href="#" id=twitter_config>Configure defaults</a></p>
 </form>
+<dialog id=twitter_cfg>
+<button type=button class=dialog_cancel>x</button>
+</dialog>
 </section>
 
 <section id=schedule>
