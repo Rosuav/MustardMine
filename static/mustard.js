@@ -344,11 +344,22 @@ document.getElementById("picker_results").onclick = function(event) {
 }
 event(".dialog_cancel", "click", function() {this.parentElement.close();});
 
+const twittercfg = document.forms.twittercfg.elements;
 document.getElementById("twitter_config").onclick = ev => {
 	ev.preventDefault();
+	twittercfg.stdsched.value = "custom";
+	twittercfg.custsched.value = sched_tweet;
+	for (let opt of twittercfg.stdsched) {
+		if (opt.value == sched_tweet) {
+			twittercfg.stdsched.value = sched_tweet;
+			twittercfg.custsched.value = "";
+			break;
+		}
+	}
+	twittercfg.stdsched.onchange();
 	document.getElementById("twitter_cfg").showModal();
 }
-document.getElementById("stdschedule").onchange = function() {console.log(this.closest("ul").dataset.selval = this.value);};
+twittercfg.stdsched.onchange = function() {this.closest("ul").dataset.selval = this.value;};
 
 document.getElementById("prev_section").onclick = () => {
 	const cur = document.querySelector("section.current");

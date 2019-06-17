@@ -8,7 +8,7 @@ const channel = {{ channel | tojson }};
 let setups = {{ setups | tojson }};
 const sched_tz = {{ sched_tz | tojson }};
 const schedule = {{ schedule | tojson }};
-const sched_tweet = {{ sched_tweet | tojson }}; //should be just a number
+let sched_tweet = {{ sched_tweet | tojson }}; //should be just a number
 const initial_tweets = {{ tweets | tojson }};
 </script>
 </head>
@@ -72,14 +72,14 @@ to save yourself the trouble of writing it out every time.</p>
 <button type=button class=dialog_cancel>x</button>
 <form name=twittercfg class=ajax method=post action="/twitter_cfg">
 <ul><li>Default schedule time:
-<select id=stdschedule name=stdschedule>
+<select name=stdsched>
 <option value="0">At schedule</option>
 <option value="300">At T+5 mins</option>
 <option value="600">At T+10 mins</option>
 <option value="1800">At T+30 mins</option>
 <option value="custom">Custom</option>
 </select></li>
-<li class=customonly><label>Custom schedule time: <input name=customsched type=number> seconds.</label></li>
+<li class=customonly><label>Custom schedule time: <input name=custsched type=number> seconds.</label></li>
 <li class=customonly>Positive for after scheduled time, negative for before.</li>
 </ul>
 </form>
