@@ -138,3 +138,13 @@ dialog {
 .hidden {
 	display: none;
 }
+
+li.customonly {
+	display: none;
+}
+
+/* Can't seem to control this based on the select's value, so instead
+we copy the value to the ul's dataset.selval and control with that. */
+ul[data-selval="custom"] li.customonly {
+	display: list-item;
+}

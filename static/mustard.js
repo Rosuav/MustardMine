@@ -348,6 +348,7 @@ document.getElementById("twitter_config").onclick = ev => {
 	ev.preventDefault();
 	document.getElementById("twitter_cfg").showModal();
 }
+document.getElementById("stdschedule").onchange = function() {console.log(this.closest("ul").dataset.selval = this.value);};
 
 document.getElementById("prev_section").onclick = () => {
 	const cur = document.querySelector("section.current");
