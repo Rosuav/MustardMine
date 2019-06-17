@@ -24,10 +24,7 @@ TODO:
     the link? Could be handy for a few channels.
     - The link itself is available inside send_tweet() but isn't currently
       used anywhere.
-    - This would actually require some per-user customizations, including
-      whether to send the tweet at all, how it should be formatted, etc;
-      and this would be a good place to put a "default schedule time" too.
-      Such customizations should NOT be available to editors.
+    - Could become another of the defaults in the twitter_cfg dialog.
 * Get someone on a Mac to test things in Safari
   - The <dialog> tag isn't officially supported. Is my monkeypatch enough?
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
