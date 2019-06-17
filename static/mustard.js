@@ -342,7 +342,7 @@ document.getElementById("picker_results").onclick = function(event) {
 		t.value = tags.join(", ");
 	}
 }
-document.getElementById("picker_cancel").onclick = () => document.getElementById("picker").close();
+event(".dialog_cancel", "click", function() {this.parentElement.close();});
 
 document.getElementById("prev_section").onclick = () => {
 	const cur = document.querySelector("section.current");

@@ -108,7 +108,7 @@ dialog {
 	margin-top: 0.25em;
 }
 
-#picker_cancel {
+.dialog_cancel {
 	position: absolute;
 	right: 1em; top: 1em;
 }
