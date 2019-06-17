@@ -38,6 +38,16 @@ details {
 	max-height: 32px;
 }
 
+button#login {
+	height: 40px;
+	display: flex;
+	align-items: center;
+}
+button svg {
+	height: 28px;
+	padding-right: 10px;
+}
+
 /* The header row doesn't get styled like the others */
 #setups tr:first-child {
 	background: inherit !important;
