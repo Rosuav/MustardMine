@@ -137,10 +137,15 @@ def get_schedule(twitchid):
 		sched = sched.split(",") + [""] * 7
 		return tz, sched[:7], int(tweet)
 
-def set_schedule(twitchid, tz, schedule, tweet):
+def set_schedule(twitchid, tz, schedule):
 	with postgres, postgres.cursor() as cur:
-		cur.execute("update mustard.users set sched_timezone=%s, schedule=%s, sched_tweet=%s where twitchid=%s",
-			(tz, ",".join(schedule), tweet, twitchid))
+		cur.execute("update mustard.users set sched_timezone=%s, schedule=%s where twitchid=%s",
+			(tz, ",".join(schedule), twitchid))
+
+def update_twitter_config(twitchid, schedule):
+	with postgres, postgres.cursor() as cur:
+		cur.execute("update mustard.users set sched_tweet=%s where twitchid=%s",
+			(schedule, twitchid))
 
 def get_checklist(twitchid):
 	"""Return the user's checklist

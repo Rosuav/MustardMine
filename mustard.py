@@ -329,11 +329,24 @@ def update_schedule(channelid):
 		tz = database.get_schedule(channelid)[0]
 		if not tz:
 			return "Please specify a timezone", 400
-	try: sched_tweet = int(request.form.get("sched_tz"))
-	except ValueError: sched_tweet = 0
-	database.set_schedule(channelid, tz, schedule, sched_tweet)
+	database.set_schedule(channelid, tz, schedule)
 	# TODO: Figure out why this isn't carrying channelid through
 	return redirect(url_for("mainpage"))
+
+@app.route("/api/twitter_cfg", methods=["POST"])
+@wants_channelid
+def update_twitter_cfg(channelid):
+	sched = request.json.get("stdsched", "custom")
+	if not sched or sched == "custom":
+		sched = request.json.get("custsched")
+	try: sched = int(str(sched))
+	except ValueError: return jsonify({"ok": False, "error": "Invalid schedule time"})
+	# Potentially bounds-check and/or round? We return the processed number
+	# in case it isn't the same as the input, even though currently it's
+	# always the same value, intified.
+	database.update_twitter_config(channelid, sched)
+	return jsonify({"ok": True, "success": "Twitter defaults updated",
+		"new_sched": sched})
 
 @app.route("/checklist", methods=["POST"])
 @wants_channelid

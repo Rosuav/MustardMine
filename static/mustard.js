@@ -142,6 +142,10 @@ const form_callbacks = {
 		select_tweet_schedule(sched_tweet);
 		if (result.ok) update_tweets(result.new_tweets);
 	},
+	"/twitter_cfg": (result, form) => {
+		form.closest("dialog").close();
+		select_tweet_schedule(result.new_sched);
+	},
 };
 
 event("form.ajax", "submit", async function(ev) {
