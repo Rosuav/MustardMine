@@ -1,3 +1,6 @@
+import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
+const {TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG} = choc;
+
 function event(selector, ev, func) {
 	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
 }
