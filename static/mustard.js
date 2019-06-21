@@ -132,7 +132,7 @@ document.getElementById("tweet").oninput = function() {
 };
 
 function update_messages(result) {
-	set_content(document.getElementById("messages"), [
+	set_content("#messages", [
 		result.error && DIV({className: "errormessage"}, result.error),
 		result.warning && DIV({className: "warningmessage"}, result.warning),
 		result.success && DIV({className: "successmessage"}, result.success),
@@ -272,7 +272,7 @@ function select_tweet_schedule(time) {
 }
 select_tweet_schedule(sched_tweet);
 
-set_content(document.getElementById("checklist"),
+set_content("#checklist",
 	document.forms.checklist.elements.checklist.value
 	.trim().split("\n")
 	.map(item => item && LI(0, LABEL(0, [INPUT({type: "checkbox"}), item])))
@@ -319,7 +319,7 @@ document.getElementById("picker_search").oninput = async function() {
 		try {
 			searching = true;
 			const res = await (await fetch(`/search/${picking}?q=` + encodeURIComponent(val))).json();
-			set_content(document.getElementById("picker_results"), res.map(pickmapper[picking]));
+			set_content("#picker_results", res.map(pickmapper[picking]));
 		}
 		finally {
 			searching = false;
@@ -402,7 +402,7 @@ async function deltweet(ev, id) {
 }
 
 function update_tweets(tweets) {
-	set_content(document.querySelector("#tweets ul"),
+	set_content("#tweets ul",
 		tweets.map(([tm, id, tweet]) => LI({}, [
 			tm + ": " + tweet + " ",
 			BUTTON({type: "button", onclick: ev => deltweet(ev, id)}, "Cancel"),
