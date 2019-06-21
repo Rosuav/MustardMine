@@ -10,11 +10,11 @@ const schedform = document.forms.schedule.elements;
 
 function render_setups() {
 	const rows = setups.map((s, i) => TR({onclick: () => pick_setup(i)}, [
-		TD(0, s.category),
-		TD(0, s.title),
-		TD(0, s.tags),
-		TD(0, s.tweet),
-		TD(0, BUTTON({className: "deleting", id: "del"+i, onclick: () => try_delete_setup(i)}, "X")),
+		TD(s.category),
+		TD(s.title),
+		TD(s.tags),
+		TD(s.tweet),
+		TD(BUTTON({className: "deleting", id: "del"+i, onclick: () => try_delete_setup(i)}, "X")),
 	]));
 	const table = document.getElementById("setups");
 	while (table.lastChild != table.firstChild) table.removeChild(table.lastChild); //Keep the header row only
@@ -275,7 +275,7 @@ select_tweet_schedule(sched_tweet);
 set_content("#checklist",
 	document.forms.checklist.elements.checklist.value
 	.trim().split("\n")
-	.map(item => item && LI(0, LABEL(0, [INPUT({type: "checkbox"}), item])))
+	.map(item => item && LI(LABEL([INPUT({type: "checkbox"}), item])))
 );
 
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
@@ -403,7 +403,7 @@ async function deltweet(ev, id) {
 
 function update_tweets(tweets) {
 	set_content("#tweets ul",
-		tweets.map(([tm, id, tweet]) => LI({}, [
+		tweets.map(([tm, id, tweet]) => LI([
 			tm + ": " + tweet + " ",
 			BUTTON({type: "button", onclick: ev => deltweet(ev, id)}, "Cancel"),
 		]))
