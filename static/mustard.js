@@ -16,9 +16,9 @@ function render_setups() {
 		TD(s.tweet),
 		TD(BUTTON({className: "deleting", id: "del"+i, onclick: () => try_delete_setup(i)}, "X")),
 	]));
-	const table = document.getElementById("setups");
-	while (table.lastChild != table.firstChild) table.removeChild(table.lastChild); //Keep the header row only
-	rows.forEach(row => table.appendChild(row));
+	const table = document.querySelector("#setups tbody");
+	rows.unshift(table.firstChild);
+	set_content(table, rows);
 }
 
 function pick_setup(i) {
