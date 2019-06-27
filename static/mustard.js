@@ -141,7 +141,7 @@ function update_messages(result) {
 
 const form_callbacks = {
 	"/tweet": (result, form) => {
-		form.reset();
+		if (result.ok) form.reset(); //Only clear the form if the tweet was sent
 		select_tweet_schedule(sched_tweet);
 		if (result.ok) update_tweets(result.new_tweets);
 	},
