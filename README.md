@@ -43,6 +43,7 @@ TODO:
   send the tweet pieces (split on any whitespace? prioritize newline??) and
   chain them as replies, which currently isn't possible in the MM UI.
 * Minor CSS highlight on mouseover for tag/game picker pls
+* Tweet that you're live: 186 / 280 - after posting tweet - bug
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
