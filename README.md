@@ -42,6 +42,7 @@ TODO:
 * Permit over-long tweets to be sent in pieces. When the scheduled time hits,
   send the tweet pieces (split on any whitespace? prioritize newline??) and
   chain them as replies, which currently isn't possible in the MM UI.
+* Minor CSS highlight on mouseover for tag/game picker pls
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
