@@ -21,13 +21,15 @@ function render_setups() {
 	set_content(table, rows);
 }
 
+const tweetbox = document.getElementById("tweet");
 function pick_setup(i) {
 	const setup = setups[i];
 	if (!setup) return; //Shouldn't happen
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
 	setupform.tags.value = setup.tags;
-	document.getElementById("tweet").value = setup.tweet;
+	tweetbox.value = setup.tweet;
+	tweetbox.oninput();
 }
 
 let deleting_setup = -1;
@@ -64,7 +66,7 @@ document.getElementById("save").onclick = async function() {
 			category: setupform.category.value,
 			title: setupform.title.value,
 			tags: setupform.tags.value,
-			tweet: document.getElementById("tweet").value,
+			tweet: tweetbox.value,
 		})
 	})).json();
 	setups.push(result);
@@ -127,7 +129,7 @@ event(".sched", "change", function() {
 	schedule[this.name[5]] = this.value = tidy_times(this.value);
 });
 
-document.getElementById("tweet").oninput = function() {
+tweetbox.oninput = function() {
 	document.getElementById("tweetlen").innerHTML = this.value.length;
 };
 
@@ -141,7 +143,7 @@ function update_messages(result) {
 
 const form_callbacks = {
 	"/tweet": (result, form) => {
-		if (result.ok) form.reset(); //Only clear the form if the tweet was sent
+		if (result.ok) {form.reset(); tweetbox.oninput();} //Only clear the form if the tweet was sent
 		select_tweet_schedule(sched_tweet);
 		if (result.ok) update_tweets(result.new_tweets);
 	},
