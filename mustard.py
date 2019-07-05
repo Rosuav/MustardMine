@@ -417,10 +417,11 @@ def get_user_tweets():
 @app.route("/api/tweet", methods=["POST"])
 @wants_channelid
 def api_tweet(channelid):
+	when = request.json.get("tweetschedule", "now")
 	err = do_tweet(channelid, request.json.get("tweet"),
-		request.json.get("tweetschedule", "now"), session.get("twitter_oauth"))
+		when, session.get("twitter_oauth"))
 	if err: return jsonify({"ok": False, "error": err})
-	return jsonify({"ok": True, "success": "Tweet scheduled.",
+	return jsonify({"ok": True, "success": "Tweet sent." if when == "now" else "Tweet scheduled.",
 		"new_tweets": get_user_tweets()})
 
 @app.route("/deltweet/<int:id>") # Deprecated
