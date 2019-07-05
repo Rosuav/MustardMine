@@ -151,6 +151,22 @@ const form_callbacks = {
 		form.closest("dialog").close();
 		select_tweet_schedule(result.new_sched);
 	},
+	"/update": (result, form) => {
+		if (!result.ok) return;
+		//Attempt to replicate the sorting behaviour done on the server
+		//It's okay if it isn't perfect, but most of the time, it'll be
+		//right enough to avoid ugly flicker. If ever it's wrong, it's
+		//what the server has that matters, and refreshing the page will
+		//update the display to match that.
+		const tags = form.elements.tags.value;
+		const newtags = tags.split(",")
+			.map(t => t.trim())
+			.sort((a,b) => a.localeCompare(b))
+			.join(", ");
+		console.log(tags);
+		console.log(newtags);
+		if (newtags !== tags) form.elements.tags.value = newtags;
+	},
 };
 
 event("form.ajax", "submit", async function(ev) {
