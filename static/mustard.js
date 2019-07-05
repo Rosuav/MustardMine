@@ -28,7 +28,7 @@ function pick_setup(i) {
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
 	setupform.tags.value = setup.tags;
-	tweetbox.value = setup.tweet;
+	if (setup.tweet !== "") tweetbox.value = setup.tweet;
 	tweetbox.oninput();
 }
 
