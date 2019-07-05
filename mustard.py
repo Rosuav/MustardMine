@@ -396,6 +396,7 @@ def send_tweet(auth, tweet):
 		print("---")
 		print(resp.json())
 		print("---")
+		return None
 	r = resp.json()
 	url = "https://twitter.com/%s/status/%s" % (r["user"]["screen_name"], r["id_str"])
 	# TODO: Show this to the user somehow
