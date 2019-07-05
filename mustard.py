@@ -358,8 +358,7 @@ def do_tweet(channelid, tweet, schedule, auth):
 	if not tweet: return "Can't send an empty tweet"
 	if not auth: return "Need to authenticate with Twitter before sending tweets"
 	if schedule == "now":
-		send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
-		return None # TODO: Carry failure messages through
+		return send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
 	schedule = int(schedule)
 	target = database.get_next_event(channelid, schedule)
 	if not target:
@@ -396,10 +395,14 @@ def send_tweet(auth, tweet):
 		print("---")
 		print(resp.json())
 		print("---")
-		return None
+		try:
+			return "Unable to send tweet: " + resp.json()["errors"][0]["message"]
+		except LookupError:
+			return "Unknown error response from Twitter (see server console)"
 	r = resp.json()
 	url = "https://twitter.com/%s/status/%s" % (r["user"]["screen_name"], r["id_str"])
 	# TODO: Show this to the user somehow
+	return ""
 
 @app.route("/tweet", methods=["POST"])
 @wants_channelid
