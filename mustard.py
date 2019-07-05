@@ -186,8 +186,7 @@ def wants_channelid(f):
 		if not may_edit_channel(userid, channelid): return redirect(url_for("mainpage"))
 		resp = f(*a, **kw, channelid=channelid)
 		if (channelid != userid and
-			isinstance(resp, Response) and
-			resp.status_code == 302 and
+			getattr(resp, "status_code", None) == 302 and
 			resp.location == url_for("mainpage")
 		):
 			return redirect(url_for("mainpage", channelid=channelid))
@@ -330,7 +329,6 @@ def update_schedule(channelid):
 		if not tz:
 			return "Please specify a timezone", 400
 	database.set_schedule(channelid, tz, schedule)
-	# TODO: Figure out why this isn't carrying channelid through
 	return redirect(url_for("mainpage"))
 
 @app.route("/api/twitter_cfg", methods=["POST"])
