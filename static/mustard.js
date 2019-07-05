@@ -1,5 +1,5 @@
 import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
-const {TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG} = choc;
+const {B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG} = choc;
 
 function event(selector, ev, func) {
 	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
@@ -298,7 +298,7 @@ event(".timer-force", "click", function() {force_timers(this.innerHTML);});
 
 const pickmapper = {
 	game: game => LI({"data-pick": game.localized_name}, [IMG({src: game.box.small, alt: ""}), game.localized_name]),
-	tag: tag => LI({"data-pick": tag.english_name}, tag.english_name + ": " + tag.english_desc),
+	tag: tag => LI({"data-pick": tag.english_name}, [B(tag.english_name), ": " + tag.english_desc]),
 };
 let picking = "";
 function open_picker(now_picking, heading) {
