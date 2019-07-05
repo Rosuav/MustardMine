@@ -111,6 +111,12 @@ dialog {
 
 #picker li {
 	cursor: pointer;
+	border: 1px solid transparent;
+}
+
+#picker li:hover {
+	border-color: #0df;
+	background: #eff;
 }
 
 #picker li img {
