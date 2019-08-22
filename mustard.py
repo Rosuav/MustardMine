@@ -161,6 +161,10 @@ def may_edit_channel(userid, channelid):
 	# access, short of making a change (a null edit doesn't count - it has to
 	# actually specify a field to change). So we first query, then update, the
 	# category. That's two additional API calls, so we cache it for 15 mins.
+	# NOTE: Poking around on the dashboard shows this undocumented API endpoint:
+	# https://api.twitch.tv/v5/permissions/channels/YOUR_ID/editable_channels
+	# Whether this is useful or not remains to be seen. Needs OAuth and a
+	# client-id, and maybe "Twitch-Api-Token: 1c8ad08632cc875c9af714fd6a9570da".
 	if userid == channelid: return True # Trivially true
 	if channel_editor_cache.get((userid, channelid), 0) > time.time():
 		# The user was an editor when last seen, recently
