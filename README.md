@@ -42,6 +42,8 @@ TODO:
   send the tweet pieces (split on any whitespace? prioritize newline??) and
   chain them as replies, which currently isn't possible in the MM UI.
 * Blank lines in checklist become separators?
+* Make an easy way to do a "temporary adjustment" where you don't save your
+  main setup, but can apply this start-of-stream change.
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
