@@ -44,6 +44,7 @@ TODO:
 * Blank lines in checklist become separators?
 * Make an easy way to do a "temporary adjustment" where you don't save your
   main setup, but can apply this start-of-stream change.
+* Track down bug with editing timers ("styling" missing, still in front end?)
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
