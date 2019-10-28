@@ -9,7 +9,7 @@ individual deployment as desired.
 
 TODO:
 
-* Connect to Discord?
+* Connect to Discord? cf Arghded
 * Query StreamLabs extension for schedule?
   - Would require assistance from SL, which they don't currently offer
   - Reverse-engineering is impractical; needs an API.
