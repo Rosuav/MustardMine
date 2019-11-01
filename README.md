@@ -62,6 +62,7 @@ TODO:
 * Blank lines in checklist become separators?
 * Make an easy way to do a "temporary adjustment" where you don't save your
   main setup, but can apply this start-of-stream change.
+* Have a way to delete timers that isn't "restore from a trimmed backup"!!
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
