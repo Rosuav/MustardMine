@@ -458,7 +458,7 @@ def api_cancel_tweet(id):
 def login():
 	twitch = OAuth2Session(config.CLIENT_ID, config.CLIENT_SECRET,
 		scope=REQUIRED_SCOPES)
-	uri, state = twitch.authorization_url("https://id.twitch.tv/oauth2/authorize",
+	uri, state = twitch.create_authorization_url("https://id.twitch.tv/oauth2/authorize",
 		redirect_uri=os.environ.get("OVERRIDE_REDIRECT_URI") or url_for("authorized", _external=True))
 	session["login_state"] = state
 	return redirect(uri)
@@ -495,14 +495,13 @@ def authorized():
 	session["twitch_user"] = user
 	return redirect(url_for("mainpage"))
 
-# TODO: This is dropping deprecation warnings regarding create_authorization_url and OAuth1
 @app.route("/login-twitter")
 def login_twitter():
 	print(url_for("authorized_twitter", _external=True))
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
 		redirect_uri=url_for("authorized_twitter", _external=True))
 	session["twitter_state"] = twitter.fetch_request_token("https://api.twitter.com/oauth/request_token")
-	return redirect(twitter.authorization_url("https://api.twitter.com/oauth/authenticate"))
+	return redirect(twitter.create_authorization_url("https://api.twitter.com/oauth/authenticate"))
 
 @app.route("/authorized-twitter")
 def authorized_twitter():
