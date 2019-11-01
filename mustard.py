@@ -553,7 +553,7 @@ def save_timer(id):
 		title=request.form["title"],
 		delta=parse_time(request.form["delta"]),
 		maxtime=parse_time(request.form["maxtime"]),
-		styling=request.form["styling"],
+		styling=request.form.get("styling", ""),
 	)
 	return redirect(url_for("mainpage"))
 
