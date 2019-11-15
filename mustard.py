@@ -238,6 +238,10 @@ def mainpage(channelid=None):
 	else:
 		twitter = Markup("""<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>""")
 		tweets = []
+	if "discord_oauth" in session:
+		discord = "-- currently logged in --"
+	else:
+		discord = Markup("""<div id=login-discord><a href="/login-discord">Connect with Discord</a></div>""")
 	error = session.get("last_error_message", "")
 	session["last_error_message"] = ""
 	return render_template("index.html",
@@ -247,7 +251,7 @@ def mainpage(channelid=None):
 		sched_tz=sched_tz, schedule=schedule, sched_tweet=sched_tweet,
 		checklist=database.get_checklist(channelid),
 		timers=database.list_timers(channelid),
-		tweets=tweets,
+		tweets=tweets, discord=discord,
 	)
 
 def do_update(channelid, info):
@@ -503,7 +507,6 @@ def authorized():
 
 @app.route("/login-twitter")
 def login_twitter():
-	print(url_for("authorized_twitter", _external=True))
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
 		redirect_uri=url_for("authorized_twitter", _external=True))
 	session["twitter_state"] = twitter.fetch_request_token("https://api.twitter.com/oauth/request_token")
@@ -522,10 +525,37 @@ def authorized_twitter():
 	session["twitter_oauth"] = resp
 	return redirect(url_for("mainpage"))
 
+@app.route("/login-discord")
+def login_discord():
+	print(url_for("authorized_discord", _external=True))
+	discord = OAuth2Session(config.DISCORD_CLIENT_ID, config.DISCORD_CLIENT_SECRET,
+		scope="webhook.incoming") # and identify?
+	uri, state = discord.create_authorization_url("https://discordapp.com/api/oauth2/authorize",
+		redirect_uri=url_for("authorized_discord", _external=True))
+	session["discord_state"] = state
+	return redirect(uri)
+
+@app.route("/authorized-discord")
+def authorized_discord():
+	if "denied" in request.args:
+		# User cancelled the auth flow - discard auth (most likely there won't be any)
+		session.pop("discord_oauth", None)
+		return redirect(url_for("mainpage"))
+	discord = OAuth2Session(config.DISCORD_CLIENT_ID, config.DISCORD_CLIENT_SECRET,
+		state=session["discord_state"])
+	resp = discord.fetch_access_token("https://discordapp.com/api/oauth2/token",
+		code=request.args["code"],
+		client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET,
+		redirect_uri=url_for("authorized_discord", _external=True))
+	print(resp)
+	session["discord_oauth"] = resp
+	return redirect(url_for("mainpage"))
+
 @app.route("/logout")
 def logout():
 	session.pop("twitch_token", None)
 	session.pop("twitter_oauth", None)
+	session.pop("discord_oauth", None)
 	return redirect(url_for("mainpage"))
 
 @app.route("/timer/new", methods=["POST"])

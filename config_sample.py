@@ -11,6 +11,10 @@ CLIENT_SECRET = "..."
 TWITTER_CLIENT_ID = "..."
 TWITTER_CLIENT_SECRET = "..."
 
+# Obtain credentials from https://discordapp.com/developers/applications/
+DISCORD_CLIENT_ID = "..."
+DISCORD_CLIENT_SECRET = "..."
+
 # Set this to an empty string to randomize every startup. This is secure
 # against most forms of session secret leakage, but means that any time the
 # server restarts, all sessions will be destroyed (meaning that all users get
