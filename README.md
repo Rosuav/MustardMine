@@ -52,7 +52,8 @@ TODO:
     can't actually send or manage the tweets (that's based on Twitter
     OAuth), so it's only going to be confusing to let them see the forms.
     This implies the need for two, and potentially three, permission-based
-    views - owner, editor, maybe moderator.
+    views - owner, editor, maybe moderator. (What if the editor is the one
+    who has control of the Twitter account though??)
 * Maybe make a "copy setup to clipboard" to allow them to be shared? Use
   the same JSON format as is in the backup file, so you can cherry-pick
   from there too.
