@@ -67,8 +67,19 @@ const initial_tweets = {{ tweets | tojson }};
 <input type=submit value="Tweet!"><span id=tweettime>Immediate</span></p>
 <p>Tip: The tweet is included in a saved setup. Retain an entire ready-to-go tweet, or pre-write parts of it (eg a list of hashtags),
 to save yourself the trouble of writing it out every time.</p>
-<p><a href="#" id=twitter_config>Configure defaults</a></p>
 </form>
+<div class="unimplemented" style="display: none">
+<h2>Discord</h2>
+{{ "discord login" }}
+<form method=post class=ajax action="/discord">
+<table id=discord_channels>
+<tr><th>Rosuav #general</th><td><input name="chan_12345" size=80></td></tr>
+<tr><th>DeviCat #live_streams</th><td><input name="chan_23456" size=80></td></tr>
+</table>
+<input type=submit value="Post announcements">
+</form>
+</div>
+<p><a href="#" id=twitter_config>Configure defaults</a></p>
 <dialog id=twitter_cfg>
 <button type=button class=dialog_cancel>x</button>
 <form name=twittercfg class=ajax method=post action="/twitter_cfg">
