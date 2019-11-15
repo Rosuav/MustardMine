@@ -13,7 +13,7 @@ TODO:
   - Have registered bot account MustardMine#2353
   - Get the gateway URL: https://discordapp.com/developers/docs/topics/gateway#get-gateway
   - Establish a websocket connection for the sake of authentication
-  - To send as Mustard Mine:
+  - To send as Mustard Mine (not currently planned as an option):
     - Authenticate (once) and save the credentials
     - Create a webhook for the user's chosen server?? Or create message each time?
     - https://discordapp.com/developers/docs/resources/channel#create-message
@@ -28,6 +28,12 @@ TODO:
     once. In fact, this almost certainly means that I do NOT want to have them all
     come from "MustardMine"; they should come from the authenticated user. That way,
     if there's an issue with spam, it falls on the person who made the choices.
+  - Configuration:
+    - Needs "guilds" OAuth scope
+    - /users/@me/guilds
+    - /guilds/{guild.id}/channels
+    - Retain the channel ID and a "descriptor" formed from the guild name and channel name
+    - Shouldn't need the guild ID
 * Query StreamLabs extension for schedule?
   - Would require assistance from SL, which they don't currently offer
   - Reverse-engineering is impractical; needs an API.
