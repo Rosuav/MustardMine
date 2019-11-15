@@ -60,7 +60,6 @@ TODO:
 * Permit over-long tweets to be sent in pieces. When the scheduled time hits,
   send the tweet pieces (split on any whitespace? prioritize newline??) and
   chain them as replies, which currently isn't possible in the MM UI.
-* Blank lines in checklist become separators?
 * Make an easy way to do a "temporary adjustment" where you don't save your
   main setup, but can apply this start-of-stream change. Or a "previous"?
 

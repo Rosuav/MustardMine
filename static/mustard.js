@@ -293,7 +293,10 @@ select_tweet_schedule(sched_tweet);
 set_content("#checklist",
 	document.forms.checklist.elements.checklist.value
 	.trim().split("\n")
-	.map(item => item && LI(LABEL([INPUT({type: "checkbox"}), item])))
+	.map(item => item
+		? LI(LABEL([INPUT({type: "checkbox"}), item]))
+		: LI({className: "separator"}, "\xA0")
+	)
 );
 
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
