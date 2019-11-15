@@ -548,10 +548,12 @@ def parse_time(timestr):
 	if neg: return -time
 	return time
 
+# Can also delete a timer
 @app.route("/timer/<id>", methods=["POST"])
 @wants_channelid
 def save_timer(id, channelid):
-	database.update_timer_details(channelid, id,
+	if "delete" in request.form: database.delete_timer(channelid, id)
+	else: database.update_timer_details(channelid, id,
 		title=request.form["title"],
 		delta=parse_time(request.form["delta"]),
 		maxtime=parse_time(request.form["maxtime"]),

@@ -18,10 +18,20 @@
 <textarea name=styling rows=8 cols=50></textarea></p>
 -->
 <input type=hidden name=channelid value="{{channelid}}"><input type=submit value="Save">
+<div class=danger>
+<p>Delete this timer? THIS CANNOT BE UNDONE. <button type=button id=deltimer>Delete</button></p>
+<p>Recreating a deleted timer will generate a new unique ID and change the URL.
+   <input type=submit id=confirmdelete name=delete value="Yes, delete" style="visibility: hidden">
+</p>
+</div>
 <script>
 const info = {{ info | tojson }};
 const form = document.forms[0].elements;
-"title delta maxtime styling".split(" ").forEach(id => form[id].value = info[id]);
+"title delta maxtime".split(" ").forEach(id => form[id].value = info[id]);
+document.getElementById("deltimer").onclick = function() {
+	this.disabled = true;
+	document.getElementById("confirmdelete").style.visibility = "visible";
+}
 </script>
 </form>
 </body>

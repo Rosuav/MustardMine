@@ -164,3 +164,9 @@ we copy the value to the ul's dataset.selval and control with that. */
 ul[data-selval="custom"] li.customonly {
 	display: list-item;
 }
+
+.danger {
+	background: #ffeeee;
+	border: 2px solid red;
+	width: fit-content;
+}

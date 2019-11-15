@@ -277,9 +277,18 @@ def update_timer_details(twitchid, id, *, title, delta, maxtime, styling):
 	Raises ValueError if it found nothing to update
 	"""
 	with postgres, postgres.cursor() as cur:
-		
 		cur.execute("update mustard.timers set title=%s, delta=%s, maxtime=%s, styling=%s where id=%s and twitchid=%s",
 			(title, delta, maxtime, styling, id, twitchid))
+		if not cur.rowcount: raise ValueError("Timer not found, or not owned by that user")
+
+def delete_timer(twitchid, id):
+	"""Delete a timer, but only if it's owned by that twitchid
+
+	Raises ValueError if it found nothing to delete
+	"""
+	with postgres, postgres.cursor() as cur:
+		cur.execute("delete from mustard.timers where id=%s and twitchid=%s",
+			(id, twitchid))
 		if not cur.rowcount: raise ValueError("Timer not found, or not owned by that user")
 
 class ValidationError(Exception): pass
