@@ -17,7 +17,7 @@
 <p><label>Custom styling (advanced usage only) (not currently supported)</label><br>
 <textarea name=styling rows=8 cols=50></textarea></p>
 -->
-<input type=submit value="Save">
+<input type=hidden name=channelid value="{{channelid}}"><input type=submit value="Save">
 <script>
 const info = {{ info | tojson }};
 const form = document.forms[0].elements;

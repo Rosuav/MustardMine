@@ -170,8 +170,8 @@ def may_edit_channel(userid, channelid):
 		# The user was an editor when last seen, recently
 		return True
 	try:
-		data = query("kraken/channels/" + channelid, method="GET", token=None)
-		resp = query("kraken/channels/" + channelid, method="PUT", token="oauth", data={"channel[game]": data["game"]})
+		data = query("kraken/channels/%s" % channelid, method="GET", token=None)
+		resp = query("kraken/channels/%s" % channelid, method="PUT", token="oauth", data={"channel[game]": data["game"]})
 		channel_editor_cache[(userid, channelid)] = time.time() + 900
 		return True
 	except TwitchDataError as e:
@@ -530,10 +530,12 @@ def create_timer(channelid):
 
 @app.route("/timer/<id>")
 def edit_timer(id):
-	# TODO: Need channelid (and don't forget auth, if wants_channelid isn't used)
-	info = database.get_timer_details(session["twitch_user"]["_id"], id)
-	if not info: return "Timer not found, or not owned by you", 404
-	return render_template("timer.html", info=info)
+	# NOTE: This doesn't get told what the channel ID is, it just does a perms check.
+	# The channel ID will be carried through in the POST data though.
+	info = database.get_timer_details(id)
+	if not info or not may_edit_channel(session["twitch_user"]["_id"], info["twitchid"]):
+		return "Timer not found, or not owned by you", 404
+	return render_template("timer.html", info=info, channelid=info["twitchid"])
 
 def parse_time(timestr):
 	"""Parse a human-writable time string into a number of seconds"""
@@ -547,9 +549,9 @@ def parse_time(timestr):
 	return time
 
 @app.route("/timer/<id>", methods=["POST"])
-def save_timer(id):
-	# TODO: Need channelid (and again, don't forget auth)
-	database.update_timer_details(session["twitch_user"]["_id"], id,
+@wants_channelid
+def save_timer(id, channelid):
+	database.update_timer_details(channelid, id,
 		title=request.form["title"],
 		delta=parse_time(request.form["delta"]),
 		maxtime=parse_time(request.form["maxtime"]),

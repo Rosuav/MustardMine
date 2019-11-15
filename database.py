@@ -173,13 +173,14 @@ def list_timers(twitchid, *, full=False):
 		cur.execute("select id, title" + morefields + " from mustard.timers where twitchid=%s order by id", (twitchid,))
 		return cur.fetchall()
 
-def get_timer_details(twitchid, id):
+def get_timer_details(id):
 	"""Get details for a specific timer
 
-	Will return data if the timer is owned by the given user, otherwise None.
+	Does not do a permissions check - will return data for ANY user's timers.
+	Perms must be checked externally.
 	"""
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-		cur.execute("select * from mustard.timers where twitchid=%s and id=%s", (twitchid, id))
+		cur.execute("select * from mustard.timers where id=%s", (id,))
 		return cur.fetchone()
 
 def find_next_event(tz, sched, delta=0):
