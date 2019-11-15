@@ -11,29 +11,17 @@ TODO:
 
 * Connect to Discord? cf Arghded
   - Have registered bot account MustardMine#2353
-  - Get the gateway URL: https://discordapp.com/developers/docs/topics/gateway#get-gateway
-  - Establish a websocket connection for the sake of authentication
-  - To send as Mustard Mine (not currently planned as an option):
-    - Authenticate (once) and save the credentials
-    - Create a webhook for the user's chosen server?? Or create message each time?
-    - https://discordapp.com/developers/docs/resources/channel#create-message
-    - How can I ensure that the person requesting this has the authority to ask MM to
-      post in a particular server? Can I insist on OAuth and an appropriate role?
-      Might be worth just always posting as that user.
-  - To send as the posting user:
-    - OAuth
-    - Need SEND_MESSAGES perms
-    - https://discordapp.com/developers/docs/resources/channel#create-message
-  - Will need to be able to send to multiple channels (in multiple servers) all at
-    once. In fact, this almost certainly means that I do NOT want to have them all
-    come from "MustardMine"; they should come from the authenticated user. That way,
-    if there's an issue with spam, it falls on the person who made the choices.
   - Configuration:
-    - Needs "guilds" OAuth scope
-    - /users/@me/guilds
-    - /guilds/{guild.id}/channels
-    - Retain the channel ID and a "descriptor" formed from the guild name and channel name
-    - Shouldn't need the guild ID
+    - Needs "identify webhook.incoming" OAuth scopes
+    - Upon authorization, will return a webhook ID and token, and the guild and channel IDs
+    - GET /guilds/{guild.id}
+    - GET /channels/{channel.id}
+    - Build a "descriptor" from the guild name and channel name
+    - Shouldn't need the guild/channel IDs after that unless it's worth updating the names
+    - POST to the webhook
+      - https://discordapp.com/developers/docs/resources/webhook#execute-webhook
+    - Each channel to be posted to will require separate authorization.
+    - See discord-integration branch for partial implementation.
 * Query StreamLabs extension for schedule?
   - Would require assistance from SL, which they don't currently offer
   - Reverse-engineering is impractical; needs an API.
