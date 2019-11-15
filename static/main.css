@@ -170,3 +170,13 @@ ul[data-selval="custom"] li.customonly {
 	border: 2px solid red;
 	width: fit-content;
 }
+
+#prevsetup {
+	margin: 0.25em;
+	padding: 0.25em;
+	border: 1px solid blue;
+	display: none;
+}
+#prevsetup span {
+	margin: 0 0.5em;
+}

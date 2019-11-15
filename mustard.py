@@ -201,6 +201,13 @@ def list_scheduled_tweets(token, secret, sched_tz):
 	cred = (token, secret)
 	return [(format_time(tm, sched_tz), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
 
+def get_channel_setup(channelid):
+	# TODO: Switch to the new API /helix/streams
+	channel = query("kraken/channels/" + channelid, token="bearer")
+	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="bearer")
+	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
+	return channel
+
 @app.route("/")
 @app.route("/editor/<channelid>")
 def mainpage(channelid=None):
@@ -221,10 +228,7 @@ def mainpage(channelid=None):
 		return redirect("/editor/" + users[0]["id"])
 	if not may_edit_channel(user["_id"], channelid): return redirect(url_for("mainpage"))
 	database.create_user(channelid) # Just in case, make sure the database has the basic structure
-	# TODO: Switch to the new API /helix/streams
-	channel = query("kraken/channels/" + channelid, token="bearer")
-	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="bearer")
-	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
+	channel = get_channel_setup(channelid)
 	sched_tz, schedule, sched_tweet = database.get_schedule(channelid)
 	if "twitter_oauth" in session:
 		auth = session["twitter_oauth"]
@@ -296,9 +300,11 @@ def update(channelid):
 @app.route("/api/update", methods=["POST"])
 @wants_channelid
 def api_update(channelid):
+	setup = get_channel_setup(channelid)
+	previous = {"category": setup["game"], "title": setup["status"], "tags": setup["tags"]}
 	err = do_update(channelid, request.json)
 	if err: return jsonify({"ok": False, "error": err})
-	return jsonify({"ok": True, "success": "Stream status updated."})
+	return jsonify({"ok": True, "success": "Stream status updated.", "previous": previous})
 
 @app.route("/schedule", methods=["POST"])
 @wants_channelid

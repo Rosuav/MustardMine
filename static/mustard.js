@@ -1,5 +1,5 @@
 import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
-const {B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG} = choc;
+const {B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
 
 function event(selector, ev, func) {
 	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
@@ -21,14 +21,15 @@ function render_setups() {
 	set_content(table, rows);
 }
 
+let prevsetup = null;
 const tweetbox = document.getElementById("tweet");
 function pick_setup(i) {
-	const setup = setups[i];
+	const setup = i === -1 ? prevsetup : setups[i];
 	if (!setup) return; //Shouldn't happen
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
 	setupform.tags.value = setup.tags;
-	if (setup.tweet !== "") tweetbox.value = setup.tweet;
+	if (setup.tweet && setup.tweet !== "") tweetbox.value = setup.tweet;
 	tweetbox.oninput();
 }
 
@@ -57,21 +58,22 @@ document.getElementById("hello").onclick = async function() {
 }
 */
 
-document.getElementById("save").onclick = async function() {
+async function save_setup(setup) {
 	const result = await (await fetch("/api/setups?channelid=" + channel._id, {
 		credentials: "include",
 		headers: {"Content-Type": "application/json"},
 		method: "POST",
-		body: JSON.stringify({
-			category: setupform.category.value,
-			title: setupform.title.value,
-			tags: setupform.tags.value,
-			tweet: tweetbox.value,
-		})
+		body: JSON.stringify(setup)
 	})).json();
 	setups.push(result);
 	render_setups();
 }
+document.getElementById("save").onclick = () => save_setup({
+	category: setupform.category.value,
+	title: setupform.title.value,
+	tags: setupform.tags.value,
+	tweet: tweetbox.value,
+});
 
 async function delete_setup(i) {
 	const result = await fetch("/api/setups/" + i + "?channelid=" + channel._id, {
@@ -163,9 +165,20 @@ const form_callbacks = {
 			.map(t => t.trim())
 			.sort((a,b) => a.localeCompare(b))
 			.join(", ");
-		console.log(tags);
-		console.log(newtags);
 		if (newtags !== tags) form.elements.tags.value = newtags;
+		//Save the previous state as a temporary setup
+		if (result.previous)
+		{
+			prevsetup = result.previous;
+			set_content("#prevsetup", [
+				SPAN("Previous setup:"),
+				SPAN(prevsetup.category),
+				SPAN(prevsetup.title),
+				SPAN(prevsetup.tags),
+				SPAN(BUTTON({onclick: () => pick_setup(-1)}, "Reapply")),
+				SPAN(BUTTON({onclick: () => save_setup(prevsetup)}, "Save")),
+			]).style.display = "block";
+		}
 	},
 };
 
