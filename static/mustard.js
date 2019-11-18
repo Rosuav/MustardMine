@@ -133,11 +133,10 @@ event(".sched", "change", function() {
 
 tweetbox.oninput = function() {
 	const value = this.innerText;
-	document.getElementById("tweet_replica").innerHTML = value;
+	document.getElementById("tweet_replica").value = value;
 	document.getElementById("tweetlen").innerHTML = value.length;
 	if (value.length > 280)
 	{
-		return; //Currently disabled
 		//The tweet needs to be broken up into a thread.
 		//First, pick a split point. We favour newlines, then spaces,
 		//and if all else fails, just take the first 280 characters.
@@ -150,21 +149,29 @@ tweetbox.oninput = function() {
 		//TODO: Extend to three or more pieces.
 		console.log(match);
 		console.log(`Splitting ${match[1].length} and ${match[2].length}`);
-		const splitpoint = match[1].length;
-		const first = match[1].trimEnd(); //There will usually be at least one whitespace character (space or nl)
 		const sel = window.getSelection();
-		const range = sel.getRangeAt(0);
-		//TODO: Find the actual cursor position relative to the div
-		const cursor = 200;
+		const range = sel.getRangeAt(0).cloneRange();
+		range.setStart(this, 0);
+		let cursor = range.toString().length; //Cursor position within the unstyled text.
 		set_content(this, [
 			SPAN({style: "background-color: #88ff88"}, match[1]),
 			SPAN({style: "background-color: #bbbbff"}, match[2]),
 		]);
+		//Find the place that this cursor position lands, in one of the spans
 		sel.removeAllRanges();
-		//Doesn't work. FIXME.
-		const newrange = document.createRange();
-		newrange.setStart(this, cursor); newrange.setEnd(this, cursor);
-		sel.addRange(newrange)
+		let piece = this.firstChild;
+		while (cursor > piece.innerText.length)
+		{
+			cursor -= piece.innerText.length;
+			piece = piece.nextSibling;
+		}
+		range.setStart(piece.firstChild, cursor);
+		range.setEnd(piece.firstChild, cursor);
+		sel.addRange(range);
+		//TODO: Record the pieces themselves for insertion into the JSON request when this gets sent
+		//Also record a single string if we DON'T need to split
+		//Also, if we don't need to split, revert to just text, no spans
+		//Then the tweet_replica can be disposed of.
 	}
 };
 

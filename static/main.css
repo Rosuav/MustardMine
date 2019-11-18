@@ -81,6 +81,7 @@ textarea {
 	cursor: text;
 	padding: 2px;
 	font-family: monospace;
+	white-space: pre-wrap;
 }
 /* Force the spans to be monospaced, since otherwise they set it
 back to Times New Roman for some reason. Or not. I dunno now. */
