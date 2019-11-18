@@ -395,10 +395,11 @@ def do_tweet(channelid, tweet, schedule, auth):
 	scheduler.put(target, send_tweet, (auth["oauth_token"], auth["oauth_token_secret"]), tweet)
 	return None
 
-def send_tweet(auth, tweet):
+def send_tweet(auth, tweet, in_reply_to=None):
 	"""Actually send a tweet"""
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET, auth[0], auth[1])
-	resp = twitter.post("https://api.twitter.com/1.1/statuses/update.json", data={"status": tweet})
+	resp = twitter.post("https://api.twitter.com/1.1/statuses/update.json",
+		data={"status": tweet, "in_reply_to_status_id": in_reply_to})
 	if resp.status_code != 200:
 		print("Unknown response from Twitter")
 		print(resp.status_code)
