@@ -365,7 +365,7 @@ def update_checklist(channelid):
 	return redirect(url_for("mainpage"))
 
 def do_tweet(channelid, tweet, schedule, auth):
-	if not tweet: return "Can't send an empty tweet"
+	if not tweet: return "Can't send an empty tweet" # or an empty list of tweets, but that shouldn't happen
 	if not auth: return "Need to authenticate with Twitter before sending tweets"
 	if schedule == "now":
 		info = send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
@@ -398,6 +398,16 @@ def do_tweet(channelid, tweet, schedule, auth):
 
 def send_tweet(auth, tweet, in_reply_to=None):
 	"""Actually send a tweet"""
+	if isinstance(tweet, list):
+		# It's a thread of tweets
+		prev = ret = None
+		for part in tweet:
+			if not part: continue
+			info = send_tweet(auth, part, in_reply_to=prev)
+			if "error" in info: return info
+			if not ret: ret = info # Return the info for the *first* tweet sent
+			prev = info["tweet_id"]
+		return ret or {"error": "Can't send a thread of nothing but empty tweets"}
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET, auth[0], auth[1])
 	resp = twitter.post("https://api.twitter.com/1.1/statuses/update.json",
 		data={"status": tweet, "in_reply_to_status_id": in_reply_to})
