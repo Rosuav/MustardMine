@@ -72,6 +72,20 @@ textarea {
 	vertical-align: top;
 }
 
+#tweet {
+	width: 60em;
+	min-height: 4em;
+	border: 1px solid grey;
+	display: inline-block;
+	vertical-align: top;
+	cursor: text;
+	padding: 2px;
+	font-family: monospace;
+}
+/* Force the spans to be monospaced, since otherwise they set it
+back to Times New Roman for some reason. Or not. I dunno now. */
+/* #tweet span {font-family: monospace!important;} */
+
 #tweetlen, #tweettime {
 	margin-left: 0.5em;
 }

@@ -132,7 +132,9 @@ event(".sched", "change", function() {
 });
 
 tweetbox.oninput = function() {
-	document.getElementById("tweetlen").innerHTML = this.value.length;
+	const value = this.innerText;
+	document.getElementById("tweet_replica").innerHTML = value;
+	document.getElementById("tweetlen").innerHTML = value.length;
 };
 
 function update_messages(result) {

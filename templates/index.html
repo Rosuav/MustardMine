@@ -55,8 +55,9 @@ const initial_tweets = {{ tweets | tojson }};
 <!-- TODO: Suppress this when channelid is not your login id. This probably doesn't make sense if you're editing another channel -->
 {{ twitter }}
 <form method=post class=ajax action="/tweet">
+<textarea name=tweet id=tweet_replica style="display:none"></textarea>
 <input type=hidden name=channelid value={{channelid}}>
-<p><label>Tweet that you're live: <textarea name=tweet id=tweet rows=3 cols=100></textarea></label><span id=tweetlen>0</span> / 280</p>
+<p><label>Tweet that you're live: <span id=tweet contenteditable=true></span></label><span id=tweetlen>0</span> / 280</p>
 <p><select name=tweetschedule id=tweetschedule>
 <option value="now">Right now</option>
 <option value="0" selected>At schedule</option>
