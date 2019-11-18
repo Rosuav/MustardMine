@@ -135,6 +135,37 @@ tweetbox.oninput = function() {
 	const value = this.innerText;
 	document.getElementById("tweet_replica").innerHTML = value;
 	document.getElementById("tweetlen").innerHTML = value.length;
+	if (value.length > 280)
+	{
+		return; //Currently disabled
+		//The tweet needs to be broken up into a thread.
+		//First, pick a split point. We favour newlines, then spaces,
+		//and if all else fails, just take the first 280 characters.
+		//Could be done with regex alternation, but that means we have more
+		//capture groups and still have to figure out which group we caught.
+		//If the /s (dotall) flag were supported, these [\s\S] units would be dots.
+		const match = /^([\s\S]{220,280}\n)([\s\S]{1,280})$/m.exec(value) //A newline within the last 60 chars...
+			|| /^([\s\S]{260,280} )([\s\S]{1,280})$/m.exec(value) // ... or a space within the last 20...
+			|| /^([\s\S]{280})([\s\S]*)$/m.exec(value); // ... or just break it right at the 280 mark.
+		//TODO: Extend to three or more pieces.
+		console.log(match);
+		console.log(`Splitting ${match[1].length} and ${match[2].length}`);
+		const splitpoint = match[1].length;
+		const first = match[1].trimEnd(); //There will usually be at least one whitespace character (space or nl)
+		const sel = window.getSelection();
+		const range = sel.getRangeAt(0);
+		//TODO: Find the actual cursor position relative to the div
+		const cursor = 200;
+		set_content(this, [
+			SPAN({style: "background-color: #88ff88"}, match[1]),
+			SPAN({style: "background-color: #bbbbff"}, match[2]),
+		]);
+		sel.removeAllRanges();
+		//Doesn't work. FIXME.
+		const newrange = document.createRange();
+		newrange.setStart(this, cursor); newrange.setEnd(this, cursor);
+		sel.addRange(newrange)
+	}
 };
 
 function update_messages(result) {
@@ -188,6 +219,7 @@ event("form.ajax", "submit", async function(ev) {
 	ev.preventDefault();
 	const dest = new URL(this.action);
 	const data = {}; new FormData(this).forEach((v,k) => data[k] = v);
+	//console.log("Would submit:", data); return "neutered";
 	const result = await (await fetch("/api" + dest.pathname + "?channelid=" + channel._id, {
 		credentials: "include",
 		headers: {"Content-Type": "application/json"},
