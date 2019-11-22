@@ -164,7 +164,7 @@ tweetbox.oninput = function() {
 	else
 	{
 		set_content(this, value); //Reset the colours
-		tweet_to_send = value; //Just the text, not in an array
+		tweet_to_send = value.trim(); //Just the text, not in an array
 	}
 	document.getElementById("tweetlen").innerHTML = value.length; //Length of the last portion
 	//Find the place that this cursor position lands, possibly in one of the spans
