@@ -73,8 +73,8 @@ textarea {
 }
 
 #tweet {
-	width: 60em;
-	min-height: 4em;
+	width: 70em;
+	min-height: 6em;
 	border: 1px solid grey;
 	display: inline-block;
 	vertical-align: top;
