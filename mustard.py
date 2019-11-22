@@ -255,7 +255,6 @@ def do_update(channelid, info):
 
 	Returns None if successful, else a string of error/warning text.
 	"""
-	print("Updating data for channel", channelid);
 	try:
 		resp = query("kraken/channels/" + channelid, method="PUT", data={
 			"channel[game]": info["category"],
