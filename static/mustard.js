@@ -133,7 +133,7 @@ event(".sched", "change", function() {
 
 let tweet_to_send = "";
 tweetbox.oninput = function() {
-	const value = this.innerText;
+	let value = this.innerText;
 	document.getElementById("tweetlen").innerHTML = value.length;
 	const sel = window.getSelection();
 	const range = sel.getRangeAt(0).cloneRange();
@@ -147,15 +147,20 @@ tweetbox.oninput = function() {
 		//Could be done with regex alternation, but that means we have more
 		//capture groups and still have to figure out which group we caught.
 		//If the /s (dotall) flag were supported, these [\s\S] units would be dots.
-		const match = /^([\s\S]{220,280}\n)([\s\S]{1,280})$/m.exec(value) //A newline within the last 60 chars...
-			|| /^([\s\S]{260,280} )([\s\S]{1,280})$/m.exec(value) // ... or a space within the last 20...
-			|| /^([\s\S]{280})([\s\S]*)$/m.exec(value); // ... or just break it right at the 280 mark.
-		//TODO: Extend to three or more pieces.
-		set_content(this, [
-			SPAN({style: "background-color: #88ff88"}, match[1]),
-			SPAN({style: "background-color: #bbbbff"}, match[2]),
-		]);
-		tweet_to_send = [match[1].trim(), match[2].trim()];
+		const pieces = []; tweet_to_send = [];
+		const colors = "#bbffbb #bbbbff #ffffbb #bbffff".split(" ");
+		while (value.length > 280)
+		{
+			const match = /^([\s\S]{220,280}\n)([\s\S]{1,})$/m.exec(value) //A newline within the last 60 chars...
+				|| /^([\s\S]{260,280} )([\s\S]{1,})$/m.exec(value) // ... or a space within the last 20...
+				|| /^([\s\S]{280})([\s\S]*)$/m.exec(value); // ... or just break it right at the 280 mark.
+			pieces.push(SPAN({style: "background-color: " + colors[pieces.length % colors.length]}, match[1]));
+			tweet_to_send.push(match[1].trim());
+			value = match[2];
+		}
+		pieces.push(SPAN({style: "background-color: " + colors[pieces.length % colors.length]}, value));
+		set_content(this, pieces);
+		tweet_to_send.push(value.trim());
 	}
 	else
 	{
