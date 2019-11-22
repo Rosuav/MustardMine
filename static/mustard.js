@@ -131,10 +131,14 @@ event(".sched", "change", function() {
 	schedule[this.name[5]] = this.value = tidy_times(this.value);
 });
 
+let tweet_to_send = "";
 tweetbox.oninput = function() {
 	const value = this.innerText;
-	document.getElementById("tweet_replica").value = value;
 	document.getElementById("tweetlen").innerHTML = value.length;
+	const sel = window.getSelection();
+	const range = sel.getRangeAt(0).cloneRange();
+	range.setStart(this, 0);
+	let cursor = range.toString().length; //Cursor position within the unstyled text.
 	if (value.length > 280)
 	{
 		//The tweet needs to be broken up into a thread.
@@ -147,32 +151,39 @@ tweetbox.oninput = function() {
 			|| /^([\s\S]{260,280} )([\s\S]{1,280})$/m.exec(value) // ... or a space within the last 20...
 			|| /^([\s\S]{280})([\s\S]*)$/m.exec(value); // ... or just break it right at the 280 mark.
 		//TODO: Extend to three or more pieces.
-		console.log(match);
-		console.log(`Splitting ${match[1].length} and ${match[2].length}`);
-		const sel = window.getSelection();
-		const range = sel.getRangeAt(0).cloneRange();
-		range.setStart(this, 0);
-		let cursor = range.toString().length; //Cursor position within the unstyled text.
 		set_content(this, [
 			SPAN({style: "background-color: #88ff88"}, match[1]),
 			SPAN({style: "background-color: #bbbbff"}, match[2]),
 		]);
-		//Find the place that this cursor position lands, in one of the spans
-		sel.removeAllRanges();
-		let piece = this.firstChild;
+		tweet_to_send = [match[1].trim(), match[2].trim()];
+	}
+	else
+	{
+		set_content(this, value); //Reset the colours
+		tweet_to_send = value; //Just the text, not in an array
+	}
+	//Find the place that this cursor position lands, possibly in one of the spans
+	sel.removeAllRanges();
+	let piece = this;
+	if (!piece.firstChild) //Completely empty? Assume cursor is at 0.
+	{
+		range.setStart(this, 0); range.setEnd(this, 0);
+		sel.addRange(range);
+		return;
+	}
+	if (piece.firstChild.nodeType === 1) //Has child nodes, not just a text node
+	{
+		//Should this be done recursively?
+		piece = piece.firstChild;
 		while (cursor > piece.innerText.length)
 		{
 			cursor -= piece.innerText.length;
 			piece = piece.nextSibling;
 		}
-		range.setStart(piece.firstChild, cursor);
-		range.setEnd(piece.firstChild, cursor);
-		sel.addRange(range);
-		//TODO: Record the pieces themselves for insertion into the JSON request when this gets sent
-		//Also record a single string if we DON'T need to split
-		//Also, if we don't need to split, revert to just text, no spans
-		//Then the tweet_replica can be disposed of.
 	}
+	range.setStart(piece.firstChild, cursor);
+	range.setEnd(piece.firstChild, cursor);
+	sel.addRange(range);
 };
 
 function update_messages(result) {
@@ -184,8 +195,11 @@ function update_messages(result) {
 }
 
 const form_callbacks = {
+	"^/tweet": (data, form) => {
+		data.tweet = tweet_to_send;
+	},
 	"/tweet": (result, form) => {
-		if (result.ok) {form.reset(); tweetbox.oninput();} //Only clear the form if the tweet was sent
+		if (result.ok) {form.reset(); tweetbox.innerText = ""; tweetbox.oninput();} //Only clear the form if the tweet was sent
 		select_tweet_schedule(sched_tweet);
 		if (result.ok) update_tweets(result.new_tweets);
 	},
@@ -226,6 +240,7 @@ event("form.ajax", "submit", async function(ev) {
 	ev.preventDefault();
 	const dest = new URL(this.action);
 	const data = {}; new FormData(this).forEach((v,k) => data[k] = v);
+	const tweak = form_callbacks["^" + dest.pathname]; if (tweak) tweak(data, this);
 	//console.log("Would submit:", data); return "neutered";
 	const result = await (await fetch("/api" + dest.pathname + "?channelid=" + channel._id, {
 		credentials: "include",
