@@ -22,9 +22,6 @@ TODO:
       - https://discordapp.com/developers/docs/resources/webhook#execute-webhook
     - Each channel to be posted to will require separate authorization.
     - See discord-integration branch for partial implementation.
-* Query StreamLabs extension for schedule?
-  - Would require assistance from SL, which they don't currently offer
-  - Reverse-engineering is impractical; needs an API.
 * Create one database transaction per incoming HTTP request, for efficiency
   - Currently all operations that *require* atomicity are done with single
     calls to database.py (and single transactions within that), but the
