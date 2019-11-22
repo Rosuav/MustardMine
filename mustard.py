@@ -371,10 +371,7 @@ def do_tweet(channelid, tweet, schedule, auth):
 		return info.get("error", "")
 	schedule = int(schedule)
 	target = database.get_next_event(channelid, schedule)
-	if not target:
-		# TODO: Catch this on the front end, so this ugly message won't
-		# happen without someone messing around
-		return "Can't schedule tweets without a schedule!"
+	if not target: return "Can't schedule tweets without a schedule!"
 	target += schedule
 	if target - time.time() > 1800:
 		# Protect against schedule mistakes and various forms of insanity
