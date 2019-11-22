@@ -17,6 +17,9 @@ postgres = psycopg2.connect(config.DATABASE_URI)
 # Assumes that dict preserves insertion order (CPython 3.6+, other Python 3.7+, possible 3.5)
 # Otherwise, tables might be created in the wrong order, breaking foreign key refs.
 TABLES = {
+	"status": [ # Singleton table
+		"tags_updated timestamptz not null default '1970-1-1Z'",
+	],
 	"users": [
 		"twitchid integer primary key",
 		"sched_timezone varchar not null default ''",
@@ -84,6 +87,9 @@ def create_tables():
 				if not need and not xtra: continue # All's well!
 				actions = ["add " + want[c] for c in need] + ["drop column " + c for c in xtra]
 				cur.execute("alter table mustard." + table + " " + ", ".join(actions))
+		cur.execute("select * from mustard.status")
+		if cur.fetchone() is None:
+			cur.execute("insert into mustard.status default values")
 create_tables()
 
 def create_user(twitchid): # Really "ensure_user" as it's quite happy to not-create if exists
@@ -412,16 +418,14 @@ def restore_from_json(twitchid, data):
 def tags_need_updating():
 	"""Check if the tags cache needs to be updated.
 
-	Uses magic to determine this, unless there are none in cache, in
-	which case they obviously DO need to be updated.
+	Updates will happen no more frequently than daily, unless the table is
+	empty.
 	"""
 	with postgres, postgres.cursor() as cur:
-		cur.execute("select count(*) from mustard.tags")
-		if not cur.fetchone()[0]: return True
-	# TODO: Use more magic
-	# It may be worth retaining a "last updated" timestamp - if it's been
-	# more than a week, do an update.
-	return False
+		# Yeah, I'm doing all the logic in PostgreSQL. Because why not.
+		cur.execute("""select now() - tags_updated > '1 day'
+			or (select count(*) from mustard.tags) < 1 from mustard.status""")
+		return cur.fetchone()[0]
 
 def replace_all_tags(tags):
 	"""Replace all tags in the cache with the given collection.
@@ -429,9 +433,11 @@ def replace_all_tags(tags):
 	tags should be a collection of (id, name, desc) tuples.
 	"""
 	with postgres, postgres.cursor() as cur:
+		cur.execute("truncate mustard.tags");
 		psycopg2.extras.execute_values(cur,
 			"insert into mustard.tags (id, english_name, english_desc) values %s",
 			tags)
+		cur.execute("update mustard.status set tags_updated = now()")
 
 def get_tag_ids(tag_names):
 	"""Convert tag names into IDs"""
