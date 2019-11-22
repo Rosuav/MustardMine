@@ -52,7 +52,6 @@ const initial_tweets = {{ tweets | tojson }};
 
 <section>
 <h2>Twitter</h2>
-<!-- TODO: Suppress this when channelid is not your login id. This probably doesn't make sense if you're editing another channel -->
 {{ twitter }}
 <form method=post class=ajax action="/tweet">
 <input type=hidden name=channelid value={{channelid}}>
