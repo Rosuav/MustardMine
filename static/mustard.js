@@ -134,7 +134,6 @@ event(".sched", "change", function() {
 let tweet_to_send = "";
 tweetbox.oninput = function() {
 	let value = this.innerText;
-	document.getElementById("tweetlen").innerHTML = value.length;
 	const sel = window.getSelection();
 	const range = sel.getRangeAt(0).cloneRange();
 	range.setStart(this, 0);
@@ -167,6 +166,7 @@ tweetbox.oninput = function() {
 		set_content(this, value); //Reset the colours
 		tweet_to_send = value; //Just the text, not in an array
 	}
+	document.getElementById("tweetlen").innerHTML = value.length; //Length of the last portion
 	//Find the place that this cursor position lands, possibly in one of the spans
 	sel.removeAllRanges();
 	let piece = this;
