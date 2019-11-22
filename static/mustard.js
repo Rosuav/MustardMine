@@ -29,7 +29,7 @@ function pick_setup(i) {
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
 	setupform.tags.value = setup.tags;
-	if (setup.tweet && setup.tweet !== "") tweetbox.value = setup.tweet;
+	if (setup.tweet && setup.tweet !== "") tweetbox.innerText = setup.tweet;
 	tweetbox.oninput();
 }
 
@@ -72,7 +72,7 @@ document.getElementById("save").onclick = () => save_setup({
 	category: setupform.category.value,
 	title: setupform.title.value,
 	tags: setupform.tags.value,
-	tweet: tweetbox.value,
+	tweet: tweetbox.innerText,
 });
 
 async function delete_setup(i) {
