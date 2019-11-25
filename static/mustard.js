@@ -496,10 +496,15 @@ async function deltweet(ev, id) {
 	if (result.ok) update_tweets(result.new_tweets);
 }
 
+function format_multi_tweet(tweet) {
+	if (typeof tweet === "string") return tweet;
+	return tweet.join(" "); //Is this good enough? Or should it be coloured like in the input?
+}
+
 function update_tweets(tweets) {
 	set_content("#tweets ul",
 		tweets.map(([tm, id, tweet]) => LI([
-			tm + ": " + tweet + " ",
+			tm + ": " + format_multi_tweet(tweet) + " ",
 			BUTTON({type: "button", onclick: ev => deltweet(ev, id)}, "Cancel"),
 		]))
 	);
