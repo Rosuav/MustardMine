@@ -48,7 +48,7 @@ sockets = Sockets(app)
 # headers are fine (and even when the spec said that the Location should
 # to be absolute, everyone accepted relative URIs).
 if os.environ.get("OVERRIDE_REDIRECT_HTTPS"):
-	from werkzeug.contrib.fixers import ProxyFix
+	from werkzeug.middleware.proxy_fix import ProxyFix
 	app.wsgi_app = ProxyFix(app.wsgi_app) # Grab info from Forwarded headers
 	_redirect = redirect
 	def redirect(*a, **kw):
