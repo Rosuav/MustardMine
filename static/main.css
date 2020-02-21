@@ -195,3 +195,7 @@ ul[data-selval="custom"] li.customonly {
 #prevsetup span {
 	margin: 0 0.5em;
 }
+
+form.dirty {
+	background-color: #ffeeee;
+}

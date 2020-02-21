@@ -191,6 +191,8 @@ tweetbox.oninput = function() {
 	sel.addRange(range);
 };
 
+event("form[name=setups] input", "input", () => document.forms.setups.classList.add("dirty"));
+
 function update_messages(result) {
 	set_content("#messages", [
 		result.error && DIV({className: "errormessage"}, result.error),
@@ -238,6 +240,7 @@ const form_callbacks = {
 				SPAN(BUTTON({onclick: () => save_setup(prevsetup)}, "Save")),
 			]).style.display = "block";
 		}
+		document.forms.setups.classList.remove("dirty");
 	},
 };
 
