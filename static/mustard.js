@@ -323,24 +323,6 @@ setInterval(function() {
 		format_schedule_time(+when) || "(need schedule)");
 }, 1000);
 
-setupform.category.value = channel.game;
-setupform.title.value = channel.status;
-setupform.tags.value = channel.tags;
-render_setups();
-
-const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-if (sched_tz === "") {
-	//No saved TZ - assume you probably want the one you're using in the browser.
-	schedform.sched_tz.value = local_tz;
-} else {
-	schedform.sched_tz.value = sched_tz;
-	if (sched_tz !== local_tz) {
-		//Your saved timezone and your browser timezone are different.
-		//Notify the user.
-		document.getElementById("othertz").innerHTML = "(Your browser's preferred timezone is: " + local_tz + ")";
-	}
-}
-
 function format_time(delay) {
 	const mm = ("0" + Math.floor((delay / 60) % 60)).slice(-2);
 	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
@@ -359,18 +341,6 @@ function select_tweet_schedule(time) {
 	tweet.add(OPTION({value: time}, desc));
 	tweet.value = time;
 }
-select_tweet_schedule(sched_tweet);
-
-set_content("#checklist",
-	document.forms.checklist.elements.checklist.value
-	.trim().split("\n")
-	.map(item => item
-		? LI(LABEL([INPUT({type: "checkbox"}), item]))
-		: LI({className: "separator"}, "\xA0")
-	)
-);
-
-schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
 
 on("click", ".timer-adjust", e =>
 	fetch("/timer-adjust-all/" + e.match.dataset.delta + "?channelid=" + channel._id, {credentials: "include"})
@@ -507,7 +477,37 @@ function update_tweets(tweets) {
 	);
 	document.getElementById("tweets").classList.toggle("hidden", !tweets.length);
 }
+
+//Initialize display based on state provided by server
+select_tweet_schedule(sched_tweet);
+setupform.category.value = channel.game;
+setupform.title.value = channel.status;
+setupform.tags.value = channel.tags;
+render_setups();
+schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
 update_tweets(initial_tweets);
+
+const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+if (sched_tz === "") {
+	//No saved TZ - assume you probably want the one you're using in the browser.
+	schedform.sched_tz.value = local_tz;
+} else {
+	schedform.sched_tz.value = sched_tz;
+	if (sched_tz !== local_tz) {
+		//Your saved timezone and your browser timezone are different.
+		//Notify the user.
+		document.getElementById("othertz").innerHTML = "(Your browser's preferred timezone is: " + local_tz + ")";
+	}
+}
+
+set_content("#checklist",
+	document.forms.checklist.elements.checklist.value //provided by the server (via templating)
+	.trim().split("\n")
+	.map(item => item
+		? LI(LABEL([INPUT({type: "checkbox"}), item]))
+		: LI({className: "separator"}, "\xA0")
+	)
+);
 
 //For browsers with only partial support for the <dialog> tag, add the barest minimum.
 //On browsers with full support, there are many advantages to using dialog rather than
