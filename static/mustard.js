@@ -239,10 +239,11 @@ const form_callbacks = {
 };
 
 on("submit", "form.ajax", async ev => {
+	const form = ev.match;
 	ev.preventDefault();
-	const dest = new URL(ev.match.action);
-	const data = {}; new FormData(ev.match).forEach((v,k) => data[k] = v);
-	const tweak = form_callbacks["^" + dest.pathname]; if (tweak) tweak(data, ev.match);
+	const dest = new URL(form.action);
+	const data = {}; new FormData(form).forEach((v,k) => data[k] = v);
+	const tweak = form_callbacks["^" + dest.pathname]; if (tweak) tweak(data, form);
 	//console.log("Would submit:", data); return "neutered";
 	const result = await (await fetch("/api" + dest.pathname + "?channelid=" + channel._id, {
 		credentials: "include",
@@ -251,7 +252,7 @@ on("submit", "form.ajax", async ev => {
 		body: JSON.stringify(data)
 	})).json();
 	update_messages(result);
-	const cb = form_callbacks[dest.pathname]; if (cb) cb(result, ev.match);
+	const cb = form_callbacks[dest.pathname]; if (cb) cb(result, form);
 	document.getElementById("messages").scrollIntoView();
 });
 
