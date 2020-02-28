@@ -10,7 +10,7 @@ function render_setups() {
 		TD(s.title),
 		TD(s.tags),
 		TD(s.tweet),
-		TD(BUTTON({className: "deleting", id: "del"+i, onclick: () => try_delete_setup(i)}, "X")),
+		TD(BUTTON({className: "deleting", id: "del"+i}, "X")),
 	]));
 	const table = document.querySelector("#setups tbody");
 	rows.unshift(table.firstChild);
@@ -29,23 +29,23 @@ function pick_setup(i) {
 	tweetbox.oninput();
 }
 
-let deleting_setup = -1;
+let deleting_setup = null;
 let delete_time = 0;
-function try_delete_setup(i) {
-	if (deleting_setup != i) {
+on("click", ".deleting", e => {
+	if (deleting_setup != e.match.id) {
 		//Await confirmation via a second click
 		document.querySelectorAll(".deleting").forEach(b => b.innerHTML = "X");
-		document.getElementById("del" + i).innerHTML = "Delete?";
-		deleting_setup = i;
+		e.match.innerHTML = "Delete?";
+		deleting_setup = e.match.id;
 		delete_time = +new Date + 1;
 		return;
 	}
 	if (+new Date < delete_time) return;
 	//Okay, let's actually delete it.
-	deleting_setup = -1;
-	document.getElementById("del" + i).innerHTML = "X";
-	delete_setup(setups[i].id);
-}
+	deleting_setup = null;
+	e.match.innerHTML = "X";
+	delete_setup(setups[e.match.id.slice(3)].id);
+});
 
 /*
 document.getElementById("hello").onclick = async function() {
