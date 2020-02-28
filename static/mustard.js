@@ -484,8 +484,9 @@ on("keydown", "form", function(ev) {
 	//TODO: What do Mac users expect? Check specifically with Twitter.
 	//If they expect Meta-Enter, can we handle that? Better still, is
 	//there a generic event that we should be hooking?
-	//FIXME: Broken (probably by the ajaxification???)
-	if (ev.ctrlKey && ev.keyCode === 13) ev.match.submit();
+	//NOTE: This won't work in Safari anyway, so we're talking about
+	//Chrome or Firefox on a Mac.
+	if (ev.ctrlKey && ev.keyCode === 13) ev.match.requestSubmit();
 });
 
 async function deltweet(ev, id) {
