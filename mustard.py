@@ -16,7 +16,7 @@ from pprint import pprint
 from gevent import monkey; monkey.patch_all(subprocess=True)
 from flask import Flask, request, redirect, session, url_for, g, render_template, jsonify, Response, Markup
 from flask_sockets import Sockets
-from authlib.client import OAuth1Session, OAuth2Session
+from authlib.integrations.requests_client import OAuth1Session, OAuth2Session
 import requests
 
 try:
