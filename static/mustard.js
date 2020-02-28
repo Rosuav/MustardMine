@@ -181,7 +181,7 @@ tweetbox.oninput = function() {
 	sel.addRange(range);
 };
 
-on("input", "form[name=setups] input", () => document.forms.setups.classList.add("dirty"));
+on("input", "form[name=setups] input", e => e.match.form.classList.add("dirty"));
 
 function update_messages(result) {
 	set_content("#messages", [
