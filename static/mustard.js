@@ -230,7 +230,7 @@ const form_callbacks = {
 				SPAN(BUTTON({onclick: () => save_setup(prevsetup)}, "Save")),
 			]).style.display = "block";
 		}
-		document.forms.setups.classList.remove("dirty");
+		form.classList.remove("dirty");
 	},
 };
 
