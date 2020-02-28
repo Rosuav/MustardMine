@@ -317,11 +317,10 @@ function format_schedule_time(offset) {
 }
 
 setInterval(function() {
-	document.getElementById("nextsched").innerHTML = format_schedule_time() || "(none)";
-	const tweet = document.getElementById("tweetschedule");
-	document.getElementById("tweettime").innerHTML =
-		tweet.value === "now" ? "Immediate" :
-		format_schedule_time(+tweet.value) || "(need schedule)";
+	set_content("#nextsched", format_schedule_time() || "(none)");
+	const when = document.getElementById("tweetschedule").value;
+	set_content("#tweettime", when === "now" ? "Immediate" :
+		format_schedule_time(+when) || "(need schedule)");
 }, 1000);
 
 setupform.category.value = channel.game;
