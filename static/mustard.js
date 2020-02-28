@@ -129,7 +129,7 @@ let tweet_to_send = "";
 tweetbox.oninput = function() {
 	let value = this.innerText;
 	const sel = window.getSelection();
-	const range = sel.getRangeAt(0).cloneRange();
+	const range = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : document.createRange();
 	range.setStart(this, 0);
 	let cursor = range.toString().length; //Cursor position within the unstyled text.
 	if (value.length > 280)
