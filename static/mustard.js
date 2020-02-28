@@ -404,6 +404,7 @@ on("click", "#picker_results li", ev => {
 		while (tags[0] === "") tags.shift(); //Any empty string(s) should have sorted first
 		t.value = tags.join(", ");
 	}
+	document.forms.setups.classList.add("dirty");
 });
 on("click", ".dialog_cancel", e => e.match.parentElement.close());
 
