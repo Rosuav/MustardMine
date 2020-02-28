@@ -422,25 +422,23 @@ document.getElementById("picker_search").oninput = async function() {
 	}
 }
 
-document.getElementById("picker_results").onclick = function(event) {
-	let li = event.target;
-	while (li && li.tagName != "LI" && li != event.currentTarget) li = li.parentElement;
-	if (li.tagName != "LI") return;
+on("click", "#picker_results li", ev => {
+	const pick = ev.match.dataset.pick;
 	if (picking === "game")
 	{
-		document.getElementById("category").value = li.dataset.pick;
+		document.getElementById("category").value = pick;
 		document.getElementById("picker").close();
 	}
 	else
 	{
 		const t = document.getElementById("tags");
 		const tags = t.value.split(", "); //NOTE: The back end splits on "," and strips spaces.
-		if (tags.includes(li.dataset.pick)) return; //Already got it
-		tags.push(li.dataset.pick); tags.sort();
+		if (tags.includes(pick)) return; //Already got it
+		tags.push(pick); tags.sort();
 		while (tags[0] === "") tags.shift(); //Any empty string(s) should have sorted first
 		t.value = tags.join(", ");
 	}
-}
+});
 on("click", ".dialog_cancel", e => e.match.parentElement.close());
 
 const twittercfg = document.forms.twittercfg.elements;
