@@ -339,14 +339,14 @@ function select_tweet_schedule(time) {
 
 on("click", ".timer-adjust", e =>
 	fetch("/timer-adjust-all/" + e.match.dataset.delta + "?channelid=" + channel._id, {credentials: "include"})
-		.catch(err => console.error(err))
+		.catch(err => update_messages({error: err.message}))
 );
 function force_timers(timestr) {
 	const [min, sec] = timestr.split(":");
 	const tm = parseInt(min, 10) * 60 + parseInt(sec||"0", 10);
-	if (tm <= 0 || tm > 3600) return; //TODO: Handle these better
+	if (tm <= 0 || tm > 3600) return update_messages({error: "Timers must be set to between 1 second and 1 hour"});
 	fetch("/timer-force-all/" + tm + "?channelid=" + channel._id, {credentials: "include"})
-		.catch(err => console.error(err));
+		.catch(err => update_messages({error: err.message}));
 }
 document.getElementById("set-timer").onclick = () => force_timers(document.getElementById("targettime").value);
 on("click", ".timer-force", e => force_timers(e.match.innerHTML));
