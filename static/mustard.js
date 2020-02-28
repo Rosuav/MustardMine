@@ -188,7 +188,7 @@ function update_messages(result) {
 		result.error && DIV({className: "errormessage"}, result.error),
 		result.warning && DIV({className: "warningmessage"}, result.warning),
 		result.success && DIV({className: "successmessage"}, result.success),
-	]);
+	]).scrollIntoView();
 }
 
 const form_callbacks = {
@@ -249,7 +249,6 @@ on("submit", "form.ajax", async ev => {
 	})).json();
 	update_messages(result);
 	const cb = form_callbacks[dest.pathname]; if (cb) cb(result, form);
-	document.getElementById("messages").scrollIntoView();
 });
 
 function timediff(timestr, date) {
