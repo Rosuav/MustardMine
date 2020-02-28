@@ -31,7 +31,7 @@ function pick_setup(i) {
 
 let deleting_setup = null;
 let delete_time = 0;
-on("click", ".deleting", e => {
+on("click", ".deleting", async e => {
 	if (deleting_setup != e.match.id) {
 		//Await confirmation via a second click
 		document.querySelectorAll(".deleting").forEach(b => b.innerHTML = "X");
@@ -44,7 +44,13 @@ on("click", ".deleting", e => {
 	//Okay, let's actually delete it.
 	deleting_setup = null;
 	e.match.innerHTML = "X";
-	delete_setup(setups[e.match.id.slice(3)].id);
+	const result = await fetch("/api/setups/" + setups[e.match.id.slice(3)].id + "?channelid=" + channel._id, {
+		credentials: "include",
+		method: "DELETE",
+	});
+	if (!result.ok) return; //TODO: Show an error?
+	setups = await (await fetch("/api/setups?channelid=" + channel._id, {credentials: "include"})).json();
+	render_setups();
 });
 
 /*
@@ -70,16 +76,6 @@ document.getElementById("save").onclick = () => save_setup({
 	tags: setupform.tags.value,
 	tweet: tweetbox.innerText,
 });
-
-async function delete_setup(i) {
-	const result = await fetch("/api/setups/" + i + "?channelid=" + channel._id, {
-		credentials: "include",
-		method: "DELETE",
-	});
-	if (!result.ok) return;
-	setups = await (await fetch("/api/setups?channelid=" + channel._id, {credentials: "include"})).json();
-	render_setups();
-}
 
 function tidy_times(times) {
 	times = times.replace(",", " ").split(" ");
