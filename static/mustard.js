@@ -1,10 +1,6 @@
 import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
 const {B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
 
-function event(selector, ev, func) {
-	document.querySelectorAll(selector).forEach(el => el["on" + ev] = func);
-}
-
 const setupform = document.forms.setups.elements;
 const schedform = document.forms.schedule.elements;
 
@@ -127,9 +123,7 @@ function tidy_times(times) {
 	return times.sort().join(" ").trim();
 }
 
-event(".sched", "change", function() {
-	schedule[this.name[5]] = this.value = tidy_times(this.value);
-});
+on("change", ".sched", e => schedule[e.match.name[5]] = e.match.value = tidy_times(e.match.value));
 
 let tweet_to_send = "";
 tweetbox.oninput = function() {
@@ -191,7 +185,7 @@ tweetbox.oninput = function() {
 	sel.addRange(range);
 };
 
-event("form[name=setups] input", "input", () => document.forms.setups.classList.add("dirty"));
+on("input", "form[name=setups] input", () => document.forms.setups.classList.add("dirty"));
 
 function update_messages(result) {
 	set_content("#messages", [
@@ -244,11 +238,11 @@ const form_callbacks = {
 	},
 };
 
-event("form.ajax", "submit", async function(ev) {
+on("submit", "form.ajax", async ev => {
 	ev.preventDefault();
-	const dest = new URL(this.action);
-	const data = {}; new FormData(this).forEach((v,k) => data[k] = v);
-	const tweak = form_callbacks["^" + dest.pathname]; if (tweak) tweak(data, this);
+	const dest = new URL(ev.match.action);
+	const data = {}; new FormData(ev.match).forEach((v,k) => data[k] = v);
+	const tweak = form_callbacks["^" + dest.pathname]; if (tweak) tweak(data, ev.match);
 	//console.log("Would submit:", data); return "neutered";
 	const result = await (await fetch("/api" + dest.pathname + "?channelid=" + channel._id, {
 		credentials: "include",
@@ -257,7 +251,7 @@ event("form.ajax", "submit", async function(ev) {
 		body: JSON.stringify(data)
 	})).json();
 	update_messages(result);
-	const cb = form_callbacks[dest.pathname]; if (cb) cb(result, this);
+	const cb = form_callbacks[dest.pathname]; if (cb) cb(result, ev.match);
 	document.getElementById("messages").scrollIntoView();
 });
 
@@ -378,10 +372,10 @@ set_content("#checklist",
 
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
 
-event(".timer-adjust", "click", function() {
-	fetch("/timer-adjust-all/" + this.dataset.delta + "?channelid=" + channel._id, {credentials: "include"})
-		.catch(err => console.error(err));
-});
+on("click", ".timer-adjust", e =>
+	fetch("/timer-adjust-all/" + e.match.dataset.delta + "?channelid=" + channel._id, {credentials: "include"})
+		.catch(err => console.error(err))
+);
 function force_timers(timestr) {
 	const [min, sec] = timestr.split(":");
 	const tm = parseInt(min, 10) * 60 + parseInt(sec||"0", 10);
@@ -390,7 +384,7 @@ function force_timers(timestr) {
 		.catch(err => console.error(err));
 }
 document.getElementById("set-timer").onclick = () => force_timers(document.getElementById("targettime").value);
-event(".timer-force", "click", function() {force_timers(this.innerHTML);});
+on("click", ".timer-force", e => force_timers(e.match.innerHTML));
 
 const pickmapper = {
 	game: game => LI({"data-pick": game.localized_name}, [IMG({src: game.box.small, alt: ""}), game.localized_name]),
@@ -447,7 +441,7 @@ document.getElementById("picker_results").onclick = function(event) {
 		t.value = tags.join(", ");
 	}
 }
-event(".dialog_cancel", "click", function() {this.parentElement.close();});
+on("click", ".dialog_cancel", e => e.match.parentElement.close());
 
 const twittercfg = document.forms.twittercfg.elements;
 document.getElementById("twitter_config").onclick = ev => {
@@ -484,12 +478,13 @@ document.getElementById("next_section").onclick = () => {
 	cur.classList.remove("current");
 }
 
-event("form", "keydown", function(ev) {
+on("keydown", "form", function(ev) {
 	//On Ctrl-Enter, submit the form.
 	//TODO: What do Mac users expect? Check specifically with Twitter.
 	//If they expect Meta-Enter, can we handle that? Better still, is
 	//there a generic event that we should be hooking?
-	if (ev.ctrlKey && ev.keyCode === 13) ev.currentTarget.submit();
+	//FIXME: Broken (probably by the ajaxification???)
+	if (ev.ctrlKey && ev.keyCode === 13) ev.match.submit();
 });
 
 async function deltweet(ev, id) {
