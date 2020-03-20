@@ -337,6 +337,12 @@ function select_tweet_schedule(time) {
 	tweet.value = time;
 }
 
+on("dragstart", ".timer-link", e => {
+	const title = encodeURIComponent(e.match.innerText + " (MM)");
+	const url = `${e.match.href}?layer-name=${title}&layer-width=470&layer-height=240`;
+	e.dataTransfer.setData("text/uri-list", url);
+});
+
 on("click", ".timer-adjust", e =>
 	fetch("/timer-adjust-all/" + e.match.dataset.delta + "?channelid=" + channel._id, {credentials: "include"})
 		.catch(err => update_messages({error: err.message}))

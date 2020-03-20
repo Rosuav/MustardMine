@@ -120,9 +120,10 @@ perfectly is even harder.)</li>
 
 <section>
 <h2>Timers</h2>
+<p>Drag a timer title directly into OBS to create it as a browser source.</p>
 <ul>
 {% for id, title in timers %}
-<li><a href="/countdown/{{id}}" target="_blank">{{title or id}}</a> | <a href="/timer/{{id}}">[edit]</a></li>
+<li><a href="/countdown/{{id}}" target="_blank" class="timer-link">{{title or id}}</a> | <a href="/timer/{{id}}">[edit]</a></li>
 {% endfor-%}
 </ul>
 <form action="/timer/new" method=post><input type=hidden name=channelid value={{channelid}}><input type=submit value="Create new timer"></form>
