@@ -41,7 +41,7 @@ TABLES = {
 		"title text not null default ''",
 		"delta integer not null default 0",
 		"maxtime integer not null default 3600", # If time to event exceeds this, shows "NOW"
-		"styling text not null default ''", # custom CSS??
+		"styling text not null default ''", # CSS - set by eg color selection
 	],
 	"tags": [ # Cache only. If we loaded tags on startup, it'd lag us out for ten seconds or so, so we cache.
 		"id text primary key",

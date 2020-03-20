@@ -12,12 +12,15 @@
 <tr><td><label for=title>Title</label></td><td><input name=title id=title size=40></td></tr>
 <tr><td><label for=delta>Delta</label></td><td><input name=delta id=delta size=10></td></tr>
 <tr><td><label for=maxtime>Max displayed time</label></td><td><input name=maxtime id=maxtime size=10></td></tr>
+<tr><td><label for=textcolor>Text color</label></td><td><input id=textcolor type=color value="#000000"></td></tr>
 </table>
 <!--
-<p><label>Custom styling (advanced usage only) (not currently supported)</label><br>
+<p><label>Custom styling (advanced usage only) (not currently supported) (needs to be merged into the hidden input)</label><br>
 <textarea name=styling rows=8 cols=50></textarea></p>
 -->
+<input type=hidden name=styling>
 <input type=hidden name=channelid value="{{channelid}}"><input type=submit value="Save">
+<p>Note: After making changes here, you may need to refresh the source in OBS.</p>
 <div class=danger>
 <p>Delete this timer? THIS CANNOT BE UNDONE. <button type=button id=deltimer>Delete</button></p>
 <p>Recreating a deleted timer will generate a new unique ID and change the URL.
@@ -27,7 +30,10 @@
 <script>
 const info = {{ info | tojson }};
 const form = document.forms[0].elements;
-"title delta maxtime".split(" ").forEach(id => form[id].value = info[id]);
+"title delta maxtime styling".split(" ").forEach(id => form[id].value = info[id]);
+const col = /#time \{color:(#[A-Fa-f0-9]+);\}/.exec(info.styling);
+if (col) form.textcolor.value = col[1];
+form.textcolor.onchange = e => form.styling.value = "#time {color:" + form.textcolor.value + ";}";
 document.getElementById("deltimer").onclick = function() {
 	this.disabled = true;
 	document.getElementById("confirmdelete").style.visibility = "visible";
