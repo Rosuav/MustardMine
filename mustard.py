@@ -510,7 +510,6 @@ def authorized():
 
 @app.route("/login-twitter")
 def login_twitter():
-	print(url_for("authorized_twitter", _external=True))
 	twitter = OAuth1Session(config.TWITTER_CLIENT_ID, config.TWITTER_CLIENT_SECRET,
 		redirect_uri=url_for("authorized_twitter", _external=True))
 	session["twitter_state"] = twitter.fetch_request_token("https://api.twitter.com/oauth/request_token")
