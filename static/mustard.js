@@ -12,7 +12,7 @@ function render_setups() {
 		TD(s.tweet),
 		TD(BUTTON({className: "deleting", id: "del"+i}, "X")),
 	]));
-	const table = document.querySelector("#setups tbody");
+	const table = DOM("#setups tbody");
 	rows.unshift(table.firstChild);
 	set_content(table, rows);
 }
@@ -431,7 +431,7 @@ document.getElementById("twitter_config").onclick = ev => {
 twittercfg.stdsched.onchange = function() {this.closest("ul").dataset.selval = this.value;};
 
 document.getElementById("prev_section").onclick = () => {
-	const cur = document.querySelector("section.current");
+	const cur = DOM("section.current");
 	let next = cur.previousElementSibling;
 	if (next.tagName != "SECTION") {
 		const all = document.querySelectorAll("section");
@@ -441,7 +441,7 @@ document.getElementById("prev_section").onclick = () => {
 	cur.classList.remove("current");
 }
 document.getElementById("next_section").onclick = () => {
-	const cur = document.querySelector("section.current");
+	const cur = DOM("section.current");
 	let next = cur.nextElementSibling;
 	if (next.tagName != "SECTION") next = document.querySelector("section"); //Loop back to start
 	next.classList.add("current");
