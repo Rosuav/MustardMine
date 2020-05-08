@@ -711,6 +711,13 @@ def control_socket(ws):
 			timerid = message["id"]
 			timer_sockets[timerid].append(ws)
 			ws.send(json.dumps({"type": "inited"}))
+		if message["type"] == "logme":
+			# Sometimes we're working in a context that has no logging
+			# facilities available. Provide some very basic logging via
+			# the server's console. Strictly strings only, and shortish.
+			msg = message.get("msg")
+			if type(msg) is str and len(msg) < 1000:
+				print("Log message from socket: %r" % msg)
 	if timerid: timer_sockets[timerid].remove(ws)
 
 '''
