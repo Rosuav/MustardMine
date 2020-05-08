@@ -38,11 +38,15 @@ function update() {
 }
 let timer = null, delay = 0;
 function set_delay() {
-	let wanted_delay = is_now ? 60000 : 1000;
+	const wanted_delay = is_now || document.hidden ? 60000 : 1000;
 	if (wanted_delay === delay) return;
+	//server_log("Setting delay to " + wanted_delay);
+	const need_update = wanted_delay < delay;
 	if (timer) clearInterval(timer);
 	timer = setInterval(update, delay = wanted_delay);
+	if (need_update) update();
 }
+document.addEventListener("visibilitychange", set_delay);
 update();
 
 const protocol = window.location.protocol == "https:" ? "wss://" : "ws://";
