@@ -20,22 +20,24 @@ let target_time = {{ next_event }} + {{ delta }};
 const maxtime = {{ maxtime }};
 let target = new Date(target_time * 1000);
 const display = document.getElementById("time");
+let is_now = false;
 function update() {
 	const delay = Math.floor((target - new Date()) / 1000);
 	if (delay <= 0 || delay >= maxtime) {
 		display.innerHTML = "NOW";
 		display.classList.add("now");
-		set_delay(60000);
+		is_now = true; set_delay();
 	} else {
 		const min = Math.floor(delay / 60);
 		const sec = delay % 60;
 		display.innerHTML = min + ":" + ("0" + sec).slice(-2);
 		display.classList.remove("now");
-		set_delay(1000);
+		is_now = false; set_delay();
 	}
 }
 let timer = null, delay = 0;
-function set_delay(wanted_delay) {
+function set_delay() {
+	let wanted_delay = is_now ? 60000 : 1000;
 	if (wanted_delay === delay) return;
 	if (timer) clearInterval(timer);
 	timer = setInterval(update, delay = wanted_delay);
