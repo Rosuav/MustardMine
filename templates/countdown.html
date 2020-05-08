@@ -21,6 +21,7 @@ const maxtime = {{ maxtime }};
 let target = new Date(target_time * 1000);
 const display = document.getElementById("time");
 let is_now = false;
+let socket = null;
 function update() {
 	const delay = Math.floor((target - new Date()) / 1000);
 	if (delay <= 0 || delay >= maxtime) {
@@ -45,7 +46,6 @@ function set_delay() {
 update();
 
 const protocol = window.location.protocol == "https:" ? "wss://" : "ws://";
-let socket;
 function init_socket() {
 	socket = new WebSocket(protocol + window.location.host + "/countdown_ctrl");
 	socket.onopen = () => {socket.send(JSON.stringify({type: "init", id: "{{id}}"}));};
@@ -70,8 +70,9 @@ function init_socket() {
 		}
 	};
 	//Automatically reconnect (after a one-second delay to prevent spinning)
-	socket.onclose = ev => setTimeout(init_socket, 1000);
+	socket.onclose = ev => {socket = null; setTimeout(init_socket, 1000);}
 }
+function server_log(msg) {socket && socket.send(JSON.stringify({type: "logme", msg}));}
 init_socket();
 </script>
 </body>
