@@ -47,6 +47,20 @@ function set_delay() {
 	if (need_update) update();
 }
 document.addEventListener("visibilitychange", set_delay);
+/* TODO: Support auto-starting timers on becoming visible.
+This will trigger when you switch to a scene with this in it, or make the source
+visible in the current scene. Tested on OBS Studio v25, will probably work the
+same way on SLOBS and other variants.
+
+Would need a server-side flag to say that this is the mode it works in, and then
+would need the target to be reset to some standard offset from now, with this
+reset happening on page load and on visibilty change (if now visible).
+
+This could then be used for a really easy BRB scene, where it always shows (say)
+5:00 when you switch to it, and then it'll change to show "NOW" (or other text)
+when the time expires. You could still adjust this time in MM's web UI, as with
+any other timer.
+*/
 update();
 
 const protocol = window.location.protocol == "https:" ? "wss://" : "ws://";
