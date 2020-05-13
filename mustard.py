@@ -204,7 +204,7 @@ def list_scheduled_tweets(token, secret, sched_tz):
 def get_channel_setup(channelid):
 	# TODO: Switch to the new API /helix/streams (once they make that work offline)
 	channel = query("kraken/channels/" + channelid, token="bearer")
-	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="bearer")
+	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="app")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
 	return channel
 
