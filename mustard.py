@@ -225,7 +225,7 @@ def mainpage(channelid=None):
 		# If you go to /editor/somename, redirect to /editor/equivalent-id
 		# Bookmarking the version with the ID will be slightly faster, but
 		# streamers will usually want to share the version with the name.
-		users = query("helix/users", token=None, params={"login": channelid})["data"]
+		users = query("helix/users", token="app", params={"login": channelid})["data"]
 		# users is either an empty list (bad login) or a list of one.
 		if not users: return redirect("/")
 		return redirect("/editor/" + users[0]["id"])
@@ -253,16 +253,39 @@ def mainpage(channelid=None):
 		tweets=tweets,
 	)
 
+def find_game_id(game_name, token="bearer"): # pass token="app" if no login - slower b/c we don't cache app tokens (yet)
+	resp = query("helix/games", token=token, params={"name": game_name})["data"]
+	print(resp)
+	if not resp: return None
+	return resp[0]["id"]
+
 def do_update(channelid, info):
 	"""Update channel status (category, title, etc)
 
 	Returns None if successful, else a string of error/warning text.
 	"""
 	try:
-		resp = query("kraken/channels/" + channelid, method="PUT", data={
-			"channel[game]": info["category"],
-			"channel[status]": info["title"],
-		}, token="oauth")
+		# TODO: Have the client remember the ID it saw on startup, and
+		# if you use the category picker, retain the game_id from that too.
+		# TODO: There may be a 'description' field, not sure. Should we use it?
+		gameid = info.get("game_id") or find_game_id(info["category"])
+		resp = query("helix/channels?broadcaster_id=" + channelid, method="PATCH", data={
+			"game_id": gameid,
+			"title": info["title"],
+		}, token="bearer")
+	except requests.exceptions.HTTPError as e:
+		# TODO: Things seem to be broken when channelid != logged in user. Is
+		# the Twitch end broken or do I need to do something different for a
+		# channel editor? For now, just guess that it might be an issue, and
+		# redo the request using the older API.
+		if channelid != session["twitch_user"]["_id"]:
+			try:
+				resp = query("kraken/channels/" + channelid, method="PUT", data={
+					"channel[game]": info["category"],
+					"channel[status]": info["title"],
+				}, token="oauth")
+			except TwitchDataError as e:
+				return "Stream status update not accepted: " + e.message
 	except TwitchDataError as e:
 		return "Stream status update not accepted: " + e.message
 
