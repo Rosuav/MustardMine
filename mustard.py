@@ -88,16 +88,19 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 		# TODO: Save the token so long as it's valid
 		# expires = int(time.time()) + data["expires_in"] - 120
 	else:
-		auth = "OAuth " + token
+		auth = "OAuth " + token # Not currently used anywhere
 
 	# 20190212: All endpoints should have explicit API selection. After a
 	# while, change so the default is helix. (Then progressively
 	# change the requests themselves so we use helix everywhere.)
+	# 20200619: The few remaining Kraken calls are all relating to a current
+	# failure in PATCH /helix/channels to use editor privileges, so that may
+	# soon be fixed and then we can finally go Helix-exclusive!
 	if not endpoint.startswith(("kraken/", "helix/")): raise ValueError("Need explicit selection of API (helix or kraken)")
 	# if not endpoint.startswith(("kraken/", "helix/")): endpoint = "helix/" + endpoint
 	r = requests.request(method, "https://api.twitch.tv/" + endpoint,
 		params=params, data=data, headers={
-		"Accept": "application/vnd.twitchtv.v5+json",
+		"Accept": "application/vnd.twitchtv.v5+json", # for Kraken only
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": auth,
 	})
