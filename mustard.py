@@ -268,8 +268,6 @@ def do_update(channelid, info):
 	Returns None if successful, else a string of error/warning text.
 	"""
 	try:
-		# TODO: Have the client remember the ID it saw on startup, and
-		# if you use the category picker, retain the game_id from that too.
 		# TODO: There may be a 'description' field, not sure. Should we use it?
 		gameid = info.get("game_id") or find_game_id(info["category"])
 		resp = query("helix/channels?broadcaster_id=" + channelid, method="PATCH", data={
@@ -612,7 +610,7 @@ def findgame():
 	if request.args["q"] == "": return jsonify([]) # Prevent failure in Twitch API call
 	cats = query("helix/search/categories", params={"query": request.args["q"], "first": "50"}, token="bearer")
 	return jsonify([{
-		"name": cat["name"], "boxart": cat["box_art_url"],
+		"name": cat["name"], "boxart": cat["box_art_url"], "id": cat["id"],
 		# Compatibility shims for cached clients (20200619)
 		"localized_name": cat["name"], "box": {"small": cat["box_art_url"]},
 	} for cat in cats["data"] or ()])

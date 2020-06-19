@@ -4,6 +4,11 @@ const {B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
 const setupform = document.forms.setups.elements;
 const schedform = document.forms.schedule.elements;
 
+//Map category names to their game IDs. If the to-be-saved category is in this
+//mapping, we can send the ID to the server (as well as the category name) to
+//save one API call.
+const gameids = {[channel.game]: channel.game_id};
+
 function render_setups() {
 	const rows = setups.map((s, i) => TR({onclick: () => pick_setup(i)}, [
 		TD(s.category),
@@ -204,6 +209,12 @@ const form_callbacks = {
 		form.closest("dialog").close();
 		select_tweet_schedule(result.new_sched);
 	},
+	"^/update": (data, form) => {
+		console.log(gameids);
+		const id = gameids[data.category];
+		if (id) data.game_id = id;
+		console.log(data);
+	},
 	"/update": (result, form) => {
 		if (!result.ok) return;
 		//Attempt to replicate the sorting behaviour done on the server
@@ -358,7 +369,10 @@ document.getElementById("set-timer").onclick = () => force_timers(document.getEl
 on("click", ".timer-force", e => force_timers(e.match.innerHTML));
 
 const pickmapper = {
-	game: game => LI({"data-pick": game.name}, [IMG({src: game.boxart, alt: ""}), game.name]),
+	game: game => LI({
+		"data-pick": game.name,
+		"data-pickid": gameids[game.name] = game.id, //Save the ID into the DOM (not currently used) and the lookup mapping
+	}, [IMG({src: game.boxart, alt: ""}), game.name]),
 	tag: tag => LI({"data-pick": tag.english_name}, [B(tag.english_name), ": " + tag.english_desc]),
 };
 let picking = "";
