@@ -502,9 +502,6 @@ def authorized():
 	session["twitch_token"] = resp["access_token"]
 	session["twitch_refresh_token"] = resp["refresh_token"]
 	session["twitch_auth_scopes"] = " ".join(sorted(resp["scope"]))
-	# kraken_user = query("kraken/user", token="oauth")
-	# The Kraken response includes fields not in Helix, including created_at,
-	# and email (though Helix gives us the latter if we add an OAuth scope).
 	user = query("helix/users", token="bearer")["data"][0]
 	user["_id"] = user["id"] # For now, everything looks for _id. Existing logins don't have user["id"].
 	database.create_user(user["_id"])
