@@ -202,8 +202,11 @@ def list_scheduled_tweets(token, secret, sched_tz):
 	return [(format_time(tm, sched_tz), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
 
 def get_channel_setup(channelid):
-	# TODO: Switch to the new API /helix/streams (once they make that work offline)
-	channel = query("kraken/channels/" + channelid, token="bearer")
+	channel = query("helix/channels?broadcaster_id=" + channelid, token="bearer")["data"][0]
+	# For compatibility and convenience, provide _id as an alias for broadcaster_id.
+	channel["_id"] = channel["broadcaster_id"]
+	# 20200619: Temporary compatibility in case people have cached versions of the JS
+	channel["game"] = channel["game_name"]; channel["status"] = channel["title"]
 	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="app")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
 	return channel
@@ -300,7 +303,7 @@ def update(channelid):
 @wants_channelid
 def api_update(channelid):
 	setup = get_channel_setup(channelid)
-	previous = {"category": setup["game"], "title": setup["status"], "tags": setup["tags"]}
+	previous = {"category": setup["game_name"], "title": setup["title"], "tags": setup["tags"]}
 	err = do_update(channelid, request.json)
 	if err: return jsonify({"ok": False, "error": err})
 	return jsonify({"ok": True, "success": "Stream status updated.", "previous": previous})

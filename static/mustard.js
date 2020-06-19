@@ -482,8 +482,8 @@ function update_tweets(tweets) {
 
 //Initialize display based on state provided by server
 select_tweet_schedule(sched_tweet);
-setupform.category.value = channel.game;
-setupform.title.value = channel.status;
+setupform.category.value = channel.game_name;
+setupform.title.value = channel.title;
 setupform.tags.value = channel.tags;
 render_setups();
 schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
