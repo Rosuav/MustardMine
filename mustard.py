@@ -607,13 +607,12 @@ def countdown(id):
 @app.route("/search/game")
 def findgame():
 	if request.args["q"] == "": return jsonify([]) # Prevent failure in Twitch API call
-	# Game search doesn't seem to be available in Helix yet. Worst case, can
-	# always cache it in Postgres same as tags are. This needs no authentication.
-	# Note that populating the cache is probably best done with helix/games/top, which
-	# can paginate its way down to infinity (yeah, I wanna know about the top billion
-	# games on Twitch, sorted by popularity, kthx!).
-	games = query("kraken/search/games", params={"query": request.args["q"], "type": "suggest"}, token=None)
-	return jsonify([{key: game[key] for key in ("name", "localized_name", "box")} for game in games["games"] or ()])
+	cats = query("helix/search/categories", params={"query": request.args["q"], "first": "50"}, token="bearer")
+	return jsonify([{
+		"name": cat["name"], "boxart": cat["box_art_url"],
+		# Compatibility shims for cached clients (20200619)
+		"localized_name": cat["name"], "box": {"small": cat["box_art_url"]},
+	} for cat in cats["data"] or ()])
 
 @app.route("/search/tag")
 def findtag():

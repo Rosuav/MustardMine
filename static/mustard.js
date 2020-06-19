@@ -358,7 +358,7 @@ document.getElementById("set-timer").onclick = () => force_timers(document.getEl
 on("click", ".timer-force", e => force_timers(e.match.innerHTML));
 
 const pickmapper = {
-	game: game => LI({"data-pick": game.localized_name}, [IMG({src: game.box.small, alt: ""}), game.localized_name]),
+	game: game => LI({"data-pick": game.name}, [IMG({src: game.boxart, alt: ""}), game.name]),
 	tag: tag => LI({"data-pick": tag.english_name}, [B(tag.english_name), ": " + tag.english_desc]),
 };
 let picking = "";
