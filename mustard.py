@@ -104,7 +104,7 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": auth,
 	})
-	if auto_refresh and r.status_code == 401 and r.json()["message"] == "invalid oauth token":
+	if auto_refresh and r.status_code == 401 and r.json()["message"].lower() == "invalid oauth token":
 		r = requests.post("https://id.twitch.tv/oauth2/token", data={
 			"grant_type": "refresh_token",
 			"refresh_token": session["twitch_refresh_token"],
@@ -120,9 +120,6 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 		# (But DO pass the token-passing mode.)
 		return query(endpoint, token="bearer" if token == "bearer" else "oauth",
 			method=method, params=params, data=data, auto_refresh=False)
-	if r.status_code == 401:
-		print("Incoming 401, JSON content is:")
-		print(r.json())
 	if r.status_code == 403:
 		# TODO: What if it *isn't* of this form??
 		raise TwitchDataError(json.loads(r.json()["message"]))
