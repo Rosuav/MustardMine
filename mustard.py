@@ -120,6 +120,9 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 		# (But DO pass the token-passing mode.)
 		return query(endpoint, token="bearer" if token == "bearer" else "oauth",
 			method=method, params=params, data=data, auto_refresh=False)
+	if r.status_code == 401:
+		print("Incoming 401, JSON content is:")
+		print(r.json())
 	if r.status_code == 403:
 		# TODO: What if it *isn't* of this form??
 		raise TwitchDataError(json.loads(r.json()["message"]))
