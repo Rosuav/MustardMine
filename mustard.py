@@ -273,6 +273,10 @@ def do_update(channelid, info):
 	# the best way to test seems to be to see if both Kraken and Helix are able to see
 	# the stream category the same way after a change, and the true symptom is that
 	# VODs get the wrong category attached to them.
+	# TODO: Do the update using Helix, but then reapply the category via Kraken? That
+	# would ensure consistency (since Kraken will take whatever junk you give it for a
+	# category, but Helix translates it internally into a game_id) but would require
+	# *three* API calls where one would otherwise be sufficient.
 	BROKEN = """
 	try:
 		# TODO: There may be a 'description' field, not sure. Should we use it?
