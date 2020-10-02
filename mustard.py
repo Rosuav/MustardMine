@@ -631,9 +631,10 @@ def findtag():
 
 @app.route("/api/hello")
 def helloworld():
+	info = {"user": None, "version": sys.version}
 	if "twitch_user" in session:
-		return jsonify({"user": session["twitch_user"]["display_name"]})
-	return jsonify({"user": None})
+		return info["user"] = session["twitch_user"]["display_name"]
+	return jsonify(info)
 
 @app.route("/api/setups")
 @wants_channelid
