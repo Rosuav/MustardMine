@@ -258,7 +258,6 @@ def mainpage(channelid=None):
 
 def find_game_id(game_name, token="bearer"): # pass token="app" if no login - slower b/c we don't cache app tokens (yet)
 	resp = query("helix/games", token=token, params={"name": game_name})["data"]
-	print(resp)
 	if not resp: return None
 	return resp[0]["id"]
 
@@ -275,18 +274,27 @@ def do_update(channelid, info):
 			"title": info["title"],
 		}, token="bearer")
 	except requests.exceptions.HTTPError as e:
-		# TODO: Things seem to be broken when channelid != logged in user. Is
-		# the Twitch end broken or do I need to do something different for a
-		# channel editor? For now, just guess that it might be an issue, and
-		# redo the request using the older API.
 		if channelid != session["twitch_user"]["_id"]:
-			try:
-				resp = query("kraken/channels/" + channelid, method="PUT", data={
-					"channel[game]": info["category"],
-					"channel[status]": info["title"],
-				}, token="oauth")
-			except TwitchDataError as e:
-				return "Stream status update not accepted: " + e.message
+			# TODO: Things seem to be broken when channelid != logged in user. Is
+			# the Twitch end broken or do I need to do something different for a
+			# channel editor? For now, just guess that it might be an issue, and
+			# redo the request using the older API.
+			# 20201002: The Kraken request is now done regardless, so it's not
+			# duplicated in here. Some time in the future, see what's needed and
+			# what's not, and clean up this messsssssss....
+			pass
+		else:
+			return "Error updating stream status: " + e.message
+	except TwitchDataError as e:
+		return "Stream status update not accepted: " + e.message
+	# 20201002: Some things seem to ignore an update pushed through Helix. I don't
+	# think this should remain permanently, but at the moment, it seems worth doing
+	# a second update request via the legacy Kraken API to catch those.
+	try:
+		resp = query("kraken/channels/" + channelid, method="PUT", data={
+			"channel[game]": info["category"],
+			"channel[status]": info["title"],
+		}, token="oauth")
 	except TwitchDataError as e:
 		return "Stream status update not accepted: " + e.message
 
