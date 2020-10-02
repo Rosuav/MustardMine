@@ -266,6 +266,14 @@ def do_update(channelid, info):
 
 	Returns None if successful, else a string of error/warning text.
 	"""
+	# It seems that updates via Helix are broken in weird ways. For now, I'm disabling
+	# this code completely and using Kraken for all updates. (Yes, I'm indecisive. You
+	# can read the full thread in comments right here. Try not to go mad... try to BE
+	# mad already, it's safer that way.) Check back now and then to see what's status;
+	# the best way to test seems to be to see if both Kraken and Helix are able to see
+	# the stream category the same way after a change, and the true symptom is that
+	# VODs get the wrong category attached to them.
+	BROKEN = """
 	try:
 		# TODO: There may be a 'description' field, not sure. Should we use it?
 		gameid = info.get("game_id") or find_game_id(info["category"])
@@ -287,6 +295,7 @@ def do_update(channelid, info):
 			return "Error updating stream status: " + e.message
 	except TwitchDataError as e:
 		return "Stream status update not accepted: " + e.message
+	"""
 	# 20201002: Some things seem to ignore an update pushed through Helix. I don't
 	# think this should remain permanently, but at the moment, it seems worth doing
 	# a second update request via the legacy Kraken API to catch those.
