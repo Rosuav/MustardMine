@@ -293,7 +293,7 @@ def do_update(channelid, info):
 	ret = None
 	if "tags" in info:
 		# Convert tag names into IDs
-		tags = tuple(t.strip() for t in info["tags"].split(","))
+		tags = tuple(t.strip() for t in info["tags"].split(",") if t.strip())
 		if len(tags) > 5: # (magic number 5 is the Twitch limit)
 			# Note that the saved setup will include all of them.
 			# Maybe some day I'll have a UI for prioritizing tags, and
@@ -301,7 +301,7 @@ def do_update(channelid, info):
 			# such that the next one along appears.
 			ret = "%d tags used, first five kept" % len(tags) # Warning, not error
 			tags = tags[:5]
-		tag_ids = database.get_tag_ids(tags)
+		tag_ids = tags and database.get_tag_ids(tags)
 		if len(tag_ids) != len(tags):
 			return "Tag names not all found in Twitch" # TODO: Make this error friendlier
 		try:
