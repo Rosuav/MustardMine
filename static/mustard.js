@@ -1,5 +1,6 @@
-import choc, {set_content} from "https://rosuav.github.io/shed/chocfactory.js";
+import choc, {set_content, DOM, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 const {B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
+fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
 const setupform = document.forms.setups.elements;
 const schedform = document.forms.schedule.elements;
@@ -524,11 +525,3 @@ set_content("#checklist",
 		: LI({className: "separator"}, "\xA0")
 	)
 );
-
-//For browsers with only partial support for the <dialog> tag, add the barest minimum.
-//On browsers with full support, there are many advantages to using dialog rather than
-//plain old div, but this way, other browsers at least have it pop up and down.
-document.querySelectorAll("dialog").forEach(dlg => {
-	if (!dlg.showModal) dlg.showModal = function() {this.style.display = "block";}
-	if (!dlg.close) dlg.close = function() {this.style.removeProperty("display");}
-});
