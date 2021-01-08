@@ -33,6 +33,7 @@ TABLES = {
 		"category text not null default ''",
 		"title text not null default ''",
 		"tags text not null default ''", # Comma-separated
+		"mature boolean not null default false",
 		"tweet text not null default ''",
 	],
 	"timers": [
@@ -105,14 +106,14 @@ def create_user(twitchid): # Really "ensure_user" as it's quite happy to not-cre
 	except psycopg2.IntegrityError:
 		pass # TODO: Update any extra info eg Twitter OAuth
 
-def create_setup(twitchid, *, category, title, tags="", tweet="", **extra):
+def create_setup(twitchid, *, category, title, tags="", mature=False, tweet="", **extra):
 	"""Create a new 'setup' - a loadable stream config
 
 	Returns the full record just created, including its ID.
 	"""
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-		cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet) values (%s, %s, %s, %s, %s) returning *",
-			(twitchid, category, title, tags, tweet))
+		cur.execute("insert into mustard.setups (twitchid, category, title, tags, mature, tweet) values (%s, %s, %s, %s, %s, %s) returning *",
+			(twitchid, category, title, tags, mature, tweet))
 		ret = cur.fetchone()
 	return ret
 
@@ -338,10 +339,10 @@ class Restorer(contextlib.ExitStack):
 	def wipe_setups(self):
 		self.cur.execute("delete from mustard.setups where twitchid = %s", (self.twitchid,))
 
-	def restore_setup(self, *, category=None, title=None, tags="", tweet=""):
+	def restore_setup(self, *, category=None, title=None, tags="", mature=False, tweet=""):
 		if not category or not title: raise ValidationError("Setups: Category and title are required")
-		self.cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet) values (%s, %s, %s, %s, %s) returning id",
-			(self.twitchid, category, title, tags, tweet))
+		self.cur.execute("insert into mustard.setups (twitchid, category, title, tags, mature, tweet) values (%s, %s, %s, %s, %s, %s) returning id",
+			(self.twitchid, category, title, tags, mature, tweet))
 		self.summary += "Restored %r setup\n" % category
 
 	def restore_schedule(self, tz, schedule, tweet):

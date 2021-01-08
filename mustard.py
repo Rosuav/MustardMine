@@ -215,6 +215,7 @@ def get_channel_setup(channelid):
 	# 20210108: Helix still doesn't carry the Mature flag. We could fetch that from Kraken,
 	# but there's no way in either Kraken or Helix to update it, so it would just be an
 	# advisory note to assist the streamer, and there's no way to keep it accurate. :(
+	# It's currently checked only at time of setup update, and nowhere else.
 	return channel
 
 @app.route("/")
@@ -689,7 +690,7 @@ def make_backup(channelid):
 	# Setups
 	setups = database.list_setups(twitchid)
 	response += '\t"setups": [\n'
-	fields = "category", "title", "tags", "tweet"
+	fields = "category", "title", "tags", "mature", "tweet"
 	for setup in setups:
 		setup = {field: setup[field] for field in fields}
 		response += "\t\t" + json.dumps(setup) + ",\n"

@@ -15,6 +15,7 @@ function render_setups() {
 		TD(s.category),
 		TD(s.title),
 		TD(s.tags),
+		TD(s.mature ? "Y" : "N"),
 		TD(s.tweet),
 		TD(BUTTON({className: "deleting", id: "del"+i}, "X")),
 	]));
@@ -31,6 +32,7 @@ function pick_setup(i) {
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
 	setupform.tags.value = setup.tags;
+	setupform.mature.checked = setup.mature;
 	if (setup.tweet && setup.tweet !== "") tweetbox.innerText = setup.tweet;
 	tweetbox.oninput();
 }
@@ -80,6 +82,7 @@ document.getElementById("save").onclick = () => save_setup({
 	category: setupform.category.value,
 	title: setupform.title.value,
 	tags: setupform.tags.value,
+	mature: setupform.mature.checked,
 	tweet: tweetbox.innerText,
 });
 
