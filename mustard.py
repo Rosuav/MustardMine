@@ -212,6 +212,9 @@ def get_channel_setup(channelid):
 	channel["game"] = channel["game_name"]; channel["status"] = channel["title"]
 	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="app")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
+	# 20210108: Helix still doesn't carry the Mature flag. We could fetch that from Kraken,
+	# but there's no way in either Kraken or Helix to update it, so it would just be an
+	# advisory note to assist the streamer, and there's no way to keep it accurate. :(
 	return channel
 
 @app.route("/")
