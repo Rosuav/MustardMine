@@ -1,5 +1,5 @@
 import choc, {set_content, DOM, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
-const {B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
+const {A, B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 
 const setupform = document.forms.setups.elements;
@@ -214,6 +214,7 @@ const form_callbacks = {
 		console.log(gameids);
 		const id = gameids[data.category];
 		if (id) data.game_id = id;
+		data.mature = data.mature === "on"; //Use true/false for checkbox state rather than presence/absence
 		console.log(data);
 	},
 	"/update": (result, form) => {
@@ -242,6 +243,19 @@ const form_callbacks = {
 				SPAN(BUTTON({onclick: () => save_setup(prevsetup)}, "Save")),
 			]).style.display = "block";
 		}
+		//The server can't update the Mature flag directly, but it does
+		//let us know if it's currently set incorrectly.
+		if (result.mature)
+		{
+			set_content("#maturedesc", [
+				" " + result.mature + " ",
+				//NOTE: If you're editing a different channel, this won't work.
+				//It's not possible to change the Mature flag for someone else's
+				//channel, but it'd be nice to reword the warning appropriately.
+				A({href: "https://dashboard.twitch.tv/settings/channel", target: "_blank"}, "Toggle it here"),
+			]).classList.add("warningmessage");
+		}
+		else set_content("#maturedesc", []).classList.remove("warningmessage");
 		form.classList.remove("dirty");
 	},
 };

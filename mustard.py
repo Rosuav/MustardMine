@@ -354,7 +354,14 @@ def api_update(channelid):
 	previous = {"category": setup["game_name"], "title": setup["title"], "tags": setup["tags"]}
 	err = do_update(channelid, request.json)
 	if err: return jsonify({"ok": False, "error": err})
-	return jsonify({"ok": True, "success": "Stream status updated.", "previous": previous})
+	resp = {"ok": True, "success": "Stream status updated.", "previous": previous}
+	if "mature" in request.json:
+		is_mature = query("kraken/channels/" + channelid, token=None)["mature"]
+		if is_mature and not request.json["mature"]:
+			resp["mature"] = "NOTE: The channel is currently set to Mature, which may dissuade viewers."
+		elif not is_mature and request.json["mature"]:
+			resp["mature"] = "CAUTION: The channel is not currently set to Mature."
+	return jsonify(resp)
 
 @app.route("/schedule", methods=["POST"])
 @wants_channelid
