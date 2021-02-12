@@ -255,7 +255,7 @@ const form_callbacks = {
 				//NOTE: If you're editing a different channel, this won't work.
 				//It's not possible to change the Mature flag for someone else's
 				//channel, but it'd be nice to reword the warning appropriately.
-				A({href: "https://dashboard.twitch.tv/settings/channel", target: "_blank"}, "Toggle it here"),
+				A({href: "https://dashboard.twitch.tv/settings/stream", target: "_blank"}, "Toggle it here"),
 			]).classList.add("warningmessage");
 		}
 		else set_content("#maturedesc", []).classList.remove("warningmessage");
