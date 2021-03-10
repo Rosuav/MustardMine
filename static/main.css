@@ -9,7 +9,7 @@
 #display_one:checked ~ #pagination {display: block;}
 
 
-section, details {
+details, body>section {
 	border: 1px solid black;
 	padding: 10px;
 	margin: 10px 0;
@@ -114,14 +114,13 @@ back to Times New Roman for some reason. Or not. I dunno now. */
 
 dialog {
 	position: fixed;
-	width: 30em; height: 20em;
+	width: 30em; /* note that height is governed by its children */
 	top: calc(50% - 15em);
 	left: calc(50% - 10em);
 	bottom: calc(50% - 15em);
 	right: calc(50% - 10em);
 	border: 5px solid black;
 	padding: 1em;
-	overflow: auto;
 }
 
 #picker li {
@@ -139,9 +138,25 @@ dialog {
 	margin-top: 0.25em;
 }
 
+/* Create a scroll context inside dialogs */
+dialog > section {
+	display: flex;
+	flex-direction: column;
+}
+dialog > section > header {
+	display: flex;
+	justify-content: space-between;
+}
+dialog > section > header > h3 {
+	margin: 0.5em 0;
+}
+dialog > section > div {
+	overflow-y: auto;
+	height: 30vh;
+}
 .dialog_cancel {
-	position: absolute;
-	right: 1em; top: 1em;
+	position: relative;
+	right: -8px; top: -8px;
 }
 
 #maturedesc {

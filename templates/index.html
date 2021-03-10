@@ -48,12 +48,12 @@ const initial_tweets = {{ tweets | tojson }};
 </table>
 <input type=submit value="Update stream info"> <button type=button id=save>Save this setup</button>
 </form>
-<dialog id=picker>
-<button type=button class=dialog_cancel>x</button>
-<h3 id=picker_heading>Pick a category:</h3>
+<dialog id=picker><section>
+<header><h3 id=picker_heading>Pick a category:</h3><div><button type=button class=dialog_cancel>x</button></div></header>
+<div>
 <input id=picker_search size=30>
 <ul id=picker_results></ul>
-</dialog>
+</div></section></dialog>
 </section>
 
 <section>
@@ -74,8 +74,9 @@ const initial_tweets = {{ tweets | tojson }};
 to save yourself the trouble of writing it out every time.</p>
 </form>
 <p><a href="#" id=twitter_config>Configure defaults</a></p>
-<dialog id=twitter_cfg>
-<button type=button class=dialog_cancel>x</button>
+<dialog id=twitter_cfg><section>
+<header><h3>Twitter defaults</h3><div><button type=button class=dialog_cancel>x</button></div></header>
+<div>
 <form name=twittercfg class=ajax method=post action="/twitter_cfg">
 <ul><li>Default schedule time:
 <select name=stdsched>
@@ -90,7 +91,7 @@ to save yourself the trouble of writing it out every time.</p>
 </ul>
 <input type=submit value="Set defaults">
 </form>
-</dialog>
+</div></section></dialog>
 </section>
 
 <section id=schedule>
