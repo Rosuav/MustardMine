@@ -473,6 +473,7 @@ def send_tweet(auth, tweet, in_reply_to=None):
 		print(resp.json())
 		print("---")
 		try:
+			# TODO: Report these to the front end somehow even if asynchronous
 			return {"error": "Unable to send tweet: " + resp.json()["errors"][0]["message"]}
 		except LookupError:
 			return {"error": "Unknown error response from Twitter (see server console)"}
