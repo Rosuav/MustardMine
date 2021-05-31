@@ -151,12 +151,12 @@ tweetbox.oninput = function() {
 		//If the /s (dotall) flag were supported, these [\s\S] units would be dots.
 		const pieces = []; tweet_to_send = [];
 		const colors = "#bbffbb #bbbbff #ffffbb #bbffff".split(" ");
-		while (!parsed.valid)
+		while (value.length && !parsed.valid)
 		{
-			const validpart = value.slice(0, parsed.validRangeEnd);
-			const match = /^([\s\S]*\n)[\s\S]{1,60}?$/m.exec(validpart) //A newline within the last 60 chars...
-				|| /^([\s\S]* )[\s\S]{1,20}?$/m.exec(validpart) // ... or a space within the last 20...
-				|| [validpart]; // ... or just break it right at the 280 mark.
+			const validpart = value.slice(0, parsed.validRangeEnd + 2); //Include one character beyond the limit, in case it's a space/newline
+			const match = /^([\s\S]*\n)[\s\S]{,60}?$/m.exec(validpart) //A newline within the last 60 chars...
+				|| /^([\s\S]* )[\s\S]{,20}?$/m.exec(validpart) // ... or a space within the last 20...
+				|| [0, validpart]; // ... or just break it right at the 280 mark.
 			pieces.push(SPAN({style: "background-color: " + colors[pieces.length % colors.length]}, match[1]));
 			tweet_to_send.push(match[1].trim());
 			value = value.slice(match[1].length);
@@ -171,7 +171,7 @@ tweetbox.oninput = function() {
 		set_content(this, value); //Reset the colours
 		tweet_to_send = value.trim(); //Just the text, not in an array
 	}
-	set_content("#tweetlen", parsed.weightedLength); //Length of the last portion
+	set_content("#tweetlen", parsed.weightedLength || "0"); //Length of the last portion
 	//Find the place that this cursor position lands, possibly in one of the spans
 	sel.removeAllRanges();
 	let piece = this;
