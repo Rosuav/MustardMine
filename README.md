@@ -47,12 +47,6 @@ TODO:
 * Maybe make a "copy setup to clipboard" to allow them to be shared? Use
   the same JSON format as is in the backup file, so you can cherry-pick
   from there too.
-* https://github.com/twitter/twitter-text/tree/master/js#tweet-parsing
-  - Current tweet length counting is naive and not guaranteed to be correct
-  - Notably, a very short URL - or something that Twitter thinks is a URL -
-    will be counted as 23 characters, even though that might be more than
-    the actual number of characters in it.
-  - The back end doesn't matter. Just give it to Twitter and go.
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.

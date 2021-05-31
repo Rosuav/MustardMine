@@ -1,6 +1,8 @@
 import choc, {set_content, DOM, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
 const {A, B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
+import "https://cdn.jsdelivr.net/gh/twitter/twitter-text@3.1.0/js/pkg/twitter-text-3.1.0.min.js";
+const parse_tweet = twttr.txt.parseTweet;
 
 const setupform = document.forms.setups.elements;
 const schedform = document.forms.schedule.elements;
@@ -137,24 +139,28 @@ tweetbox.oninput = function() {
 	const range = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : document.createRange();
 	range.setStart(this, 0);
 	let cursor = range.toString().length; //Cursor position within the unstyled text.
-	if (value.length > 280)
+	let parsed = parse_tweet(value);
+	if (!parsed.valid)
 	{
 		//The tweet needs to be broken up into a thread.
-		//First, pick a split point. We favour newlines, then spaces,
-		//and if all else fails, just take the first 280 characters.
+		//First, pick a split point. We favour newlines, then spaces, and
+		//if all else fails, just take the first N characters, where N is
+		//whatever length the Twitter library says was valid.
 		//Could be done with regex alternation, but that means we have more
 		//capture groups and still have to figure out which group we caught.
 		//If the /s (dotall) flag were supported, these [\s\S] units would be dots.
 		const pieces = []; tweet_to_send = [];
 		const colors = "#bbffbb #bbbbff #ffffbb #bbffff".split(" ");
-		while (value.length > 280)
+		while (!parsed.valid)
 		{
-			const match = /^([\s\S]{220,280}\n)([\s\S]{1,})$/m.exec(value) //A newline within the last 60 chars...
-				|| /^([\s\S]{260,280} )([\s\S]{1,})$/m.exec(value) // ... or a space within the last 20...
-				|| /^([\s\S]{280})([\s\S]*)$/m.exec(value); // ... or just break it right at the 280 mark.
+			const validpart = value.slice(0, parsed.validRangeEnd);
+			const match = /^([\s\S]*\n)[\s\S]{1,60}?$/m.exec(validpart) //A newline within the last 60 chars...
+				|| /^([\s\S]* )[\s\S]{1,20}?$/m.exec(validpart) // ... or a space within the last 20...
+				|| [validpart]; // ... or just break it right at the 280 mark.
 			pieces.push(SPAN({style: "background-color: " + colors[pieces.length % colors.length]}, match[1]));
 			tweet_to_send.push(match[1].trim());
-			value = match[2];
+			value = value.slice(match[1].length);
+			parsed = parse_tweet(value);
 		}
 		pieces.push(SPAN({style: "background-color: " + colors[pieces.length % colors.length]}, value));
 		set_content(this, pieces);
@@ -165,7 +171,7 @@ tweetbox.oninput = function() {
 		set_content(this, value); //Reset the colours
 		tweet_to_send = value.trim(); //Just the text, not in an array
 	}
-	document.getElementById("tweetlen").innerHTML = value.length; //Length of the last portion
+	set_content("#tweetlen", parsed.weightedLength); //Length of the last portion
 	//Find the place that this cursor position lands, possibly in one of the spans
 	sel.removeAllRanges();
 	let piece = this;
