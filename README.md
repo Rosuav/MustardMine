@@ -33,6 +33,9 @@ TODO:
     the link? Could be handy for a few channels.
     - The link itself is part of send_tweet()'s return value, fwiw.
     - Could become another of the defaults in the twitter_cfg dialog.
+  - This would also be a good way to report tweet errors to the broadcaster.
+    Though I'm not expecting any, there's always the possibility that some
+    desync or bug will result in a back-end error.
 * Get someone on a Mac to test things in Safari
   - The <dialog> tag isn't officially supported. Is my monkeypatch enough?
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
