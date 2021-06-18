@@ -96,33 +96,11 @@ to save yourself the trouble of writing it out every time.</p>
 
 <section id=schedule>
 <h2>Schedule</h2>
-<form name=schedule method=post action="/schedule">
-<input type=hidden name=channelid value={{channelid}}>
-<p>Specify schedule in timezone: <input name=sched_tz size=40> <span id=othertz></span></p>
-<p>Next scheduled time: <span id=nextsched></span></p>
-<table>
-<tr><td><label for=sched0>Sun:</label></td><td><input class=sched name=sched0 size=20></td></tr>
-<tr><td><label for=sched1>Mon:</label></td><td><input class=sched name=sched1 size=20></td></tr>
-<tr><td><label for=sched2>Tue:</label></td><td><input class=sched name=sched2 size=20></td></tr>
-<tr><td><label for=sched3>Wed:</label></td><td><input class=sched name=sched3 size=20></td></tr>
-<tr><td><label for=sched4>Thu:</label></td><td><input class=sched name=sched4 size=20></td></tr>
-<tr><td><label for=sched5>Fri:</label></td><td><input class=sched name=sched5 size=20></td></tr>
-<tr><td><label for=sched6>Sat:</label></td><td><input class=sched name=sched6 size=20></td></tr>
-</table>
-<input type=submit value="Update schedule">
-</form>
-<ul>
-<li>The schedule repeats weekly. Everything is based on Sun/Mon/Tue etc.</li>
-<li>On each day-of-week, you may have zero or more times. Each time is interpreted within the specified timezone.</li>
-<li>Times can be entered with AM/PM and will be converted into 24-hour notation.</li>
-<li>"Preview" times and countdowns on this dashboard may use your local time, ignoring the specified timezone. Don't worry, the real countdown will use the right timezone.</li>
-<li>This info is not public, so there's no need to have a "vacation mode" etc. Just don't click the button to tell MM to do stuff. For the same
-reason, it's absolutely fine to have temporary or occasional stream times listed here; this isn't a promise to your viewers, just a convenience
-for your countdown timer and tweet.</li>
-<li>Daylight Saving Time is an abomination. It's impossible to handle it perfectly. If you disagree with how MM handles it, speak to your elected
-representatives and try to get DST abolished. (It won't be easy - in fact, it'll be nearly impossible - but trying to get a program to handle DST
-perfectly is even harder.)</li>
-</ul>
+<p>Your schedule can be managed <a href="https://dashboard.twitch.tv/settings/channel/schedule">on your Twitch dashboard</a>.</p>
+Upcoming streams: <ul id=upcoming_streams></ul>
+<p><button type=button id=fetch_schedule>Refresh schedule</button></p>
+<p>"Preview" times and countdowns on this dashboard use your local time. This may look a little odd in
+some cases, but it'll refer to the same instant in time.</p>
 </section>
 
 <section>

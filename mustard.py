@@ -414,6 +414,29 @@ def update_twitter_cfg(channelid):
 	return jsonify({"ok": True, "success": "Twitter defaults updated",
 		"new_sched": sched})
 
+@app.route("/api/twitch_schedule")
+@wants_channelid
+def fetch_schedule(channelid):
+	if "twitch_user" not in session: return jsonify({"ok": False, "error": "Unauthorized"})
+	cursor = ""
+	schedule = []
+	now = datetime.datetime.now().astimezone(datetime.timezone.utc)
+	nextweek = now + datetime.timedelta(days=7)
+	while cursor is not None:
+		data = query("helix/schedule", token="app", params={"broadcaster_id": channelid, "after": cursor}, auto_refresh=False)
+		if not data.get("data"): break
+		segments = data["data"].get("segments")
+		if not segments: break # Might not be an error - might just be that there aren't any
+		for s in segments:
+			tm = datetime.datetime.strptime(s["start_time"], "%Y-%m-%dT%H:%M:%S%z")
+			if tm > nextweek: break
+			if s["canceled_until"]: continue
+			if tm < now: continue # Event started in the past. Presumably it ends in the future.
+			schedule.append({"title": s["title"], "category": s.get("category") or {}, "start_time": s["start_time"]})
+		if tm > nextweek: break
+		cursor = data["pagination"].get("cursor")
+	return jsonify({"ok": True, "schedule": schedule});
+
 @app.route("/checklist", methods=["POST"])
 @wants_channelid
 def update_checklist(channelid):

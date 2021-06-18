@@ -5,7 +5,6 @@ import "https://cdn.jsdelivr.net/gh/twitter/twitter-text@3.1.0/js/pkg/twitter-te
 const parse_tweet = twttr.txt.parseTweet;
 
 const setupform = document.forms.setups.elements;
-const schedform = document.forms.schedule.elements;
 
 //Map category names to their game IDs. If the to-be-saved category is in this
 //mapping, we can send the ID to the server (as well as the category name) to
@@ -129,8 +128,6 @@ function tidy_times(times) {
 	}
 	return times.sort().join(" ").trim();
 }
-
-on("change", ".sched", e => schedule[e.match.name[5]] = e.match.value = tidy_times(e.match.value));
 
 let tweet_to_send = "";
 tweetbox.oninput = function() {
@@ -286,71 +283,31 @@ on("submit", "form.ajax", async ev => {
 	const cb = form_callbacks[dest.pathname]; if (cb) cb(result, form);
 });
 
-function timediff(timestr, date) {
-	//Calculate the difference between a time string and a date.
-	//Yes, it's weird. It's a helper for g_n_s_t below. Nothing more.
-	//Can and will return a negative number of seconds if timestr
-	//represents a time earlier in the day than date does.
-	const [hr, min] = timestr.split(":");
-	const tm = parseInt(hr, 10) * 60 + parseInt(min, 10);
-	const secs = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
-	return tm * 60 - secs;
-}
-
-function get_next_scheduled_time(offset) {
-	//Returns [dow, time, days, tm]
-	//dow - day of week (0-6)
-	//time - HH:MM
-	//days - number of days into the future (might be 0, might be 7)
-	//tm - number of seconds from now until that time.
-	//If no times on the schedule, returns [].
-	const now = new Date(new Date() - (offset||0)*1000);
-	const today = now.getDay(); //0 = Sunday, 1 = Monday, etc
-	//Cycle from today forwards, wrapping, until we find a valid time
-	//If we get all the way back to today, look at times behind us.
-	const today_times = schedule[today].split(" ").filter(x => x);
-	if (today_times.length) {
-		//Find one that's after the current time
-		const time = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2);
-		for (let t of today_times) if (t > time) {
-			return [today, t, 0, timediff(t, now)];
-		}
-	}
-	//Nope? Okay, let's try tomorrow.
-	for (let days = 1; days < 7; ++days) {
-		const times = schedule[(today + days) % 7].split(" ").filter(x => x);
-		if (times.length) return [(today + days) % 7, times[0], days, days*86400 + timediff(times[0], now)];
-	}
-	//Nothing at all? Alright, one last try, looking at today.
-	//If there is anything at all on today's schedule, and we didn't return
-	//from the previous block, then what we want is to wait all the way around
-	//the week until we get back to today, and then take the earliest time
-	//slot available. Seven days and negative a few hours.
-	if (today_times.length) return [today, today_times[0], 7, 604800 + timediff(today_times[0], now)];
-	//If we get here, the entire schedule must be empty.
-	return [];
-}
-
-function format_schedule_time(offset) {
-	const [dow, time, days, delay] = get_next_scheduled_time(offset);
-	if (!time) return null;
-	const hh = Math.floor(delay / 3600);
-	const mm = ("0" + Math.floor((delay / 60) % 60)).slice(-2);
-	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
-	const downame = "Sun Mon Tue Wed Thu Fri Sat".split(" ")[dow];
+function format_schedule_time(tm, offset) {
+	const target = Date.parse(tm), now = +new Date();
+	const targ = new Date(target);
+	const time = ("0" + targ.getHours()).slice(-2) + ":" + ("0" + targ.getMinutes()).slice(-2);
+	const downame = "Sun Mon Tue Wed Thu Fri Sat".split(" ")[targ.getDay()];
+	const days = Math.floor(target / 86400000) - Math.floor(now / 86400000);
 	let day;
 	if (!days) day = "Today";
 	else if (days == 1) day = "Tomorrow";
-	else if (days == 7) day = "Next " + downame
+	else if (days == 7) day = "Next " + downame;
 	else day = downame;
+	if (offset === "no-countdown") return day + " " + time;
+	const delay = Math.floor((target - now) / 1000) + offset;
+	const hh = Math.floor(delay / 3600);
+	const mm = ("0" + Math.floor((delay / 60) % 60)).slice(-2);
+	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
 	return `${day} ${time} ==> ${hh}:${mm}:${ss}`;
 }
 
+let schedule = [];
 setInterval(function() {
-	set_content("#nextsched", format_schedule_time() || "(none)");
+	if (schedule.length) set_content("#upcoming_streams li:first-of-type .time", format_schedule_time(schedule[0].start_time, 0));
 	const when = document.getElementById("tweetschedule").value;
 	set_content("#tweettime", when === "now" ? "Immediate" :
-		format_schedule_time(+when) || "(need schedule)");
+		schedule.length ? format_schedule_time(schedule[0].start_time, +when) : "(need schedule)");
 }, 1000);
 
 function format_time(delay) {
@@ -358,6 +315,21 @@ function format_time(delay) {
 	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
 	return mm + ":" + ss;
 }
+
+async function fetch_schedule() {
+	const data = await (await fetch("/api/twitch_schedule?channelid=" + channel._id)).json();
+	console.log("Got schedule:", data);
+	schedule = data.schedule || [];
+	if (!schedule.length) set_content("#upcoming_streams", LI("No scheduled streams - configure on your Twitch dashboard"));
+	else set_content("#upcoming_streams", schedule.map(sch => LI([
+		B({className: "time"}, format_schedule_time(sch.start_time, "no-countdown")),
+		" - " + sch.title,
+		//TODO: Box art for category, if applicable
+		sch.category.name ? B(" - " + sch.category.name) : "",
+	])));
+}
+on("click", "#fetch_schedule", fetch_schedule);
+fetch_schedule();
 
 function select_tweet_schedule(time) {
 	const tweet = document.getElementById("tweetschedule");
@@ -524,21 +496,7 @@ setupform.category.value = channel.game_name;
 setupform.title.value = channel.title;
 setupform.tags.value = channel.tags;
 render_setups();
-schedule.forEach((times, day) => schedform["sched" + day].value = tidy_times(times));
 update_tweets(initial_tweets);
-
-const local_tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-if (sched_tz === "") {
-	//No saved TZ - assume you probably want the one you're using in the browser.
-	schedform.sched_tz.value = local_tz;
-} else {
-	schedform.sched_tz.value = sched_tz;
-	if (sched_tz !== local_tz) {
-		//Your saved timezone and your browser timezone are different.
-		//Notify the user.
-		document.getElementById("othertz").innerHTML = "(Your browser's preferred timezone is: " + local_tz + ")";
-	}
-}
 
 set_content("#checklist",
 	document.forms.checklist.elements.checklist.value //provided by the server (via templating)
