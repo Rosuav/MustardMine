@@ -200,9 +200,9 @@ def wants_channelid(f):
 		return resp
 	return handler
 
-def list_scheduled_tweets(token, secret, sched_tz):
+def list_scheduled_tweets(token, secret):
 	cred = (token, secret)
-	return [(format_time(tm, sched_tz), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
+	return [(format_time(tm, None), id, args[1]) for tm, id, args in scheduler.search(send_tweet) if args[0] == cred]
 
 def get_channel_setup(channelid):
 	channel = query("helix/channels?broadcaster_id=" + channelid, token="bearer")["data"][0]
@@ -239,12 +239,12 @@ def mainpage(channelid=None):
 	if not may_edit_channel(user["_id"], channelid): return redirect(url_for("mainpage"))
 	database.create_user(channelid) # Just in case, make sure the database has the basic structure
 	channel = get_channel_setup(channelid)
-	sched_tz, schedule, sched_tweet = database.get_schedule(channelid)
+	[sched_tweet] = database.get_twitter_config(channelid)
 	if "twitter_oauth" in session:
 		auth = session["twitter_oauth"]
 		username = auth["screen_name"]
 		twitter = "Twitter connected: " + username
-		tweets = list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"], sched_tz)
+		tweets = list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"])
 	else:
 		twitter = Markup("""<div id="login-twitter"><a href="/login-twitter"><img src="/static/Twitter_Social_Icon_Square_Color.svg" alt="Twitter logo"><div>Connect with Twitter</div></a></div>""")
 		tweets = []
@@ -254,10 +254,9 @@ def mainpage(channelid=None):
 		twitter=twitter, username=user["display_name"],
 		channel=channel, channelid=channelid, error=error,
 		setups=database.list_setups(channelid),
-		sched_tz=sched_tz, schedule=schedule, sched_tweet=sched_tweet,
 		checklist=database.get_checklist(channelid),
 		timers=database.list_timers(channelid),
-		tweets=tweets,
+		sched_tweet=sched_tweet, tweets=tweets,
 	)
 
 def find_game_id(game_name, token="bearer"): # pass token="app" if no login - slower b/c we don't cache app tokens (yet)
@@ -364,41 +363,6 @@ def api_update(channelid):
 			resp["mature"] = "CAUTION: The channel is not currently set to Mature."
 	return jsonify(resp)
 
-@app.route("/schedule", methods=["POST"])
-@wants_channelid
-def update_schedule(channelid):
-	if "twitch_user" not in session:
-		return redirect(url_for("mainpage"))
-	# Perform simple validation on the schedule. Tidying up human entry
-	# is the job of the front end; if you send "1pm" to the back end,
-	# you will simply get back an error, nothing more. The front end is
-	# supposed to have already converted this to "13:00", which is the
-	# only format we accept here.
-	schedule = []
-	sched = "<unknown cause>" # in case we get an unexpected ValueError
-	try:
-		for day in range(7):
-			sched = request.form.get("sched%d" % day, "")
-			if ',' in sched: raise ValueError
-			for time in sched.split():
-				hr, min = time.split(":") # Raises ValueError if wrong number of colons
-				if not (0 <= int(hr) < 24): raise ValueError # Also raises if not integer
-				if not (0 <= int(min) < 60): raise ValueError
-			schedule.append(" ".join(sched.split()))
-	except ValueError:
-		return "Schedule format error: " + sched, 400
-	tz = request.form.get("sched_tz")
-	if not tz:
-		# No TZ specified? Use what we have, if possible, otherwise
-		# demand one from the user. The front end will normally try
-		# to provide a default timezone, so most users won't have
-		# to worry about this.
-		tz = database.get_schedule(channelid)[0]
-		if not tz:
-			return "Please specify a timezone", 400
-	database.set_schedule(channelid, tz, schedule)
-	return redirect(url_for("mainpage"))
-
 @app.route("/api/twitter_cfg", methods=["POST"])
 @wants_channelid
 def update_twitter_cfg(channelid):
@@ -414,13 +378,10 @@ def update_twitter_cfg(channelid):
 	return jsonify({"ok": True, "success": "Twitter defaults updated",
 		"new_sched": sched})
 
-@app.route("/api/twitch_schedule")
-@wants_channelid
-def fetch_schedule(channelid):
-	if "twitch_user" not in session: return jsonify({"ok": False, "error": "Unauthorized"})
+def get_schedule(channelid, delta=0):
 	cursor = ""
 	schedule = []
-	now = datetime.datetime.now().astimezone(datetime.timezone.utc)
+	now = datetime.datetime.now().astimezone(datetime.timezone.utc) - datetime.timedelta(seconds=delta)
 	nextweek = now + datetime.timedelta(days=7)
 	while cursor is not None:
 		data = query("helix/schedule", token="app", params={"broadcaster_id": channelid, "after": cursor}, auto_refresh=False)
@@ -429,13 +390,19 @@ def fetch_schedule(channelid):
 		if not segments: break # Might not be an error - might just be that there aren't any
 		for s in segments:
 			tm = datetime.datetime.strptime(s["start_time"], "%Y-%m-%dT%H:%M:%S%z")
-			if tm > nextweek: break
+			if tm > nextweek: return schedule
 			if s["canceled_until"]: continue
 			if tm < now: continue # Event started in the past. Presumably it ends in the future.
-			schedule.append({"title": s["title"], "category": s.get("category") or {}, "start_time": s["start_time"]})
-		if tm > nextweek: break
+			schedule.append({"title": s["title"], "category": s.get("category") or {},
+				"start_time": s["start_time"], "unixtime": int(tm.timestamp()) + delta})
 		cursor = data["pagination"].get("cursor")
-	return jsonify({"ok": True, "schedule": schedule});
+	return schedule
+
+@app.route("/api/twitch_schedule")
+@wants_channelid
+def fetch_schedule(channelid):
+	if "twitch_user" not in session: return jsonify({"ok": False, "error": "Unauthorized"})
+	return jsonify({"ok": True, "schedule": get_schedule(channelid)});
 
 @app.route("/checklist", methods=["POST"])
 @wants_channelid
@@ -451,10 +418,9 @@ def do_tweet(channelid, tweet, schedule, auth):
 	if schedule == "now":
 		info = send_tweet((auth["oauth_token"], auth["oauth_token_secret"]), tweet)
 		return info.get("error", "")
-	schedule = int(schedule)
-	target = database.get_next_event(channelid, schedule)
-	if not target: return "Can't schedule tweets without a schedule!"
-	target += schedule
+	events = get_schedule(channelid, int(schedule))
+	if not events: return "Can't schedule tweets without a schedule!"
+	target = events[0]["unixtime"]
 	if target - time.time() > 1800:
 		# Protect against schedule mistakes and various forms of insanity
 		# The half-hour limit aligns with the Heroku policy of shutting a
@@ -514,8 +480,7 @@ def form_tweet(channelid):
 
 def get_user_tweets():
 	auth = session["twitter_oauth"]
-	sched_tz = database.get_schedule(session["twitch_user"]["_id"])[0]
-	return list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"], sched_tz)
+	return list_scheduled_tweets(auth["oauth_token"], auth["oauth_token_secret"])
 
 @app.route("/api/tweet", methods=["POST"])
 @wants_channelid
@@ -657,7 +622,8 @@ def save_timer(id, channelid):
 def countdown(id):
 	info = database.get_public_timer_details(id)
 	if not info: return "Timer not found", 404
-	return render_template("countdown.html", id=id, **info)
+	events = get_schedule(info["twitchid"], int(info["delta"]))
+	return render_template("countdown.html", id=id, **info, next_event=events[0]["unixtime"] if events else 0)
 
 # ---- Live search API ----
 
@@ -719,12 +685,9 @@ def make_backup(channelid):
 		setup = {field: setup[field] for field in fields}
 		response += "\t\t" + json.dumps(setup) + ",\n"
 	response += '\t\t""\n\t],\n'
-	# Schedule
-	tz, sched, sched_tweet = database.get_schedule(twitchid)
-	response += '\t"schedule": [\n'
-	for day in sched:
-		response += "\t\t" + json.dumps(day) + ",\n"
-	response += "\t\t%s,\n\t\t%d\n\t],\n" % (json.dumps(tz), sched_tweet)
+	# Twitter config (formerly Schedule)
+	[sched_tweet] = database.get_twitter_config(twitchid)
+	response += '\t"twitter_config": [%d],\n' % sched_tweet
 	# Checklist
 	checklist = database.get_checklist(twitchid).strip().split("\n")
 	response += '\t"checklist": [\n'

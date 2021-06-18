@@ -16,7 +16,7 @@ div {
 <div id=id>{{ id }}</div>
 <div id=time></div>
 <script>
-let target_time = {{ next_event }} + {{ delta }};
+let target_time = {{ next_event }};
 const maxtime = {{ maxtime }};
 let target = new Date(target_time * 1000);
 const display = document.getElementById("time");

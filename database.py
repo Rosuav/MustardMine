@@ -22,8 +22,6 @@ TABLES = {
 	],
 	"users": [
 		"twitchid integer primary key",
-		"sched_timezone varchar not null default ''",
-		"schedule varchar not null default ''",
 		"sched_tweet integer not null default 0",
 		"checklist text not null default ''",
 	],
@@ -133,21 +131,11 @@ def delete_setup(twitchid, setupid):
 		cur.execute("delete from mustard.setups where twitchid=%s and id=%s", (twitchid, setupid))
 		return cur.rowcount
 
-def get_schedule(twitchid):
-	"""Return the user's timezone and schedule
-
-	Schedule is split into seven (Sun through Sat) space-delimited strings.
-	"""
+def get_twitter_config(twitchid):
+	"""Return the user's tweet schedule"""
 	with postgres, postgres.cursor() as cur:
-		cur.execute("select sched_timezone, schedule, sched_tweet from mustard.users where twitchid=%s", (twitchid,))
-		tz, sched, tweet = cur.fetchone()
-		sched = sched.split(",") + [""] * 7
-		return tz, sched[:7], int(tweet)
-
-def set_schedule(twitchid, tz, schedule):
-	with postgres, postgres.cursor() as cur:
-		cur.execute("update mustard.users set sched_timezone=%s, schedule=%s where twitchid=%s",
-			(tz, ",".join(schedule), twitchid))
+		cur.execute("select sched_tweet from mustard.users where twitchid=%s", (twitchid,))
+		return cur.fetchone()
 
 def update_twitter_config(twitchid, schedule):
 	with postgres, postgres.cursor() as cur:
@@ -190,75 +178,15 @@ def get_timer_details(id):
 		cur.execute("select * from mustard.timers where id=%s", (id,))
 		return cur.fetchone()
 
-def find_next_event(tz, sched, delta=0):
-	if not sched.strip(","):
-		# If you have no schedule set, there can't be any events.
-		# Early check to prevent crashing out if no TZ set. If
-		# you have a schedule but do *not* have a TZ, the below
-		# code will bomb.
-		return 0
-	sched = sched.split(",") + [""] * 7
-	sched = [[tm for tm in day.split(" ") if tm] for day in sched[:7]]
-	tz = pytz.timezone(tz)
-	now = datetime.now(tz=tz).replace(second=0, microsecond=0) - timedelta(seconds=delta)
-	tm = (now.hour, now.minute)
-	dow = now.isoweekday() % 7 # isoweekday returns 7 for Sunday, we want 0
-	for tryme in range(8):
-		for schedtime in sched[(dow + tryme) % 7]:
-			hr, min = schedtime.split(":")
-			# First pass, looking at today, we count only times in the future.
-			# After that, we look at the first available time. If we go seven
-			# full days into the future (weeklong wraparound), we take any
-			# schedule entry from the current date.
-			if tryme or tm < (int(hr), int(min)):
-				# Advance to the right day
-				target = now + timedelta(days=tryme)
-				# Select the hour and minute, which might break stuff badly
-				target = target.replace(hour=int(hr), minute=int(min))
-				# Fix the timezone in case something's broken
-				target = tz.normalize(target)
-				# In case we went past a UTC offset change, re-replace.
-				target = target.replace(hour=int(hr), minute=int(min))
-				# In case we landed right inside a DST advancement, re-normalize.
-				target = tz.normalize(target)
-				# Convert to Unix time and return it!
-				return int(target.timestamp())
-	# Nothing? Strange. We were supposed to catch empty schedules up above.
-	# Maybe there's a malformed entry that got skipped. In any case, this
-	# is an empty schedule, so return failure.
-	return 0
-
 def get_public_timer_details(id):
 	"""Get public details for a specific timer
 
 	Requires no Twitch ID, but is guaranteed to return ONLY public info.
-	In addition to the raw info, this also gives the UTC time of the next
-	scheduled event.
 	"""
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
 		cur.execute("select twitchid, title, delta, maxtime, styling from mustard.timers where id=%s", (id,))
 		info = cur.fetchone()
-		if not info: return None
-		# Survive psycopg2 2.8.0 bug by turning the RealDict into a real dict
-		# Otherwise, mutating the dictionary causes future iteration to crash.
-		info = {**info}
-		twitchid = info.pop("twitchid")
-		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
-		sched = cur.fetchone()
-		info["next_event"] = find_next_event(sched["sched_timezone"], sched["schedule"], info["delta"])
 		return info
-
-def get_next_event(twitchid, delta=0):
-	"""Get the next event from this user's schedule
-
-	Similar to get_public_timer_details but can provide arbitrary times
-	and deltas, without requiring preconfigured timers. Returns the Unix
-	time for the next event, or 0 if no events on this user's calendar.
-	"""
-	with postgres, postgres.cursor() as cur:
-		cur.execute("select sched_timezone, schedule from mustard.users where twitchid=%s", (twitchid,))
-		tz, sched = cur.fetchone()
-		return find_next_event(tz, sched, delta)
 
 def generate_timer_id():
 	"""Generate an alphanumeric random identifier.
@@ -345,10 +273,10 @@ class Restorer(contextlib.ExitStack):
 			(self.twitchid, category, title, tags, mature, tweet))
 		self.summary += "Restored %r setup\n" % category
 
-	def restore_schedule(self, tz, schedule, tweet):
-		self.cur.execute("update mustard.users set sched_timezone=%s, schedule=%s, sched_tweet=%s where twitchid=%s",
-			(tz, ",".join(schedule), tweet, self.twitchid))
-		self.summary += "Restored schedule, timezone, and default tweet schedule\n"
+	def restore_twitter_config(self, tweet):
+		self.cur.execute("update mustard.users set sched_tweet=%s where twitchid=%s",
+			(tweet, self.twitchid))
+		self.summary += "Restored default tweet schedule\n"
 
 	def restore_checklist(self, checklist):
 		self.cur.execute("update mustard.users set checklist=%s where twitchid=%s", (checklist, self.twitchid,))
@@ -394,12 +322,16 @@ def restore_from_json(twitchid, data):
 					del setup["communities"]
 				r.check_dict(setup)
 				r.restore_setup(**setup)
-		if "schedule" in data:
+		if "schedule" in data: # Deprecated in favour of "twitter_config"
 			sched = data["schedule"]
 			if not isinstance(sched, list): r.fail()
-			elif len(sched) == 8: r.restore_schedule(sched[-1], sched[:-1], 0) # Old format backups
-			elif len(sched) == 9: r.restore_schedule(sched[-2], sched[:-2], int(sched[-1])) # New backups
+			elif len(sched) == 8: r.restore_twitter_config(0)
+			elif len(sched) == 9: r.restore_twitter_config(int(sched[-1]))
 			else: r.fail()
+		if "twitter_config" in data:
+			cfg = data["twitter_config"]
+			if not isinstance(cfg, list) or not cfg: r.fail()
+			else: r.restore_twitter_config(int(cfg[0]))
 		if "checklist" in data:
 			checklist = data["checklist"]
 			if isinstance(checklist, list): checklist = "\n".join(checklist).strip()
