@@ -50,7 +50,6 @@ TODO:
 * Maybe make a "copy setup to clipboard" to allow them to be shared? Use
   the same JSON format as is in the backup file, so you can cherry-pick
   from there too.
-* FIXME: Selecting a saved setup doesn't mark form as dirty
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.

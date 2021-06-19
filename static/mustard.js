@@ -34,6 +34,7 @@ function pick_setup(i) {
 	setupform.title.value = setup.title;
 	setupform.tags.value = setup.tags;
 	setupform.mature.checked = setup.mature;
+	document.forms.setups.classList.add("dirty");
 	if (setup.tweet && setup.tweet !== "") tweetbox.innerText = setup.tweet;
 	tweetbox.oninput();
 }
@@ -86,48 +87,6 @@ document.getElementById("save").onclick = () => save_setup({
 	mature: setupform.mature.checked,
 	tweet: tweetbox.innerText,
 });
-
-function tidy_times(times) {
-	times = times.replace(",", " ").split(" ");
-	for (let i = 0; i < times.length; ++i)
-	{
-		const tm = times[i];
-		//Reformat tm tidily
-		//If tm is exactly "AM" or "PM" (case insensitively),
-		//apply the transformation to the previous entry, and discard
-		//this one. That will allow "9 pm" to parse correctly.
-		//Edge case: "9  pm" still doesn't parse. Whatevs.
-		const which = /^(AM)?(PM)?$/i.exec(tm);
-		if (which && i && times[i-1] != "")
-		{
-			let [hr, min] = times[i-1].split(":");
-			if (hr == "12") hr = "00";
-			if (which[2]) hr = ("0" + (parseInt(hr, 10) + 12)).slice(-2);
-			times[i-1] = hr + ":" + min;
-			times[i] = "";
-			continue;
-		}
-		//Yes, that's "?::" in a regex. Don't you just LOVE it when a
-		//character is sometimes special, sometimes literal?
-		//I'm abusing regex a little here; the last bit really should be
-		//(AM|PM)?, but there's no way to say "but which of the alternation
-		//did you match?". So by splitting it into two matchable parts, I
-		//take advantage of the regex case-insensitivity flag. That DOES
-		//mean that "2:30AMPM" will match. Simple rule: PM wins. (Just ask
-		//Jim Hacker if you don't believe me. Except when he's PM.)
-		const parts = /^([0-9][0-9]?)(?::([0-9][0-9]?))?(AM)?(PM)?$/i.exec(tm);
-		if (!parts) {times[i] = ""; continue;} //Will end up getting completely suppressed
-		let hour = parseInt(parts[1], 10);
-		let min = parseInt(parts[2] || "00", 10);
-		if (parts[3] || parts[4]) //AM or PM was set
-		{
-			if (hour == 12) hour = 0;
-			if (parts[4]) hour += 12; //PM
-		}
-		times[i] = ("0" + hour).slice(-2) + ":" + ("0" + min).slice(-2);
-	}
-	return times.sort().join(" ").trim();
-}
 
 let tweet_to_send = "";
 tweetbox.oninput = function() {
