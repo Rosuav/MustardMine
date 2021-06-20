@@ -247,6 +247,7 @@ function format_schedule_time(tm, offset) {
 	const targ = new Date(target);
 	const time = ("0" + targ.getHours()).slice(-2) + ":" + ("0" + targ.getMinutes()).slice(-2);
 	const downame = "Sun Mon Tue Wed Thu Fri Sat".split(" ")[targ.getDay()];
+	//TODO: Calculate days in *your* timezone, not UTC (which this is doing)
 	const days = Math.floor(target / 86400000) - Math.floor(now / 86400000);
 	let day;
 	if (!days) day = "Today";
