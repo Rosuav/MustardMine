@@ -50,6 +50,7 @@ TODO:
 * Maybe make a "copy setup to clipboard" to allow them to be shared? Use
   the same JSON format as is in the backup file, so you can cherry-pick
   from there too.
+* Are queued tweets being shown properly? They may appear on refresh only.
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
