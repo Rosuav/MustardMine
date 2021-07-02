@@ -96,7 +96,7 @@ tweetbox.oninput = function() {
 	range.setStart(this, 0);
 	let cursor = range.toString().length; //Cursor position within the unstyled text.
 	let parsed = parse_tweet(value);
-	if (!parsed.valid)
+	if (value !== "" && !parsed.valid)
 	{
 		//The tweet needs to be broken up into a thread.
 		//First, pick a split point. We favour newlines, then spaces, and
