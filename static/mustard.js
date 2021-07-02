@@ -247,8 +247,11 @@ function format_schedule_time(tm, offset) {
 	const targ = new Date(target);
 	const time = ("0" + targ.getHours()).slice(-2) + ":" + ("0" + targ.getMinutes()).slice(-2);
 	const downame = "Sun Mon Tue Wed Thu Fri Sat".split(" ")[targ.getDay()];
-	//TODO: Calculate days in *your* timezone, not UTC (which this is doing)
-	const days = Math.floor(target / 86400000) - Math.floor(now / 86400000);
+	//Subtract out the timezone offset to get us to local time, then round to the nearest
+	//day. That gives us a date in days-since-1970 in local time. Note that this may give
+	//odd results across a DST switch, since we use the same offset for both.
+	const ofs = targ.getTimezoneOffset() * 60000;
+	const days = Math.floor((target - ofs) / 86400000) - Math.floor((now - ofs) / 86400000);
 	let day;
 	if (!days) day = "Today";
 	else if (days == 1) day = "Tomorrow";
