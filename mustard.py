@@ -19,6 +19,13 @@ from flask_sockets import Sockets
 from authlib.integrations.requests_client import OAuth1Session, OAuth2Session
 import requests
 
+# Flask_Sockets 0.2.1 with Werkzeug 2.0.0+ breaks on all websocket connections due to
+# a mismatch of routing rules. The websocket rules need to be identified correctly.
+from werkzeug.routing import Rule
+class Sockets(Sockets):
+	def add_url_rule(self, rule, _, f, **options):
+		self.url_map.add(Rule(rule, endpoint=f, websocket=True))
+
 try:
 	import config
 except ImportError:
