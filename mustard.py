@@ -65,7 +65,12 @@ if os.environ.get("OVERRIDE_REDIRECT_HTTPS"):
 	_url_for = url_for
 	def url_for(*a, **kw): return _url_for(*a, **kw).replace("http://", "https://")
 
-REQUIRED_SCOPES = "channel_editor user:edit:broadcast user_read" # Ensure that these are sorted
+# TODO: Ensure that all the Helix scopes are listed here. Until the shutdown,
+# the Kraken scopes will be treated as valid (eg "user_read" grants permissions to
+# the Helix APIs that want "user:read:email" permission - but "user:edit:broadcast"
+# should imply that too), but ideally, we should be requesting the Helix scopes in
+# addition to the Kraken ones, so that the shutdown can simply have us remove some.
+REQUIRED_SCOPES = "channel:manage:broadcast channel_editor user:edit:broadcast user_read" # Ensure that these are sorted
 
 class TwitchDataError(Exception):
 	def __init__(self, error):
@@ -180,6 +185,8 @@ def may_edit_channel(userid, channelid):
 		# The user was an editor when last seen, recently
 		return True
 	try:
+		# TODO: Once editors are allowed to edit via Helix, find a way to probe
+		# for support - probably the equivalent to this, but using Helix.
 		data = query("kraken/channels/%s" % channelid, method="GET", token=None)
 		resp = query("kraken/channels/%s" % channelid, method="PUT", token="oauth", data={"channel[game]": data["game"]})
 		channel_editor_cache[(userid, channelid)] = time.time() + 900
@@ -223,6 +230,8 @@ def get_channel_setup(channelid):
 	# but there's no way in either Kraken or Helix to update it, so it would just be an
 	# advisory note to assist the streamer, and there's no way to keep it accurate. :(
 	# It's currently checked only at time of setup update, and nowhere else.
+	# 20210716: Still a problem. Have moaned here but we'll see if they do anything.
+	# https://twitch.uservoice.com/forums/310213-developers/suggestions/42246544
 	return channel
 
 @app.route("/")
@@ -276,20 +285,10 @@ def do_update(channelid, info):
 
 	Returns None if successful, else a string of error/warning text.
 	"""
-	# It seems that updates via Helix are broken in weird ways. For now, I'm disabling
-	# this code completely and using Kraken for all updates. (Yes, I'm indecisive. You
-	# can read the full thread in comments right here. Try not to go mad... try to BE
-	# mad already, it's safer that way.) Check back now and then to see what's status;
-	# the best way to test seems to be to see if both Kraken and Helix are able to see
-	# the stream category the same way after a change, and the true symptom is that
-	# VODs get the wrong category attached to them.
-	# TODO: Do the update using Helix, but then reapply the category via Kraken? That
-	# would ensure consistency (since Kraken will take whatever junk you give it for a
-	# category, but Helix translates it internally into a game_id) but would require
-	# *three* API calls where one would otherwise be sufficient.
-	BROKEN = """
+	# 20210716: Twitch is sunsetting the Kraken API in half a year. If all the issues previously
+	# seen have been resolved, then this code will be all we need. We still lose the Mature flag,
+	# but we kinda already didn't have it.
 	try:
-		# TODO: There may be a 'description' field, not sure. Should we use it?
 		gameid = info.get("game_id") or find_game_id(info["category"])
 		resp = query("helix/channels?broadcaster_id=" + channelid, method="PATCH", data={
 			"game_id": gameid,
@@ -297,27 +296,21 @@ def do_update(channelid, info):
 		}, token="bearer")
 	except requests.exceptions.HTTPError as e:
 		if channelid != session["twitch_user"]["_id"]:
-			# TODO: Things seem to be broken when channelid != logged in user. Is
-			# the Twitch end broken or do I need to do something different for a
-			# channel editor? For now, just guess that it might be an issue, and
-			# redo the request using the older API.
-			# 20201002: The Kraken request is now done regardless, so it's not
-			# duplicated in here. Some time in the future, see what's needed and
-			# what's not, and clean up this messsssssss....
-			pass
+			# 20210716: This endpoint does not work for editors. For the moment, we can
+			# repeat the request via Kraken, but that won't work post-Feb. See also:
+			# https://twitch.uservoice.com/forums/310213-developers/suggestions/40863712
+			try:
+				resp = query("kraken/channels/" + channelid, method="PUT", data={
+					"channel[game]": info["category"],
+					"channel[status]": info["title"],
+				}, token="oauth")
+			except TwitchDataError as e:
+				return "Stream status update not accepted: " + e.message
 		else:
-			return "Error updating stream status: " + e.message
-	except TwitchDataError as e:
-		return "Stream status update not accepted: " + e.message
-	"""
-	# 20201002: Some things seem to ignore an update pushed through Helix. I don't
-	# think this should remain permanently, but at the moment, it seems worth doing
-	# a second update request via the legacy Kraken API to catch those.
-	try:
-		resp = query("kraken/channels/" + channelid, method="PUT", data={
-			"channel[game]": info["category"],
-			"channel[status]": info["title"],
-		}, token="oauth")
+			try: return "Error updating stream status: " + e.message
+			except AttributeError:
+				print(e)
+				return "Unknown error updating stream status (see server log)"
 	except TwitchDataError as e:
 		return "Stream status update not accepted: " + e.message
 
@@ -363,6 +356,8 @@ def api_update(channelid):
 	if err: return jsonify({"ok": False, "error": err})
 	resp = {"ok": True, "success": "Stream status updated.", "previous": previous}
 	if "mature" in request.json:
+		# CJA 20210716: Since we can't view or update the Mature flag for offline channels
+		# via Helix, we query it via Kraken here.
 		is_mature = query("kraken/channels/" + channelid, token=None)["mature"]
 		if is_mature and not request.json["mature"]:
 			resp["mature"] = "NOTE: The channel is currently set to Mature, which may dissuade viewers."
