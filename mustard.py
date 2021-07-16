@@ -391,7 +391,10 @@ def get_schedule(channelid, delta=0):
 	now = datetime.datetime.now().astimezone(datetime.timezone.utc) - datetime.timedelta(seconds=delta)
 	nextweek = now + datetime.timedelta(days=7)
 	while cursor is not None:
-		data = query("helix/schedule", token="app", params={"broadcaster_id": channelid, "after": cursor}, auto_refresh=False)
+		try:
+			data = query("helix/schedule", token="app", params={"broadcaster_id": channelid, "after": cursor}, auto_refresh=False)
+		except requests.exceptions.HTTPError:
+			data = { } # TODO: Only do this if we get specifically a 404
 		if not data.get("data"): break
 		segments = data["data"].get("segments")
 		if not segments: break # Might not be an error - might just be that there aren't any
