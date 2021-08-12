@@ -114,11 +114,11 @@ back to Times New Roman for some reason. Or not. I dunno now. */
 
 dialog {
 	position: fixed;
-	width: 30em; /* note that height is governed by its children */
-	top: calc(50% - 15em);
-	left: calc(50% - 10em);
-	bottom: calc(50% - 15em);
-	right: calc(50% - 10em);
+	width: 40em; /* note that height is governed by its children */
+	top: calc(50% - 25em);
+	left: calc(50% - 20em);
+	bottom: calc(50% - 25em);
+	right: calc(50% - 20em);
 	border: 5px solid black;
 	padding: 1em;
 }
@@ -152,7 +152,7 @@ dialog > section > header > h3 {
 }
 dialog > section > div {
 	overflow-y: auto;
-	height: 30vh;
+	height: 40vh;
 }
 .dialog_cancel {
 	position: relative;
