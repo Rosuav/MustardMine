@@ -236,8 +236,16 @@ def get_channel_setup(channelid):
 	# https://twitch.uservoice.com/forums/310213-developers/suggestions/42246544
 	return channel
 
-@app.route("/")
 @app.route("/editor/<channelid>")
+def no_editors_allowed(channelid):
+	return """Due to the shutdown of Twitch's Kraken API and a bug in the Helix API, channel editors
+		are no longer able to make changes using third-party tools. If this shutdown has affected
+		you, please contact Rosuav and request a token-retention system as an alternative. This
+		will require additional the broadcaster to grant additional permissions to the Mustard Mine,
+		but would re-enable editor access to this page. We apologize for the inconvenience.""", 401
+
+@app.route("/")
+#@app.route("/editor/<channelid>") # Disabled until Twitch fix things
 def mainpage(channelid=None):
 	# NOTE: If we've *reduced* the required scopes, this will still force a re-login.
 	# However, it'll be an easy login, as Twitch will recognize the existing auth.
