@@ -133,8 +133,10 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 		return query(endpoint, token="bearer" if token == "bearer" else "oauth",
 			method=method, params=params, data=data, auto_refresh=False)
 	if r.status_code == 403:
-		# TODO: What if it *isn't* of this form??
-		raise TwitchDataError(json.loads(r.json()["message"]))
+		msg = r.json()["message"]
+		try: msg = json.loads(msg)
+		except json.JSONDecodeError: msg = {"message": str(msg)} # Some APIs return JSON messages, some don't.
+		raise TwitchDataError(msg)
 	r.raise_for_status()
 	if r.status_code == 204: return {}
 	return r.json()
