@@ -241,6 +241,8 @@ on("submit", "form.ajax", async ev => {
 
 function format_schedule_time(tm, offset) {
 	const target = Date.parse(tm), now = +new Date();
+	const delay = Math.floor((target - now) / 1000) + offset;
+	if (delay < 0) return "(done)";
 	const targ = new Date(target);
 	const time = ("0" + targ.getHours()).slice(-2) + ":" + ("0" + targ.getMinutes()).slice(-2);
 	const downame = "Sun Mon Tue Wed Thu Fri Sat".split(" ")[targ.getDay()];
@@ -255,7 +257,6 @@ function format_schedule_time(tm, offset) {
 	else if (days == 7) day = "Next " + downame;
 	else day = downame;
 	if (offset === "no-countdown") return day + " " + time;
-	const delay = Math.floor((target - now) / 1000) + offset;
 	const hh = Math.floor(delay / 3600);
 	const mm = ("0" + Math.floor((delay / 60) % 60)).slice(-2);
 	const ss = ("0" + Math.floor(delay % 60)).slice(-2);
@@ -266,8 +267,9 @@ let schedule = [];
 setInterval(function() {
 	if (schedule.length) set_content("#upcoming_streams li:first-of-type .time", format_schedule_time(schedule[0].start_time, 0));
 	const when = document.getElementById("tweetschedule").value;
-	set_content("#tweettime", when === "now" ? "Immediate" :
-		schedule.length ? format_schedule_time(schedule[0].start_time, +when) : "(need schedule)");
+	const sched = when === "now" ? "Immediate" : schedule.length ? format_schedule_time(schedule[0].start_time, +when) : "(need schedule)";
+	if (sched == "(done)") fetch_schedule();
+	set_content("#tweettime", sched);
 }, 1000);
 
 function format_time(delay) {
