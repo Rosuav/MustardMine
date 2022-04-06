@@ -766,7 +766,7 @@ def control_socket(ws):
 		message = ws.receive()
 		if type(message) is not str: continue # Be VERY strict here, for safety
 		try: message = json.loads(message)
-		except JSON.JSONDecodeError: continue
+		except json.JSONDecodeError: continue
 		if type(message) is not dict: continue # Again, very strict
 		if "type" not in message: continue
 		# Okay, we have a properly-formed message.
