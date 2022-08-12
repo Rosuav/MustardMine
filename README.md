@@ -37,7 +37,8 @@ TODO:
     Though I'm not expecting any, there's always the possibility that some
     desync or bug will result in a back-end error.
 * Get someone on a Mac to test things in Safari
-  - The <dialog> tag isn't officially supported. Is my monkeypatch enough?
+  - The <dialog> tag is officially supported only from v15.4 onwards, and
+    older versions are still in use. Is my monkeypatch enough?
   - What should the Twitter MLE react to for "send now"? Ctrl-Enter okay?
 * Can it be made so mods can be given permission to select a pre-built
   setup? Editors get full access (including seeing MM's own configs).
