@@ -50,6 +50,11 @@ TODO:
 * Maybe make a "copy setup to clipboard" to allow them to be shared? Use
   the same JSON format as is in the backup file, so you can cherry-pick
   from there too.
+* Tags are currently restricted to old-style (limit 5, use the IDs). When
+  the Twitch API grows support for new-style tags (limit 10, free-form),
+  switch to pushing those out. Saved setups may need to be migrated, eg
+  "Family Friendly" to "FamilyFriendly", but hopefully Twitch will return
+  them in the correct format.
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
