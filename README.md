@@ -63,3 +63,25 @@ Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
 NOTE: On Python 3.8+, newer versions of gevent and werkzeug may be needed:
 pip install -v git+git://github.com/gevent/gevent.git#egg=gevent
 pip install -v git+git://github.com/pallets/werkzeug
+
+
+Hosting options
+---------------
+
+Heroku is removing its free tier. Eventually, it will not be possible to host
+Mustard Mine on Heroku without paying money. Where can we mine this valuable
+mineral as inexpensively as possible?
+
+* Heroku - Hobby dyno $7 + Hobby Basic database $9 = $16/mo
+  https://www.heroku.com/pricing
+* NodeChef - the absolute minimum should be fine, $7 container + $2 database
+  https://www.nodechef.com/pricing
+* Qovery - free tier maybe? Awaiting signup response for more details.
+  https://www.qovery.com/pricing/
+* PythonAnywhere - no PGSQL on free tier, not even external. Custom minimum
+  $5 for CPU and $7 for DB = $12/mo.
+  https://www.pythonanywhere.com/pricing/
+  ElephantSQL may be an option here, still requires paid app hosting but the
+  DB would be $0. https://www.elephantsql.com/plans.html
+* DigitalOcean droplet $4/mo but I'd have to do all the mgt
+  https://www.digitalocean.com/pricing
