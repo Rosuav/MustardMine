@@ -75,13 +75,10 @@ class TwitchDataError(Exception):
 def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
 	# the auth token, and set auto_refresh to False.
-	# TODO: Tidy up all this mess of auth patterns. It'll probably be easiest
-	# to migrate everything to Helix first, and then probably everything will
-	# use Bearer or App authentication.
+	# TODO: Cache the app token, then use that for any non-authenticated calls,
+	# which will mean it's just "auth" or "no auth".
 	if token is None:
 		auth = None
-	elif token == "oauth":
-		auth = "OAuth " + session["twitch_token"]
 	elif token == "bearer":
 		auth = "Bearer " + session["twitch_token"]
 	elif token == "app":
@@ -95,7 +92,7 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 		# TODO: Save the token so long as it's valid
 		# expires = int(time.time()) + data["expires_in"] - 120
 	else:
-		auth = "OAuth " + token # Not currently used anywhere
+		raise Exception("Shouldn't happen - bad token type code")
 
 	# 20190212: All endpoints should have explicit API selection. After a
 	# while, change so the default is helix. (Then progressively
@@ -183,12 +180,9 @@ def may_edit_channel(userid, channelid):
 		return True
 	try:
 		# TODO: Once editors are allowed to edit via Helix, find a way to probe
-		# for support - probably the equivalent to this, but using Helix.
-		# 20220218: It's still not working. So editor access is being disabled,
-		# and these calls will fail.
+		# for support - probably the equivalent to this, but using Helix. Do
+		# some sort of call that will fail (with TwitchDataError) if not editor.
 		return False
-		data = query("kraken/channels/%s" % channelid, method="GET", token=None)
-		resp = query("kraken/channels/%s" % channelid, method="PUT", token="oauth", data={"channel[game]": data["game"]})
 		channel_editor_cache[(userid, channelid)] = time.time() + 900
 		return True
 	except TwitchDataError as e:
@@ -303,24 +297,10 @@ def do_update(channelid, info):
 			"title": info["title"],
 		}, token="bearer")
 	except requests.exceptions.HTTPError as e:
-		if channelid != session["twitch_user"]["_id"]:
-			# 20210716: This endpoint does not work for editors. For the moment, we can
-			# repeat the request via Kraken, but that won't work post-Feb. See also:
-			# https://twitch.uservoice.com/forums/310213-developers/suggestions/40863712
-			# 20220218: It still doesn't. So this ain't gonna work. Disabling.
-			return "Editors can't use Helix, contact Rosuav for more details."
-			try:
-				resp = query("kraken/channels/" + channelid, method="PUT", data={
-					"channel[game]": info["category"],
-					"channel[status]": info["title"],
-				}, token="oauth")
-			except TwitchDataError as e:
-				return "Stream status update not accepted: " + e.message
-		else:
-			try: return "Error updating stream status: " + e.message
-			except AttributeError:
-				print(e)
-				return "Unknown error updating stream status (see server log)"
+		try: return "Error updating stream status: " + e.message
+		except AttributeError:
+			print(e)
+			return "Unknown error updating stream status (see server log)"
 	except TwitchDataError as e:
 		return "Stream status update not accepted: " + e.message
 
@@ -366,10 +346,7 @@ def api_update(channelid):
 	if err: return jsonify({"ok": False, "error": err})
 	resp = {"ok": True, "success": "Stream status updated.", "previous": previous}
 	if "mature" in request.json:
-		# CJA 20210716: Since we can't view or update the Mature flag for offline channels
-		# via Helix, we query it via Kraken here.
-		# 20220218: Still can't. So we can't check this any more.
-		# is_mature = query("kraken/channels/" + channelid, token=None)["mature"]
+		# CJA 20210716: We can't view or update the Mature flag for offline channels.
 		# if is_mature and not request.json["mature"]:
 			# resp["mature"] = "NOTE: The channel is currently set to Mature, which may dissuade viewers."
 		# elif not is_mature and request.json["mature"]:
