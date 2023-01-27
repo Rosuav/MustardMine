@@ -184,16 +184,9 @@ const form_callbacks = {
 	},
 	"/update": (result, form) => {
 		if (!result.ok) return;
-		//Attempt to replicate the sorting behaviour done on the server
-		//It's okay if it isn't perfect, but most of the time, it'll be
-		//right enough to avoid ugly flicker. If ever it's wrong, it's
-		//what the server has that matters, and refreshing the page will
-		//update the display to match that.
+		//Attempt to replicate the formatting behaviour done on the server
 		const tags = form.elements.tags.value;
-		const newtags = tags.split(",")
-			.map(t => t.trim())
-			.sort((a,b) => a.localeCompare(b))
-			.join(", ");
+		const newtags = tags.split(",").map(t => t.trim()).join(", ");
 		if (newtags !== tags) form.elements.tags.value = newtags;
 		//Save the previous state as a temporary setup
 		if (result.previous)
@@ -331,7 +324,7 @@ const pickmapper = {
 		"data-pick": game.name,
 		"data-pickid": gameids[game.name] = game.id, //Save the ID into the DOM (not currently used) and the lookup mapping
 	}, [IMG({src: game.boxart, alt: ""}), game.name]),
-	tag: tag => LI({"data-pick": tag.english_name}, [B(tag.english_name), ": " + tag.english_desc]),
+	//Currently only one thing is pickable
 };
 let picking = "";
 function open_picker(now_picking, heading) {
@@ -343,7 +336,6 @@ function open_picker(now_picking, heading) {
 	document.getElementById("picker_search").oninput(); //Do an initial search immediately
 }
 document.getElementById("pick_cat").onclick = function(ev) {open_picker("game", "Pick a category:"); ev.preventDefault();}
-document.getElementById("pick_tag").onclick = function(ev) {open_picker("tag", "Select tags:"); ev.preventDefault();}
 
 let searching = false;
 document.getElementById("picker_search").oninput = async function() {
@@ -371,15 +363,6 @@ on("click", "#picker_results li", ev => {
 	{
 		document.getElementById("category").value = pick;
 		document.getElementById("picker").close();
-	}
-	else
-	{
-		const t = document.getElementById("tags");
-		const tags = t.value.split(", "); //NOTE: The back end splits on "," and strips spaces.
-		if (tags.includes(pick)) return; //Already got it
-		tags.push(pick); tags.sort();
-		while (tags[0] === "") tags.shift(); //Any empty string(s) should have sorted first
-		t.value = tags.join(", ");
 	}
 	document.forms.setups.classList.add("dirty");
 });
