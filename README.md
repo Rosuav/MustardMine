@@ -54,8 +54,9 @@ Heroku is removing its free tier. Eventually, it will not be possible to host
 Mustard Mine on Heroku without paying money. Where can we mine this valuable
 mineral as inexpensively as possible?
 
-* Heroku - Hobby dyno $7 + Hobby Basic database $9 = $16/mo
+* Heroku Basic - Hobby dyno $7 + Hobby Basic database $9 = $16/mo
   https://www.heroku.com/pricing
+* Heroku Eco - find details, it's cheaper than Basic but has restrictions
 * NodeChef - the absolute minimum should be fine, $7 container + $2 database
   https://www.nodechef.com/pricing
 * Qovery - free tier maybe? Awaiting signup response for more details.
