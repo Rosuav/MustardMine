@@ -125,25 +125,6 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 	if r.status_code == 204: return {}
 	return r.json()
 
-def get_all_tags():
-	print("Fetching tags into cache...")
-	t = time.time()
-	cursor = ""
-	all_tags = []
-	seen = 0
-	while cursor is not None:
-		data = query("helix/tags/streams", params={"first": 100, "after": cursor}, token="app", auto_refresh=False)
-		# with open("dump.json", "w") as f: json.dump(data, f)
-		all_tags.extend(
-			(tag["tag_id"], tag["localization_names"]["en-us"], tag["localization_descriptions"]["en-us"])
-			for tag in data["data"] if not tag["is_auto"]
-		)
-		seen += len(data["data"])
-		cursor = data["pagination"].get("cursor")
-		print("Fetching more... %d/%d" % (len(all_tags), seen))
-	database.replace_all_tags(all_tags)
-	print(len(all_tags), "tags fetched. Time taken:", time.time() - t)
-
 def format_time(tm, tz):
 	"""Format a time_t in a human-readable way, based on the timezone"""
 	if not tz:
@@ -210,8 +191,7 @@ def get_channel_setup(channelid):
 	channel["_id"] = channel["broadcaster_id"]
 	# 20200619: Temporary compatibility in case people have cached versions of the JS
 	channel["game"] = channel["game_name"]; channel["status"] = channel["title"]
-	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="app")
-	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
+	channel["tags"] = ", ".join(channel["tags"]) # More convenient to have a single string than an array
 	return channel
 
 @app.route("/editor/<channelid>")
@@ -272,11 +252,25 @@ def do_update(channelid, info):
 
 	Returns None if successful, else a string of error/warning text.
 	"""
+	warn = None # Assume success until proven failed
+	tags = []
+	if "tags" in info:
+		# Convert a comma-separated list of tags into an array
+		tags = [t.strip() for t in info["tags"].split(",") if t.strip()]
+		if len(tags) > 10: # (magic number 10 is the Twitch limit)
+			# Note that the saved setup will include all of them.
+			# Maybe some day I'll have a UI for prioritizing tags, and
+			# then have an easy way to turn one off (eg "Warming Up")
+			# such that the next one along appears.
+			warn = "%d tags used, first ten kept" % len(tags)
+			tags = tags[:10]
+
 	try:
 		gameid = info.get("game_id") or find_game_id(info["category"])
 		resp = query("helix/channels?broadcaster_id=" + channelid, method="PATCH", data={
 			"game_id": gameid,
 			"title": info["title"],
+			"tags": tags,
 		}, token="bearer")
 	except requests.exceptions.HTTPError as e:
 		try: return "Error updating stream status: " + e.message
@@ -286,29 +280,7 @@ def do_update(channelid, info):
 	except TwitchDataError as e:
 		return "Stream status update not accepted: " + e.message
 
-	ret = None
-	if "tags" in info:
-		# Convert tag names into IDs
-		tags = tuple(t.strip() for t in info["tags"].split(",") if t.strip())
-		if len(tags) > 5: # (magic number 5 is the Twitch limit)
-			# Note that the saved setup will include all of them.
-			# Maybe some day I'll have a UI for prioritizing tags, and
-			# then have an easy way to turn one off (eg "Warming Up")
-			# such that the next one along appears.
-			ret = "%d tags used, first five kept" % len(tags) # Warning, not error
-			tags = tags[:5]
-		tag_ids = tags and database.get_tag_ids(tags)
-		if len(tag_ids) != len(tags):
-			return "Tag names not all found in Twitch" # TODO: Make this error friendlier
-		try:
-			resp = query("helix/streams/tags", method="PUT", token="bearer",
-				params={"broadcaster_id": channelid},
-				data={"tag_ids": tag_ids},
-			)
-		except TwitchDataError as e:
-			return "Stream tags update not accepted: " + e.message
-
-	return ret
+	return warn
 
 @app.route("/update", methods=["POST"])
 @wants_channelid
@@ -615,7 +587,9 @@ def findgame():
 
 @app.route("/search/tag")
 def findtag():
-	return jsonify(database.find_tags_by_prefix(request.args["q"]))
+	# Deprecated as of 20220127; tags are now fully custom, so tag IDs are irrelevant and
+	# searching is unnecessary. Can be removed altogether eventually.
+	return jsonify([])
 
 # ---- Config management API ----
 
@@ -791,5 +765,4 @@ if __name__ == "__main__":
 else:
 	# Worker startup. This is the place to put any actual initialization work
 	# as it won't be done on master startup.
-	if database.tags_need_updating():
-		threading.Thread(target=get_all_tags).start()
+	pass # Don't currently need anything, actually. For now. Probably will at some point.

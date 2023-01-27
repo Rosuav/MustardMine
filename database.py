@@ -18,7 +18,7 @@ postgres = psycopg2.connect(config.DATABASE_URI)
 # Otherwise, tables might be created in the wrong order, breaking foreign key refs.
 TABLES = {
 	"status": [ # Singleton table
-		"tags_updated timestamptz not null default '1970-1-1Z'",
+		"tags_updated timestamptz not null default '1970-1-1Z'", # No longer needed as of 20220127
 	],
 	"users": [
 		"twitchid integer primary key",
@@ -41,11 +41,6 @@ TABLES = {
 		"delta integer not null default 0",
 		"maxtime integer not null default 3600", # If time to event exceeds this, shows "NOW"
 		"styling text not null default ''", # CSS - set by eg color selection
-	],
-	"tags": [ # Cache only. If we loaded tags on startup, it'd lag us out for ten seconds or so, so we cache.
-		"id text primary key",
-		"english_name text not null", # Twitch has localized names, but we keep only the en-us one
-		"english_desc text not null", # Ditto. If there is no en-us, we'll probably crash somewhere.
 	],
 }
 
@@ -347,40 +342,3 @@ def restore_from_json(twitchid, data):
 				r.restore_timer(**timer)
 			r.wipe_untouched_timers()
 	return r
-
-def tags_need_updating():
-	"""Check if the tags cache needs to be updated.
-
-	Updates will happen no more frequently than daily, unless the table is
-	empty.
-	"""
-	with postgres, postgres.cursor() as cur:
-		# Yeah, I'm doing all the logic in PostgreSQL. Because why not.
-		cur.execute("""select now() - tags_updated > '1 day'
-			or (select count(*) from mustard.tags) < 1 from mustard.status""")
-		return cur.fetchone()[0]
-
-def replace_all_tags(tags):
-	"""Replace all tags in the cache with the given collection.
-
-	tags should be a collection of (id, name, desc) tuples.
-	"""
-	with postgres, postgres.cursor() as cur:
-		cur.execute("truncate mustard.tags");
-		psycopg2.extras.execute_values(cur,
-			"insert into mustard.tags (id, english_name, english_desc) values %s",
-			tags)
-		cur.execute("update mustard.status set tags_updated = now()")
-
-def get_tag_ids(tag_names):
-	"""Convert tag names into IDs"""
-	tag_names = tuple(tag_names)
-	with postgres, postgres.cursor() as cur:
-		cur.execute("select id from mustard.tags where english_name in %s", (tag_names,))
-		return [row[0] for row in cur]
-
-def find_tags_by_prefix(prefix):
-	"""Get a list of all tags that start with some string"""
-	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-		cur.execute("select * from mustard.tags where english_name ilike %s order by english_name", (prefix + "%",))
-		return cur.fetchall()
