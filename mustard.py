@@ -65,12 +65,7 @@ if os.environ.get("OVERRIDE_REDIRECT_HTTPS"):
 	_url_for = url_for
 	def url_for(*a, **kw): return _url_for(*a, **kw).replace("http://", "https://")
 
-# TODO: Ensure that all the Helix scopes are listed here. Until the shutdown,
-# the Kraken scopes will be treated as valid (eg "user_read" grants permissions to
-# the Helix APIs that want "user:read:email" permission - but "user:edit:broadcast"
-# should imply that too), but ideally, we should be requesting the Helix scopes in
-# addition to the Kraken ones, so that the shutdown can simply have us remove some.
-REQUIRED_SCOPES = "channel:manage:broadcast channel_editor user:edit:broadcast user_read" # Ensure that these are sorted
+REQUIRED_SCOPES = "channel:manage:broadcast" # Ensure that these remain sorted
 
 class TwitchDataError(Exception):
 	def __init__(self, error):
