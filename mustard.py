@@ -94,17 +94,9 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 	else:
 		raise Exception("Shouldn't happen - bad token type code")
 
-	# 20190212: All endpoints should have explicit API selection. After a
-	# while, change so the default is helix. (Then progressively
-	# change the requests themselves so we use helix everywhere.)
-	# 20200619: The few remaining Kraken calls are all relating to a current
-	# failure in PATCH /helix/channels to use editor privileges, so that may
-	# soon be fixed and then we can finally go Helix-exclusive!
-	if not endpoint.startswith(("kraken/", "helix/")): raise ValueError("Need explicit selection of API (helix or kraken)")
-	# if not endpoint.startswith(("kraken/", "helix/")): endpoint = "helix/" + endpoint
+	if not endpoint.startswith("helix/"): endpoint = "helix/" + endpoint
 	r = requests.request(method, "https://api.twitch.tv/" + endpoint,
 		params=params, data=data, headers={
-		"Accept": "application/vnd.twitchtv.v5+json", # for Kraken only
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": auth,
 	})
@@ -220,18 +212,11 @@ def get_channel_setup(channelid):
 	channel["game"] = channel["game_name"]; channel["status"] = channel["title"]
 	tags = query("helix/streams/tags", params={"broadcaster_id": channelid}, token="app")
 	channel["tags"] = ", ".join(sorted(t["localization_names"]["en-us"] for t in tags["data"] if not t["is_auto"]))
-	# 20210108: Helix still doesn't carry the Mature flag. We could fetch that from Kraken,
-	# but there's no way in either Kraken or Helix to update it, so it would just be an
-	# advisory note to assist the streamer, and there's no way to keep it accurate. :(
-	# It's currently checked only at time of setup update, and nowhere else.
-	# 20210716: Still a problem. Have moaned here but we'll see if they do anything.
-	# https://twitch.uservoice.com/forums/310213-developers/suggestions/42246544
 	return channel
 
 @app.route("/editor/<channelid>")
 def no_editors_allowed(channelid):
-	return """Due to the shutdown of Twitch's Kraken API and a bug in the Helix API, channel editors
-		are no longer able to make changes using third-party tools. If this shutdown has affected
+	return """Channel editors are not able to change channel settings using third-party tools. If this shutdown has affected
 		you, please contact Rosuav and request a token-retention system as an alternative. This
 		will require additional the broadcaster to grant additional permissions to the Mustard Mine,
 		but would re-enable editor access to this page. We apologize for the inconvenience.""", 401
@@ -287,9 +272,6 @@ def do_update(channelid, info):
 
 	Returns None if successful, else a string of error/warning text.
 	"""
-	# 20210716: Twitch is sunsetting the Kraken API in half a year. If all the issues previously
-	# seen have been resolved, then this code will be all we need. We still lose the Mature flag,
-	# but we kinda already didn't have it.
 	try:
 		gameid = info.get("game_id") or find_game_id(info["category"])
 		resp = query("helix/channels?broadcaster_id=" + channelid, method="PATCH", data={
