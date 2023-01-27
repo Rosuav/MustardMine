@@ -9,19 +9,6 @@ individual deployment as desired.
 
 TODO:
 
-* Connect to Discord? cf Arghded
-  - Have registered bot account MustardMine#2353
-  - Configuration:
-    - Needs "identify webhook.incoming" OAuth scopes
-    - Upon authorization, will return a webhook ID and token, and the guild and channel IDs
-    - GET /guilds/{guild.id}
-    - GET /channels/{channel.id}
-    - Build a "descriptor" from the guild name and channel name
-    - Shouldn't need the guild/channel IDs after that unless it's worth updating the names
-    - POST to the webhook
-      - https://discordapp.com/developers/docs/resources/webhook#execute-webhook
-    - Each channel to be posted to will require separate authorization.
-    - See discord-integration branch for partial implementation.
 * Create one database transaction per incoming HTTP request, for efficiency
   - Currently all operations that *require* atomicity are done with single
     calls to database.py (and single transactions within that), but the
@@ -51,11 +38,6 @@ TODO:
 * Maybe make a "copy setup to clipboard" to allow them to be shared? Use
   the same JSON format as is in the backup file, so you can cherry-pick
   from there too.
-* Tags are currently restricted to old-style (limit 5, use the IDs). When
-  the Twitch API grows support for new-style tags (limit 10, free-form),
-  switch to pushing those out. Saved setups may need to be migrated, eg
-  "Family Friendly" to "FamilyFriendly", but hopefully Twitch will return
-  them in the correct format.
 
 
 Requires Python 3.6 or newer. MAY run on 3.5 but not guaranteed.
