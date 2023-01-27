@@ -383,7 +383,7 @@ on("click", "#picker_results li", ev => {
 	}
 	document.forms.setups.classList.add("dirty");
 });
-on("click", ".dialog_cancel", e => e.match.parentElement.close());
+on("click", ".dialog_cancel", e => e.match.closest("dialog").close());
 
 const twittercfg = document.forms.twittercfg.elements;
 document.getElementById("twitter_config").onclick = ev => {
