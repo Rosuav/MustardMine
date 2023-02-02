@@ -186,7 +186,7 @@ const form_callbacks = {
 		if (!result.ok) return;
 		//Attempt to replicate the formatting behaviour done on the server
 		const tags = form.elements.tags.value;
-		const newtags = tags.split(",").map(t => t.trim()).join(", ");
+		const newtags = tags.split(",").map(t => t.trim().replace(" ", "")).join(", ");
 		if (newtags !== tags) form.elements.tags.value = newtags;
 		//Save the previous state as a temporary setup
 		if (result.previous)

@@ -256,7 +256,7 @@ def do_update(channelid, info):
 	tags = []
 	if "tags" in info:
 		# Convert a comma-separated list of tags into an array
-		tags = [t.strip() for t in info["tags"].split(",") if t.strip()]
+		tags = [t.strip().replace(" ", "") for t in info["tags"].split(",") if t.strip()]
 		if len(tags) > 10: # (magic number 10 is the Twitch limit)
 			# Note that the saved setup will include all of them.
 			# Maybe some day I'll have a UI for prioritizing tags, and
