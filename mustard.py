@@ -96,7 +96,7 @@ def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh
 
 	if not endpoint.startswith("helix/"): endpoint = "helix/" + endpoint
 	r = requests.request(method, "https://api.twitch.tv/" + endpoint,
-		params=params, data=data, headers={
+		params=params, json=data, headers={
 		"Client-ID": config.CLIENT_ID,
 		"Authorization": auth,
 	})
