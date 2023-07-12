@@ -31,8 +31,8 @@ TABLES = {
 		"category text not null default ''",
 		"title text not null default ''",
 		"tags text not null default ''", # Comma-separated
-		"mature boolean not null default false",
 		"tweet text not null default ''",
+		"ccls text not null default ''", # Comma-separated IDs
 	],
 	"timers": [
 		"id text primary key",
@@ -99,14 +99,14 @@ def create_user(twitchid): # Really "ensure_user" as it's quite happy to not-cre
 	except psycopg2.IntegrityError:
 		pass # TODO: Update any extra info eg Twitter OAuth
 
-def create_setup(twitchid, *, category, title, tags="", mature=False, tweet="", **extra):
+def create_setup(twitchid, *, category, title, tags="", tweet="", ccls="", **extra):
 	"""Create a new 'setup' - a loadable stream config
 
 	Returns the full record just created, including its ID.
 	"""
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-		cur.execute("insert into mustard.setups (twitchid, category, title, tags, mature, tweet) values (%s, %s, %s, %s, %s, %s) returning *",
-			(twitchid, category, title, tags, mature, tweet))
+		cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet, ccls) values (%s, %s, %s, %s, %s, %s, %s) returning *",
+			(twitchid, category, title, tags, tweet, ccls))
 		ret = cur.fetchone()
 	return ret
 
@@ -262,10 +262,10 @@ class Restorer(contextlib.ExitStack):
 	def wipe_setups(self):
 		self.cur.execute("delete from mustard.setups where twitchid = %s", (self.twitchid,))
 
-	def restore_setup(self, *, category=None, title=None, tags="", mature=False, tweet=""):
+	def restore_setup(self, *, category=None, title=None, tags="", tweet="", ccls=""):
 		if not category or not title: raise ValidationError("Setups: Category and title are required")
-		self.cur.execute("insert into mustard.setups (twitchid, category, title, tags, mature, tweet) values (%s, %s, %s, %s, %s, %s) returning id",
-			(self.twitchid, category, title, tags, mature, tweet))
+		self.cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet, ccls) values (%s, %s, %s, %s, %s, %s) returning id",
+			(self.twitchid, category, title, tags, tweet, ccls))
 		self.summary += "Restored %r setup\n" % category
 
 	def restore_twitter_config(self, tweet):

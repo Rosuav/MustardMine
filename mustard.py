@@ -72,6 +72,11 @@ class TwitchDataError(Exception):
 		self.__dict__.update(error)
 		super().__init__(error["message"])
 
+# Dumped from the Twitch API call to reduce startup roundtrip cost
+all_ccls = [{'id': 'DrugsIntoxication', 'description': 'Excessive tobacco glorification or promotion, any marijuana consumption/use, legal drug and alcohol induced intoxication, discussions of illegal drugs.', 'name': 'Drugs, Intoxication, or Excessive Tobacco Use'}, {'id': 'Gambling', 'description': 'Participating in online or in-person gambling, poker or fantasy sports, that involve the exchange of real money.', 'name': 'Gambling'}, {'id': 'ProfanityVulgarity', 'description': 'Prolonged, and repeated use of obscenities, profanities, and vulgarities, especially as a regular part of speech.', 'name': 'Significant Profanity or Vulgarity'}, {'id': 'SexualThemes', 'description': 'Content that focuses on sexualized physical attributes and activities, sexual topics, or experiences.', 'name': 'Sexual Themes'}, {'id': 'ViolentGraphic', 'description': 'Simulations and/or depictions of realistic violence, gore, extreme injury, or death.', 'name': 'Violent and Graphic Depictions'}]
+# If it's set to None, we'll do the fetch.
+# all_ccls = None
+
 def query(endpoint, *, token, method="GET", params=None, data=None, auto_refresh=True):
 	# If this is called outside of a Flask request context, be sure to provide
 	# the auth token, and set auto_refresh to False.
@@ -192,6 +197,7 @@ def get_channel_setup(channelid):
 	# 20200619: Temporary compatibility in case people have cached versions of the JS
 	channel["game"] = channel["game_name"]; channel["status"] = channel["title"]
 	channel["tags"] = ", ".join(channel["tags"]) # More convenient to have a single string than an array
+	channel["ccls"] = ", ".join(channel["content_classification_labels"]) # Hack pending a dialog
 	return channel
 
 @app.route("/editor/<channelid>")
@@ -267,10 +273,15 @@ def do_update(channelid, info):
 
 	try:
 		gameid = info.get("game_id") or find_game_id(info["category"])
+		ccls = set(filter(None, map(str.strip, info.get("ccls", "").split(","))))
 		resp = query("helix/channels?broadcaster_id=" + channelid, method="PATCH", data={
 			"game_id": gameid,
 			"title": info["title"],
 			"tags": tags,
+			"content_classification_labels": [
+				{"id": ccl["id"], "is_enabled": ccl["id"] in ccls}
+				for ccl in all_ccls
+			],
 		}, token="bearer")
 	except requests.exceptions.HTTPError as e:
 		try: return "Error updating stream status: " + e.message
@@ -299,13 +310,6 @@ def api_update(channelid):
 	err = do_update(channelid, request.json)
 	if err: return jsonify({"ok": False, "error": err})
 	resp = {"ok": True, "success": "Stream status updated.", "previous": previous}
-	if "mature" in request.json:
-		# CJA 20210716: We can't view or update the Mature flag for offline channels.
-		# if is_mature and not request.json["mature"]:
-			# resp["mature"] = "NOTE: The channel is currently set to Mature, which may dissuade viewers."
-		# elif not is_mature and request.json["mature"]:
-			# resp["mature"] = "CAUTION: The channel is not currently set to Mature."
-		resp["mature"] = "NOTE: As of 20220218, mature status must be manually checked."
 	return jsonify(resp)
 
 @app.route("/api/twitter_cfg", methods=["POST"])
@@ -630,7 +634,7 @@ def make_backup(channelid):
 	# Setups
 	setups = database.list_setups(twitchid)
 	response += '\t"setups": [\n'
-	fields = "category", "title", "tags", "mature", "tweet"
+	fields = "category", "title", "tags", "tweet", "ccls"
 	for setup in setups:
 		setup = {field: setup[field] for field in fields}
 		response += "\t\t" + json.dumps(setup) + ",\n"
@@ -753,6 +757,15 @@ def force_all_timers(channelid, tm):
 			for ws in timer_sockets[id]:
 				ws.send(json.dumps({"type": "force", "time": tm}))
 	return "", 204
+
+if all_ccls is None:
+	print("---------- Fetching CCLs\n")
+	all_ccls = query("helix/content_classification_labels", token="app")["data"]
+	# The MatureGame setting is controlled by the category
+	all_ccls = [ccl for ccl in all_ccls if ccl["id"] != "MatureGame"]
+	# Doing this unconditionally would slow startup, so instead, let's snapshot it.
+	print("all_ccls =", all_ccls)
+	print("\n----------- CCLs fetched")
 
 if __name__ == "__main__":
 	import logging

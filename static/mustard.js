@@ -16,7 +16,7 @@ function render_setups() {
 		TD(s.category),
 		TD(s.title),
 		TD(s.tags),
-		TD(s.mature ? "Y" : "N"),
+		TD(s.ccls), //Or just show yes/no?
 		TD(s.tweet),
 		TD(BUTTON({className: "deleting", id: "del"+i}, "X")),
 	]));
@@ -33,7 +33,7 @@ function pick_setup(i) {
 	setupform.category.value = setup.category;
 	setupform.title.value = setup.title;
 	setupform.tags.value = setup.tags;
-	setupform.mature.checked = setup.mature;
+	setupform.ccls.value = setup.ccls; //TODO: Control with dialog
 	document.forms.setups.classList.add("dirty");
 	if (setup.tweet && setup.tweet !== "") tweetbox.innerText = setup.tweet;
 	tweetbox.oninput();
@@ -84,7 +84,7 @@ document.getElementById("save").onclick = () => save_setup({
 	category: setupform.category.value,
 	title: setupform.title.value,
 	tags: setupform.tags.value,
-	mature: setupform.mature.checked,
+	ccls: setupform.ccls.value,
 	tweet: tweetbox.innerText,
 });
 
@@ -179,7 +179,6 @@ const form_callbacks = {
 		console.log(gameids);
 		const id = gameids[data.category];
 		if (id) data.game_id = id;
-		data.mature = data.mature === "on"; //Use true/false for checkbox state rather than presence/absence
 		console.log(data);
 	},
 	"/update": (result, form) => {
@@ -201,16 +200,6 @@ const form_callbacks = {
 				SPAN(BUTTON({onclick: () => save_setup(prevsetup)}, "Save")),
 			]).style.display = "block";
 		}
-		//The server can't update the Mature flag directly, but it does
-		//let us know if it's currently set incorrectly.
-		if (result.mature)
-		{
-			set_content("#maturedesc", [
-				" " + result.mature + " ",
-				A({href: "https://dashboard.twitch.tv/settings/stream", target: "_blank"}, "Verify it here"),
-			]).classList.add("warningmessage");
-		}
-		else set_content("#maturedesc", []).classList.remove("warningmessage");
 		form.classList.remove("dirty");
 	},
 };
@@ -440,6 +429,7 @@ select_tweet_schedule(sched_tweet);
 setupform.category.value = channel.game_name;
 setupform.title.value = channel.title;
 setupform.tags.value = channel.tags;
+setupform.ccls.value = channel.ccls;
 render_setups();
 update_tweets(initial_tweets);
 

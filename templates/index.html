@@ -28,7 +28,7 @@ const initial_tweets = {{ tweets | tojson }};
 
 <section class=current>
 <h2>Stream setups</h2>
-<table border=1 id=setups><tr><th>Category</th><th>Title</th><th>Tags</th><th>Mature</th><th>Tweet</th></tr></table>
+<table border=1 id=setups><tr><th>Category</th><th>Title</th><th>Tags</th><th><abbr title="Content Classification Labels">CCLs</abbr></th><th>Tweet</th></tr></table>
 <div id=prevsetup></div>
 <form name=setups class=ajax method=post action="/update">
 <input type=hidden name=channelid value={{channelid}}>
@@ -37,7 +37,7 @@ const initial_tweets = {{ tweets | tojson }};
 	<td><label for=category>Category:</label></td>
 	<td>
 		<input id=category name=category size=30><button id=pick_cat type=button>Pick</button>
-		<label><input id=mature type=checkbox name=mature> Mature</label><span id=maturedesc></span>
+		<label>CCLs: <input id=ccls name=ccls size=30></label> (hack pending a dialog)
 	</td>
 </tr>
 <tr><td><label for=title>Stream title:</label></td><td><input id=title name=title size=125></td></tr>
