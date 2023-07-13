@@ -197,7 +197,7 @@ def get_channel_setup(channelid):
 	# 20200619: Temporary compatibility in case people have cached versions of the JS
 	channel["game"] = channel["game_name"]; channel["status"] = channel["title"]
 	channel["tags"] = ", ".join(channel["tags"]) # More convenient to have a single string than an array
-	channel["ccls"] = ", ".join(channel["content_classification_labels"]) # Hack pending a dialog
+	channel["ccls"] = ", ".join(channel["content_classification_labels"])
 	return channel
 
 @app.route("/editor/<channelid>")
@@ -246,6 +246,7 @@ def mainpage(channelid=None):
 		checklist=database.get_checklist(channelid),
 		timers=database.list_timers(channelid),
 		sched_tweet=sched_tweet, tweets=tweets,
+		all_ccls=all_ccls,
 	)
 
 def find_game_id(game_name, token="bearer"): # pass token="app" if no login - slower b/c we don't cache app tokens (yet)

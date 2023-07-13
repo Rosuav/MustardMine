@@ -1,5 +1,6 @@
 import choc, {set_content, DOM, fix_dialogs} from "https://rosuav.github.io/shed/chocfactory.js";
-const {A, B, TR, TD, BUTTON, DIV, OPTION, LI, INPUT, LABEL, IMG, SPAN} = choc;
+const {B, BR, BUTTON, DIV, I, IMG, INPUT, LABEL, LI, SPAN, TD, TR} = choc; //autoimport
+const {OPTION} = choc;
 fix_dialogs({close_selector: ".dialog_cancel,.dialog_close", click_outside: true});
 import "https://cdn.jsdelivr.net/gh/twitter/twitter-text@3.1.0/js/pkg/twitter-text-3.1.0.min.js";
 const parse_tweet = twttr.txt.parseTweet;
@@ -325,6 +326,17 @@ function open_picker(now_picking, heading) {
 	document.getElementById("picker_search").oninput(); //Do an initial search immediately
 }
 document.getElementById("pick_cat").onclick = function(ev) {open_picker("game", "Pick a category:"); ev.preventDefault();}
+on("click", "#pick_ccls", e => {
+	const ccls = DOM("#ccls").value.split(", "); //Require the spaces between them - this isn't human-editable
+	DOM("#ccl_options").querySelectorAll("input").forEach(el => el.checked = ccls.includes(el.name));
+	DOM("#ccl_picker").showModal();
+});
+on("click", "#ccl_apply", e => {
+	const ccls = [];
+	DOM("#ccl_options").querySelectorAll("input").forEach(el => el.checked && ccls.push(el.name));
+	DOM("#ccls").value = ccls.join(", ");
+	DOM("#ccl_picker").close();
+});
 
 let searching = false;
 document.getElementById("picker_search").oninput = async function() {
@@ -441,3 +453,8 @@ set_content("#checklist",
 		: LI({className: "separator"}, "\xA0")
 	)
 );
+
+set_content("#ccl_options", all_ccls.map(ccl => LI([
+	LABEL([INPUT({type: "checkbox", name: ccl.id}), " ", ccl.name]),
+	BR(), I(ccl.description),
+])));
