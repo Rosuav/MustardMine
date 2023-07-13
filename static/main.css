@@ -219,3 +219,11 @@ ul[data-selval="custom"] li.customonly {
 form.dirty {
 	background-color: #fdd;
 }
+
+/* Add a bit of gap between these, since there's room to spare */
+#ccl_options li {
+	margin-bottom: 1em;
+}
+input[readonly] {
+	background-color: #ddd;
+}
