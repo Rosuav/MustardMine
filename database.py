@@ -105,7 +105,7 @@ def create_setup(twitchid, *, category, title, tags="", tweet="", ccls="", **ext
 	Returns the full record just created, including its ID.
 	"""
 	with postgres, postgres.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-		cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet, ccls) values (%s, %s, %s, %s, %s, %s, %s) returning *",
+		cur.execute("insert into mustard.setups (twitchid, category, title, tags, tweet, ccls) values (%s, %s, %s, %s, %s, %s) returning *",
 			(twitchid, category, title, tags, tweet, ccls))
 		ret = cur.fetchone()
 	return ret
