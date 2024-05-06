@@ -543,7 +543,7 @@ def edit_timer(id):
 	# NOTE: This doesn't get told what the channel ID is, it just does a perms check.
 	# The channel ID will be carried through in the POST data though.
 	info = database.get_timer_details(id)
-	if not info or not may_edit_channel(session["twitch_user"]["_id"], info["twitchid"]):
+	if not info or not may_edit_channel(int(session["twitch_user"]["_id"]), info["twitchid"]):
 		return "Timer not found, or not owned by you", 404
 	return render_template("timer.html", info=info, channelid=info["twitchid"])
 
