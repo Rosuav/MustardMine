@@ -227,3 +227,14 @@ form.dirty {
 input[readonly] {
 	background-color: #ddd;
 }
+
+/* Banner warning people that this is the old page */
+/* TODO: At some point in late 2024, change the wording to say that this is actually deprecated */
+#banner {
+	background: #faa;
+	border: 1px solid red;
+	position: fixed;
+	left: 10px; right: 10px;
+	top: 10px; min-height: 30px;
+	text-align: center;
+}
